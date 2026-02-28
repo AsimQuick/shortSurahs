@@ -107,7 +107,7 @@ The critical path is: US-4 -> US-5 -> US-6. US-3 remaining ACs are independent a
 
 #### Remaining Acceptance Criteria
 
-- [ ] **AC-3.2: Artwork rendering**
+- [x] **AC-3.2: Artwork rendering**
   - Artwork loaded from bundled `assets/images/{surahId}.jpg`
   - Images display with rounded corners
   - Image `resizeMode` is set to `cover`
@@ -193,9 +193,12 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 
 **Dependencies:** US-1 (done), US-2 (done)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty -- Dev Team fills this in_
+AC-4.1 implemented 2026-03-01. Updated `app/player/[surahId].tsx` with the full PRD player layout: back button (top, calls router.back()), large artwork centered (width = SCREEN_WIDTH * 0.85, computed at runtime via Dimensions.get('window').width, borderRadius: 12), surah English name (loaded via getSurahs().find()), aya indicator ("Aya 1"), and playback controls row at bottom (Prev / Play / Next Pressables). System theme applied via useColorScheme (background #000/#fff, text #fff/#000). Artwork loaded via getArtwork() from artworkMap. 26 new source-level unit tests in `__tests__/player-layout.test.ts`; all 180 tests pass.
+[OPEN: AC-4.2] Playback control hit areas (44x44pt), disabled states, and icon toggling deferred to AC-4.2.
+[OPEN: AC-4.3] Dynamic aya indicator (track index updates) deferred to AC-4.3 / US-5 audio wiring.
+[OPEN: AC-4.4] Visual polish (no progress bar, no volume slider verification) deferred to AC-4.4.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
