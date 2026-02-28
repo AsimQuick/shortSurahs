@@ -6,7 +6,7 @@
 **Velocity (planned):** 6 user stories, 26 story points
 **Phase:** development
 **Last Updated:** 2026-03-01
-**Last Updated By:** tester (US-2 AC-2.1 CI pass — Iteration 2, quality gate: done)
+**Last Updated By:** tester (US-2 AC-2.1 CI fail — Iteration 3, quality gate: blocked — CI infrastructure failure, no logs)
 
 ---
 
@@ -138,7 +138,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - [ ] Code includes structured metadata header comments
 
 ### Tester Status
-done
+blocked
 
 ### Tester Notes
 - Re-validated 2026-02-28 after PO incorporated tester feedback.
@@ -253,12 +253,43 @@ All AC-2.1 acceptance criteria are met per the Dev Team implementation and CI ve
 
 ---
 
+**CI FAIL — Dev-Tester Loop: Iteration 3 of 3**
+
+- **Classification:** Indeterminate — CI infrastructure failure (no actionable failure logs produced)
+- **Severity:** Cannot be assessed — the CI job failed before generating any output
+- **CI stage that failed:** Unknown — `No failure logs available`
+- **Prior CI state:** GREEN at Iteration 2 (run `22528252816`) — all 5 test suites, 117 tests, 100% coverage, zero warnings
+
+**Root cause analysis:**
+
+The failure report carries no log output whatsoever. A zero-log CI failure means the pipeline itself was unable to execute or capture output before terminating — it is not a test failure, type error, lint violation, or dependency conflict. Probable causes in order of likelihood:
+
+1. **Transient CI runner failure** — GitHub Actions runner became unavailable, timed out at the infrastructure level, or was evicted before the job wrote any output. This is the most common cause of zero-log failures and requires no code change.
+2. **Run cancellation or queue eviction** — A newer commit or manual cancellation terminated the run before it started. Benign and self-resolving on re-trigger.
+3. **CI configuration or token issue** — A permissions or token expiry prevented the workflow from initialising. This is a CI infrastructure concern, not a code concern.
+
+**This is not a code bug and not a requirements issue.** No implementation files have changed since the Iteration 2 CI PASS at commit `0594ded`. The following files are unchanged: `package.json`, `package-lock.json`, `app/_layout.tsx`, `app/index.tsx`, `__tests__/router-config.test.ts`, `app.json`. A CI infrastructure failure cannot be diagnosed or fixed by Dev Team code changes.
+
+**Required action:**
+
+1. Re-trigger the CI pipeline for branch `feature/US-2-AC-2.1` without any code changes.
+2. If CI passes on re-run: no further action required — quality gate remains met as established at Iteration 2.
+3. If CI fails again with actual failure logs: re-invoke the Tester with those logs for a genuine code defect classification.
+4. If CI fails again with no logs: escalate to Project Lead — this is a persistent CI infrastructure issue outside the Dev-Tester Loop scope.
+
+**Note on Dev-Tester Loop cap:** Iteration 3 of 3 is the final permitted iteration. The loop cannot be extended. Resolution of a persistent CI infrastructure failure requires Project Lead intervention, not Dev Team code changes. The Iteration 2 quality gate decision remains valid for the code at commit `0594ded` — this failure does not invalidate that PASS.
+
+**Tester Status: blocked** — Quality gate cannot be re-evaluated without actionable CI failure output. Recommend CI re-trigger before any code changes are made.
+
+---
+
 ### Dev Team Status
 resolved
 
 ### Dev Team Notes
 - AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 - **CI defect fix (iteration 1):** Bumped `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies and regenerated `package-lock.json` via `npm install`. Root cause: `expo-router` transitively pulled in `react-dom@19.2.4` (via `@radix-ui` packages), which declares `peerDependencies: { react: "^19.2.4" }`. Since `19.2.0 < 19.2.4`, `npm ci`'s strict resolver aborted with ERESOLVE. Patch-level bump to `19.2.4` satisfies the constraint without affecting Expo SDK 55 compatibility.
+- **CI re-trigger (iteration 3):** No code changes required. Tester classified Iteration 3 CI failure as a transient CI infrastructure failure — zero-log failure, job terminated before any output was captured, no actionable error output produced. Per Tester required action, CI pipeline re-triggered by pushing this commit. No implementation files modified since Iteration 2 PASS at commit `0594ded`. All 117 tests, lint, and type-check were green at that commit and remain unchanged.
 
 ---
 
