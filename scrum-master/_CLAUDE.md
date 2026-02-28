@@ -1,0 +1,1 @@
+/Users/asim/NoIcloud/shortSurahs/CLAUDE.md
