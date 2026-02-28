@@ -15,11 +15,13 @@
  *              Layout: back button (top), large artwork (>=80% screen width,
  *              computed at runtime via Dimensions.get('window').width), surah
  *              English name, aya indicator, and playback controls (bottom).
- *              Audio wiring (TrackPlayer) implemented in US-5 (AC-5.x).
+ *              Implements AC-5.3: Loop behavior (PRD Rule 1) — isPlaying
+ *              initialises to true because loadSurahQueue() starts playback
+ *              automatically (RepeatMode.Track + TrackPlayer.play()).
  * @project shortSurahs
  *              Implements AC-5.2: Loads surah tracks into TrackPlayer queue
  *              on mount via loadSurahQueue() (clears previous queue first).
- * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4; US-5 AC-5.2
+ * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4; US-5 AC-5.2, AC-5.3
  */
 
 import { useEffect, useState } from 'react';
@@ -59,8 +61,8 @@ export default function PlayerScreen() {
     loadSurahQueue(surahId as string).catch(() => {});
   }, [surahId]);
 
-  // AC-4.2: Local playback UI state — wired to TrackPlayer in US-5 (AC-5.x)
-  const [isPlaying, setIsPlaying] = useState(false);
+  // AC-4.2 / AC-5.3: isPlaying starts true — loadSurahQueue() auto-starts playback.
+  const [isPlaying, setIsPlaying] = useState(true);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   const isPrevDisabled = currentTrackIndex === 0;

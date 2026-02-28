@@ -9,11 +9,15 @@
  *                - artist: "shortSurahs"
  *                - artwork: bundled require() asset from artworkMap
  *                - url: bundled require() asset from audioMap
+ *              Implements AC-5.3: Loop behavior (PRD Rule 1).
+ *              After adding tracks, sets RepeatMode.Track so the current track
+ *              loops forever, then calls TrackPlayer.play() to start playback
+ *              automatically (no manual intervention required).
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3
  */
 
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { RepeatMode } from 'react-native-track-player';
 import { getSurahs } from '../data/dataUtils';
 import { getArtwork } from '../data/artworkMap';
 import { getAudioAsset } from '../data/audioMap';
@@ -44,4 +48,8 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
   });
 
   await TrackPlayer.add(tracks);
+
+  // AC-5.3: Enable per-track looping (PRD Rule 1) and start playback automatically.
+  await TrackPlayer.setRepeatMode(RepeatMode.Track);
+  await TrackPlayer.play();
 }

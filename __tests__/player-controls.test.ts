@@ -37,8 +37,8 @@ describe('AC-4.2 — isPlaying state', () => {
     expect(source).toContain('isPlaying');
   });
 
-  test('isPlaying is initialized to false (not playing on mount)', () => {
-    expect(source).toMatch(/useState\(false\)/);
+  test('isPlaying is initialized to true (auto-play on mount, AC-5.3)', () => {
+    expect(source).toMatch(/useState\(true\)/);
   });
 
   test('setIsPlaying setter is defined', () => {

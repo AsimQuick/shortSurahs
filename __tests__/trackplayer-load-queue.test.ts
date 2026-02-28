@@ -239,7 +239,14 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
 
     jest.mock('react-native-track-player', () => ({
       __esModule: true,
-      default: { reset: mockReset, add: mockAdd },
+      default: {
+        reset: mockReset,
+        add: mockAdd,
+        setRepeatMode: jest.fn().mockResolvedValue(undefined),
+        play: jest.fn().mockResolvedValue(undefined),
+      },
+      // AC-5.3: RepeatMode needed because loadSurahQueue now calls setRepeatMode(RepeatMode.Track)
+      RepeatMode: { Track: 2 },
     }));
 
     jest.mock('../data/audioMap', () => ({
