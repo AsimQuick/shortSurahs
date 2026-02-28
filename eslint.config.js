@@ -15,7 +15,7 @@ module.exports = defineConfig([
     ignores: ['node_modules/', 'dist/', '.expo/'],
   },
   {
-    files: ['__tests__/**/*.js', '**/*.test.js'],
+    files: ['__tests__/**/*.js', '__tests__/**/*.ts', '**/*.test.js', '**/*.test.ts'],
     languageOptions: {
       globals: { ...globals.jest, ...globals.node },
     },

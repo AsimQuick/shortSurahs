@@ -55,8 +55,10 @@ resolved
 - CI infrastructure resolved per Tester pre-dev audit: `eslint.config.js` added (Expo flat config), `jest` + `eslint` + `eslint-config-expo` added to devDependencies, `"test": "jest"` script added to `package.json`, jest preset `jest-expo` configured.
 - 32 unit tests written in `__tests__/surahs.json.test.js` — all pass. Tests cover: file existence, JSON validity, entry count, all 4 surah IDs, full schema field presence, exact nameEnglish/nameArabic/trackCount/folder/artwork values per AC-1.1.
 - Note: JSON does not support comments; metadata header requirement is satisfied for all .js files (eslint.config.js, test file). `surahs.json` is a data file — no metadata header added to avoid invalid JSON.
-- AC-1.2 and AC-1.3 pending (separate ACs).
 - **CI defect fix (iteration 1):** Added `globals` package import and a `files`-scoped block in `eslint.config.js` targeting `__tests__/**/*.js` and `**/*.test.js`, injecting `globals.jest` and `globals.node`. Resolves 33 ESLint `no-undef` errors (`__dirname`, `describe`, `beforeAll`, `test`, `expect`). `eslint .` exits 0; all 32 tests still pass.
+- AC-1.2 complete: `types/index.ts` created with `Surah` and `Track` interfaces. `Surah` fields: `id`, `nameEnglish`, `nameArabic`, `trackCount`, `artwork`, `folder`. `Track` fields: `id`, `url`, `title`, `artist`, `artwork`. `url` and `artwork` typed as `string | number` to support bundled `require()` assets (number) and string paths. Types exported and metadata header included. 17 unit tests written in `__tests__/types.test.ts` — all pass (49 total). `eslint .` exits 0.
+- AC-1.3 pending (separate AC).
+- **CI defect fix (iteration 2):** Added `@types/jest: "^29.5.0"` to `devDependencies` in `package.json`. This resolves all 38 TypeScript errors (TS2582/TS2304) in `__tests__/types.test.ts` caused by missing Jest type definitions. Also extended ESLint `files` glob in `eslint.config.js` to include `__tests__/**/*.ts` and `**/*.test.ts` to ensure `.ts` test files receive Jest/Node globals. Verification: `npx tsc --noEmit` exits 0, `npm test` passes 49 tests (32 + 17), `npx eslint . --max-warnings 0` exits 0.
 
 ### Tester Status
 defect-found
@@ -70,31 +72,37 @@ defect-found
 
 ---
 
-**CI DEFECT — Dev-Tester Loop Iteration 1 of 3**
+**CI DEFECT — Dev-Tester Loop: Iteration 1 of 3**
 
 - **Classification:** Code bug — not a requirements issue
-- **Severity:** High (blocks CI gate; story cannot merge)
-- **CI stage that failed:** Lint (ESLint) — Tests pass (32/32)
-- **Run:** https://github.com/AsimQuick/shortSurahs/actions/runs/22526818861
+- **Severity:** Blocker (CI type-check exits code 2; story cannot merge; jest runtime never runs)
+- **CI stage that failed:** Type check (`npx tsc --noEmit`)
+- **CI stage that passed:** Lint (`npx eslint . --max-warnings 0`) — exits 0, no errors
+- **Runs:** https://github.com/AsimQuick/shortSurahs/actions/runs/22526960769 and https://github.com/AsimQuick/shortSurahs/actions/runs/22526964759
 
-**Root cause:** `eslint.config.js` uses `eslint-config-expo/flat` but does not declare Jest or Node.js globals for test files. ESLint reports 33 `no-undef` errors on `__tests__/surahs.json.test.js`:
-  - `__dirname` — Node.js global not declared
-  - `describe`, `beforeAll`, `test`, `expect` — Jest globals not declared
+**Root cause:** The Dev Team added `__tests__/types.test.ts` (a TypeScript test file) that uses Jest globals — `describe`, `test`, and `expect`. TypeScript's type-checker requires `@types/jest` to be installed in `devDependencies` to resolve those global names. The package is absent from `package.json`. As a result, `tsc --noEmit` reports the following errors across all 17 test blocks in `__tests__/types.test.ts`:
 
-**Required fix (Dev Team):** Add a `files`-scoped config block in `eslint.config.js` targeting `__tests__/**/*.js` (and `**/*.test.js`) that injects `globals.jest` and `globals.node`. Example:
-```js
-const globals = require('globals');
-// inside defineConfig([...]):
-{
-  files: ['__tests__/**/*.js', '**/*.test.js'],
-  languageOptions: {
-    globals: { ...globals.jest, ...globals.node },
-  },
-},
+- TS2582 on every `describe` and `test` call: "Cannot find name 'describe'/'test'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest`"
+- TS2304 on every `expect` call: "Cannot find name 'expect'"
+
+Total: 38 TypeScript errors, all in `__tests__/types.test.ts`. The production types file `types/index.ts` has zero errors — the `Surah` and `Track` interfaces are correctly defined and fully satisfy AC-1.2.
+
+**This is not a requirements gap.** AC-1.2 is satisfied in the implementation. The defect is a missing devDependency introduced when the test file was upgraded from `.js` to `.ts`.
+
+**Required fix (Dev Team):** Add `@types/jest` to `devDependencies` in `package.json`:
+
+```json
+"@types/jest": "^29.5.0"
 ```
-The `globals` package is already a transitive dependency of `eslint-config-expo`.
 
-**Verification:** After the fix, `npm run lint` (or `eslint .`) must exit 0 with no `no-undef` errors in test files. All 32 tests must continue to pass.
+The version should align with the installed `jest` version (`^29.7.0`). After running `npm install`, `npx tsc --noEmit` must exit 0.
+
+**Secondary check — ESLint scope for `.ts` test files:** The existing `eslint.config.js` globals block targets `__tests__/**/*.js` and `**/*.test.js`. Now that a `.ts` test file exists, the Dev Team should verify that ESLint is not producing `no-undef` errors for `__tests__/types.test.ts`. If ESLint does flag it, the files glob in `eslint.config.js` must be extended to include `__tests__/**/*.ts` and `**/*.test.ts`. The current CI Lint run shows no errors — `eslint-config-expo/flat` may already handle TypeScript files — but this should be confirmed locally.
+
+**Verification:** After the fix:
+1. `npx tsc --noEmit` must exit 0 with no errors.
+2. `npm test` must run all 49 tests (32 from AC-1.1 + 17 from AC-1.2) and pass.
+3. `npx eslint . --max-warnings 0` must continue to exit 0.
 
 ---
 
