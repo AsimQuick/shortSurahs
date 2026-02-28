@@ -6,7 +6,7 @@
 **Velocity (planned):** 6 user stories, 26 story points
 **Phase:** development
 **Last Updated:** 2026-03-01
-**Last Updated By:** tester (US-2 AC-2.1 CI defect — Iteration 1)
+**Last Updated By:** tester (US-2 AC-2.1 CI pass — Iteration 2, quality gate: done)
 
 ---
 
@@ -138,7 +138,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - [ ] Code includes structured metadata header comments
 
 ### Tester Status
-defect-found
+done
 
 ### Tester Notes
 - Re-validated 2026-02-28 after PO incorporated tester feedback.
@@ -196,6 +196,60 @@ Then regenerate `package-lock.json` by running `npm install` (not `npm ci`). Com
 2. `npx tsc --noEmit` must exit 0 with no errors.
 3. `npm test` must run all 106 tests (93 from US-1 + 13 from AC-2.1) and pass.
 4. `npx eslint . --max-warnings 0` must exit 0.
+
+---
+
+**CI PASS — Dev-Tester Loop: Iteration 2 of 3**
+
+- **Classification:** Code bug (Iteration 1) — resolved by Dev Team
+- **Severity:** N/A — CI is green
+- **CI run:** https://github.com/AsimQuick/shortSurahs/actions/runs/22528252816 (commit `0594ded`)
+- **Overall result:** All stages passed — no failures, no warnings
+
+**Stage-by-stage results:**
+
+| Stage | Result | Detail |
+|---|---|---|
+| Install dependencies (`npm ci`) | PASSED | 1006 packages installed, 0 vulnerabilities, exit 0 |
+| Lint (`npx eslint . --max-warnings 0`) | PASSED | exit 0, no warnings or errors |
+| Type check (`npx tsc --noEmit`) | PASSED | exit 0, no type errors |
+| Tests with coverage | PASSED | 5 suites, 117 tests, 0 failures |
+
+**Coverage report:**
+
+```
+All files     | 100 | 100 | 100 | 100 |
+ dataUtils.ts | 100 | 100 | 100 | 100 |
+```
+
+Coverage exceeds the 70% threshold on all four dimensions (statements, branches, functions, lines). Gate: PASSED.
+
+**Test suites passing:**
+- `__tests__/dataUtils.test.ts` — PASS
+- `__tests__/router-config.test.ts` — PASS
+- `__tests__/types.test.ts` — PASS
+- `__tests__/surah-list-layout.test.ts` — PASS
+- `__tests__/surahs.json.test.js` — PASS
+
+**Quality gate decision for AC-2.1:**
+
+All AC-2.1 acceptance criteria are met per the Dev Team implementation and CI verification:
+- `expo-router` installed and present in `package.json` (asserted in `router-config.test.ts`)
+- `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (asserted in `router-config.test.ts`)
+- `app/` directory exists with `_layout.tsx` (root Stack navigator) and `app/index.tsx` (asserted in `router-config.test.ts`)
+- `package.json` `main` entry updated to `expo-router/entry` (asserted in `router-config.test.ts`)
+- TypeScript compilation clean (`npx tsc --noEmit` exit 0)
+- Lint clean (`npx eslint . --max-warnings 0` exit 0)
+- Structured metadata header comments included in all code files
+
+**DoD items satisfied for AC-2.1:**
+- Expo Router configured: VERIFIED (configuration assertions in `router-config.test.ts`, CI green)
+- Code includes structured metadata header comments: VERIFIED
+- Forward and back navigation and "no console errors" items: these require AC-2.2 and AC-2.3 implementation and are out of scope for this AC-2.1 task
+
+**Tester Status: done** — AC-2.1 quality gate is met. Implementation is correct, CI is green, and all 13 AC-2.1-scoped tests pass. Dev Team may proceed to AC-2.2 (route structure) and AC-2.3 (navigation behavior).
+
+**Note on AC-2.2 and AC-2.3 scope:** `app/player/[surahId].tsx` does not exist yet (created in AC-2.2). The `router-config.test.ts` suite does not assert for that file, which is correct — AC-2.1 scopes to Expo Router installation and root layout only. The missing player route file is expected at this stage and is not a defect.
 
 ---
 
