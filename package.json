@@ -21,6 +21,7 @@
     "react-native": "0.83.2"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/react": "~19.2.2",
     "eslint": "^9.39.3",
     "eslint-config-expo": "^55.0.0",
