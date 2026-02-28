@@ -112,7 +112,7 @@ The critical path is: US-4 -> US-5 -> US-6. US-3 remaining ACs are independent a
   - Images display with rounded corners
   - Image `resizeMode` is set to `cover`
 
-- [ ] **AC-3.3: Surah data loaded dynamically**
+- [x] **AC-3.3: Surah data loaded dynamically**
   - List populated from `surahs.json` via data utilities (US-1)
   - Not hardcoded in the component
   - All 4 surahs displayed: Al-Fatiha, Al-Falaq, Al-Ikhlas, An-Nas
@@ -137,6 +137,7 @@ Current `app/index.tsx` uses `source={{ uri: item.artwork }}` for artwork (strin
 **Dev Team Status:** done
 **Dev Team Notes:**
 AC-3.2 implemented 2026-03-01. Created `data/artworkMap.ts` with a static `require()` map covering all 4 surahs (fatiha, falaq, ikhlas, nas). Updated `app/index.tsx`: replaced `source={{ uri: item.artwork }}` with `source={getArtwork(item.id)}`, added `resizeMode="cover"` prop to Image, and added `borderRadius: 8` to the artwork style. 14 new source-level unit tests in `__tests__/surah-list-artwork.test.ts`; all 154 tests pass.
+AC-3.3 implemented 2026-03-01. `app/index.tsx` was already loading surah data dynamically via `getSurahs()` from `data/dataUtils.ts` (no hardcoded surah names in the component). No source changes required. 19 new source-level unit tests added in `__tests__/surah-list-dynamic.test.ts` covering: getSurahs export, dynamic import in index.tsx, absence of hardcoded surah names, and presence of all 4 surahs in the data source. All 199 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
