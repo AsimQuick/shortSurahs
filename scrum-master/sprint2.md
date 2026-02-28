@@ -117,7 +117,7 @@ The critical path is: US-4 -> US-5 -> US-6. US-3 remaining ACs are independent a
   - Not hardcoded in the component
   - All 4 surahs displayed: Al-Fatiha, Al-Falaq, Al-Ikhlas, An-Nas
 
-- [ ] **AC-3.4: Visual polish**
+- [x] **AC-3.4: Visual polish**
   - Follows system theme (light/dark via `useColorScheme` applied to background and text colors)
   - No more than 3 UI elements per row: artwork, English name, Arabic name
   - No badge, count, or metadata label elements rendered in each row
@@ -138,6 +138,7 @@ Current `app/index.tsx` uses `source={{ uri: item.artwork }}` for artwork (strin
 **Dev Team Notes:**
 AC-3.2 implemented 2026-03-01. Created `data/artworkMap.ts` with a static `require()` map covering all 4 surahs (fatiha, falaq, ikhlas, nas). Updated `app/index.tsx`: replaced `source={{ uri: item.artwork }}` with `source={getArtwork(item.id)}`, added `resizeMode="cover"` prop to Image, and added `borderRadius: 8` to the artwork style. 14 new source-level unit tests in `__tests__/surah-list-artwork.test.ts`; all 154 tests pass.
 AC-3.3 implemented 2026-03-01. `app/index.tsx` was already loading surah data dynamically via `getSurahs()` from `data/dataUtils.ts` (no hardcoded surah names in the component). No source changes required. 19 new source-level unit tests added in `__tests__/surah-list-dynamic.test.ts` covering: getSurahs export, dynamic import in index.tsx, absence of hardcoded surah names, and presence of all 4 surahs in the data source. All 199 tests pass.
+AC-3.4 implemented 2026-03-01. Updated `app/index.tsx`: imported `useColorScheme` from react-native; called `useColorScheme()` in `SurahListScreen`, derived `isDark`, `backgroundColor` (#000000/#ffffff), and `textColor` (#ffffff/#000000); wrapped FlatList in a `View` with `{ backgroundColor }` applied; added `textColor` prop to `SurahRow` and applied it via inline `{ color: textColor }` on both name Text elements. Row structure unchanged: exactly 3 elements per row (artwork Image, English name Text, Arabic name Text); no badges, counts, or metadata labels present. Updated file header to document AC-3.4 and sprint annotation. 21 new source-level unit tests in `__tests__/surah-list-visual-polish.test.ts` covering: useColorScheme import and invocation, isDark derivation, dark/light background and text colors, backgroundColor container application, textColor prop wiring, and absence of badge/count/metadata elements. All 366 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
@@ -223,7 +224,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
   - TrackPlayer service registered and initialized on app start
   - Playback capability configured for play, pause, skip-next, skip-previous
 
-- [ ] **AC-5.2: Load surah tracks**
+- [x] **AC-5.2: Load surah tracks**
   - When player screen opens, all tracks for the selected surah are loaded into the queue
   - If a queue already exists from a previous surah, it must be cleared before loading the new surah's tracks
   - Track metadata includes: title (aya number), artist ("shortSurahs"), artwork path
