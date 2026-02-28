@@ -122,8 +122,9 @@ describe('AC-4.1 — aya indicator below surah name', () => {
     expect(source).toContain('Aya');
   });
 
-  test('aya indicator renders a number after "Aya"', () => {
-    expect(source).toMatch(/Aya\s+\d/);
+  test('aya indicator renders "Aya" followed by a number or dynamic expression', () => {
+    // AC-4.3 made the indicator dynamic: "Aya {currentTrackIndex + 1}"
+    expect(source).toMatch(/Aya.*(\d|currentTrackIndex)/);
   });
 });
 
