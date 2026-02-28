@@ -5,8 +5,8 @@
 **Sprint Duration:** 2026-02-28 → 2026-03-14
 **Velocity (planned):** 6 user stories, 26 story points
 **Phase:** development
-**Last Updated:** 2026-02-28
-**Last Updated By:** tester (US-2 AC-2.1 CI defect — Iteration 1)
+**Last Updated:** 2026-03-01
+**Last Updated By:** tester (US-2 AC-2.1 CI fail — Iteration 3, quality gate: blocked — CI infrastructure failure, no logs)
 
 ---
 
@@ -138,7 +138,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - [ ] Code includes structured metadata header comments
 
 ### Tester Status
-defect-found
+done (AC-2.1)
 
 ### Tester Notes
 - Re-validated 2026-02-28 after PO incorporated tester feedback.
@@ -155,6 +155,7 @@ defect-found
 - **Severity:** Blocker (`npm ci` exits with ERESOLVE; dependency installation fails before lint, type-check, or tests can run)
 - **CI stage that failed:** Install dependencies (`npm ci`)
 - **CI stages that did not run:** Lint, type-check, tests — all skipped due to install failure
+- **Failed CI runs:** https://github.com/AsimQuick/shortSurahs/actions/runs/22527833868 and https://github.com/AsimQuick/shortSurahs/actions/runs/22527827747
 
 **Root cause:** Installing `expo-router@~55.0.3` (AC-2.1) introduced a transitive peer dependency conflict. The dependency chain is:
 
@@ -165,7 +166,20 @@ expo-router → @radix-ui/react-tabs → @radix-ui/react-roving-focus → @radix
 
 All of these `@radix-ui` packages declare `peerDependencies: { react-dom: "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }`. npm resolved `react-dom@19.2.4` to satisfy those peers. However, `react-dom@19.2.4` itself declares `peerDependencies: { react: "^19.2.4" }` — meaning it requires `react >= 19.2.4`.
 
-The project's `package.json` pins `react` at `"19.2.0"`. Since `19.2.0 < 19.2.4`, the constraint is not met and npm's strict resolver (used by `npm ci`) aborts with ERESOLVE.
+The project's `package.json` pinned `react` at `"19.2.0"`. Since `19.2.0 < 19.2.4`, the constraint is not met and npm's strict resolver (used by `npm ci`) aborts with ERESOLVE.
+
+**npm error output (key lines):**
+```
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error While resolving: react-dom@19.2.4
+npm error Found: react@19.2.0
+npm error Could not resolve dependency:
+npm error peer react@"^19.2.4" from react-dom@19.2.4
+npm error Conflicting peer dependency: react@19.2.4
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+```
 
 **This is not a requirements gap.** AC-2.1 is correctly specified. The defect is a patch-version mismatch in `react` introduced when `expo-router` was installed without simultaneously updating `react` to the version that satisfies its transitive peer dependencies.
 
@@ -185,12 +199,128 @@ Then regenerate `package-lock.json` by running `npm install` (not `npm ci`). Com
 
 ---
 
+**CI PASS — Dev-Tester Loop: Iteration 2 of 3**
+
+- **Classification:** Code bug (Iteration 1) — resolved by Dev Team
+- **Severity:** N/A — CI is green
+- **CI run:** https://github.com/AsimQuick/shortSurahs/actions/runs/22528252816 (commit `0594ded`)
+- **Overall result:** All stages passed — no failures, no warnings
+
+**Stage-by-stage results:**
+
+| Stage | Result | Detail |
+|---|---|---|
+| Install dependencies (`npm ci`) | PASSED | 1006 packages installed, 0 vulnerabilities, exit 0 |
+| Lint (`npx eslint . --max-warnings 0`) | PASSED | exit 0, no warnings or errors |
+| Type check (`npx tsc --noEmit`) | PASSED | exit 0, no type errors |
+| Tests with coverage | PASSED | 5 suites, 117 tests, 0 failures |
+
+**Coverage report:**
+
+```
+All files     | 100 | 100 | 100 | 100 |
+ dataUtils.ts | 100 | 100 | 100 | 100 |
+```
+
+Coverage exceeds the 70% threshold on all four dimensions (statements, branches, functions, lines). Gate: PASSED.
+
+**Test suites passing:**
+- `__tests__/dataUtils.test.ts` — PASS
+- `__tests__/router-config.test.ts` — PASS
+- `__tests__/types.test.ts` — PASS
+- `__tests__/surah-list-layout.test.ts` — PASS
+- `__tests__/surahs.json.test.js` — PASS
+
+**Quality gate decision for AC-2.1:**
+
+All AC-2.1 acceptance criteria are met per the Dev Team implementation and CI verification:
+- `expo-router` installed and present in `package.json` (asserted in `router-config.test.ts`)
+- `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (asserted in `router-config.test.ts`)
+- `app/` directory exists with `_layout.tsx` (root Stack navigator) and `app/index.tsx` (asserted in `router-config.test.ts`)
+- `package.json` `main` entry updated to `expo-router/entry` (asserted in `router-config.test.ts`)
+- TypeScript compilation clean (`npx tsc --noEmit` exit 0)
+- Lint clean (`npx eslint . --max-warnings 0` exit 0)
+- Structured metadata header comments included in all code files
+
+**DoD items satisfied for AC-2.1:**
+- Expo Router configured: VERIFIED (configuration assertions in `router-config.test.ts`, CI green)
+- Code includes structured metadata header comments: VERIFIED
+- Forward and back navigation and "no console errors" items: these require AC-2.2 and AC-2.3 implementation and are out of scope for this AC-2.1 task
+
+**Tester Status: done** — AC-2.1 quality gate is met. Implementation is correct, CI is green, and all 13 AC-2.1-scoped tests pass. Dev Team may proceed to AC-2.2 (route structure) and AC-2.3 (navigation behavior).
+
+**Note on AC-2.2 and AC-2.3 scope:** `app/player/[surahId].tsx` does not exist yet (created in AC-2.2). The `router-config.test.ts` suite does not assert for that file, which is correct — AC-2.1 scopes to Expo Router installation and root layout only. The missing player route file is expected at this stage and is not a defect.
+
+---
+
+**CI FAIL — Dev-Tester Loop: Iteration 3 of 3**
+
+- **Classification:** Indeterminate — CI infrastructure failure (no actionable failure logs produced)
+- **Severity:** Cannot be assessed — the CI job failed before generating any output
+- **CI stage that failed:** Unknown — `No failure logs available`
+- **Prior CI state:** GREEN at Iteration 2 (run `22528252816`) — all 5 test suites, 117 tests, 100% coverage, zero warnings
+
+**Root cause analysis:**
+
+The failure report carries no log output whatsoever. A zero-log CI failure means the pipeline itself was unable to execute or capture output before terminating — it is not a test failure, type error, lint violation, or dependency conflict. Probable causes in order of likelihood:
+
+1. **Transient CI runner failure** — GitHub Actions runner became unavailable, timed out at the infrastructure level, or was evicted before the job wrote any output. This is the most common cause of zero-log failures and requires no code change.
+2. **Run cancellation or queue eviction** — A newer commit or manual cancellation terminated the run before it started. Benign and self-resolving on re-trigger.
+3. **CI configuration or token issue** — A permissions or token expiry prevented the workflow from initialising. This is a CI infrastructure concern, not a code concern.
+
+**This is not a code bug and not a requirements issue.** No implementation files have changed since the Iteration 2 CI PASS at commit `0594ded`. The following files are unchanged: `package.json`, `package-lock.json`, `app/_layout.tsx`, `app/index.tsx`, `__tests__/router-config.test.ts`, `app.json`. A CI infrastructure failure cannot be diagnosed or fixed by Dev Team code changes.
+
+**Required action:**
+
+1. Re-trigger the CI pipeline for branch `feature/US-2-AC-2.1` without any code changes.
+2. If CI passes on re-run: no further action required — quality gate remains met as established at Iteration 2.
+3. If CI fails again with actual failure logs: re-invoke the Tester with those logs for a genuine code defect classification.
+4. If CI fails again with no logs: escalate to Project Lead — this is a persistent CI infrastructure issue outside the Dev-Tester Loop scope.
+
+**Note on Dev-Tester Loop cap:** Iteration 3 of 3 is the final permitted iteration. The loop cannot be extended. Resolution of a persistent CI infrastructure failure requires Project Lead intervention, not Dev Team code changes. The Iteration 2 quality gate decision remains valid for the code at commit `0594ded` — this failure does not invalidate that PASS.
+
+**Tester Status: blocked** — Quality gate cannot be re-evaluated without actionable CI failure output. Recommend CI re-trigger before any code changes are made.
+
+---
+
+**PROJECT LEAD RECOVERY — Dev-Tester Loop Exhaustion Resolution (2026-03-01)**
+
+- **Trigger:** Dev-Tester loop exhausted (3/3 iterations) with Tester status `blocked` due to CI infrastructure failure at Iteration 3
+- **Classification:** Process artifact — not a code defect, not a requirements gap
+
+**Root cause analysis:**
+
+The 3-iteration loop was consumed as follows:
+1. **Iteration 1:** Genuine code bug (ERESOLVE peer dependency conflict). Correctly identified and fixed by Dev Team. Loop iteration properly spent.
+2. **Iteration 2:** CI fully green. Quality gate met. AC-2.1 verified correct. This was the terminal state for the code.
+3. **Iteration 3:** Transient CI infrastructure failure — zero-log GitHub Actions runner failure. No code changed between iterations 2 and 3. The loop's final iteration was consumed by an infrastructure issue outside anyone's control.
+
+**Evidence supporting resolution:**
+
+| Factor | Evidence |
+|--------|----------|
+| Code unchanged since Iteration 2 PASS | Confirmed — `package.json`, `package-lock.json`, `app/_layout.tsx`, `app/index.tsx`, `__tests__/router-config.test.ts`, `app.json` all identical |
+| CI re-trigger succeeded | Run `22528577563` (commit `d9df405`) — all stages green, 117 tests pass |
+| Both agents agree no code defect | Tester Notes (Iter 3): "not a code bug and not a requirements issue"; Dev Team Notes: "no code changes required" |
+| Iteration 2 quality gate was explicit PASS | Tester wrote: "AC-2.1 quality gate is met. Implementation is correct, CI is green" |
+
+**Decision: Accept Iteration 2 quality gate. AC-2.1 is DONE.**
+
+The Iteration 3 infrastructure failure does not invalidate the Iteration 2 PASS. The re-triggered CI run confirms the code remains correct. No re-scoping, no deferral, no AC revision needed.
+
+**Process improvement note:** The Dev-Tester loop should distinguish between code defects (which consume an iteration) and infrastructure failures (which should not). Infrastructure-only failures should be retried without counting against the loop cap. This will be addressed in the retrospective.
+
+**Tester Status override:** `blocked` → `done` (AC-2.1). AC-2.2 and AC-2.3 remain `requirements-approved` and are ready for development.
+
+---
+
 ### Dev Team Status
 resolved
 
 ### Dev Team Notes
 - AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 - **CI defect fix (iteration 1):** Bumped `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies and regenerated `package-lock.json` via `npm install`. Root cause: `expo-router` transitively pulled in `react-dom@19.2.4` (via `@radix-ui` packages), which declares `peerDependencies: { react: "^19.2.4" }`. Since `19.2.0 < 19.2.4`, `npm ci`'s strict resolver aborted with ERESOLVE. Patch-level bump to `19.2.4` satisfies the constraint without affecting Expo SDK 55 compatibility.
+- **CI re-trigger (iteration 3):** No code changes required. Tester classified Iteration 3 CI failure as a transient CI infrastructure failure — zero-log failure, job terminated before any output was captured, no actionable error output produced. Per Tester required action, CI pipeline re-triggered by pushing this commit. No implementation files modified since Iteration 2 PASS at commit `0594ded`. All 117 tests, lint, and type-check were green at that commit and remain unchanged.
 
 ---
 
@@ -204,7 +334,7 @@ resolved
 
 ### Acceptance Criteria
 
-**AC-3.1: List layout matches PRD design**
+- [x] **AC-3.1: List layout matches PRD design**
 - Vertical scrollable list
 - Each row displays: artwork thumbnail, English name, Arabic name
 - Layout follows the PRD pattern:
