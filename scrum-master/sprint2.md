@@ -170,22 +170,22 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
   - Previous disabled when on track 1
   - Next disabled when on last track
 
-- [x] **AC-4.3: Dynamic content**
+- [x] - [x] **AC-4.3: Dynamic content**
   - Artwork loaded from bundled assets for the selected surah
   - Surah name displayed from data model
   - Aya number updates when track changes (Aya = track index)
 
-- [ ] **AC-4.4: Visual polish**
+- [x] **AC-4.4: Visual polish**
   - Follows system theme (light/dark via `useColorScheme` applied to background and text colors)
   - No progress bar rendered in the player screen (tracks loop -- no linear progress)
   - No volume slider rendered in the player screen (system volume used)
 
 #### Definition of Done (Story Level)
-- [ ] Player screen renders with correct artwork, surah name, aya number
-- [ ] Controls (prev/play-pause/next) are visible with touchable area at least 44x44pt each
-- [ ] Screen follows system light/dark theme
-- [ ] Back button returns to surah list
-- [ ] Code includes structured metadata header comments
+- [x] Player screen renders with correct artwork, surah name, aya number
+- [x] Controls (prev/play-pause/next) are visible with touchable area at least 44x44pt each
+- [x] Screen follows system light/dark theme
+- [x] Back button returns to surah list
+- [x] Code includes structured metadata header comments
 
 #### Tester Quality Strategy Notes (from Sprint 1 requirements review)
 - AC-4.1: Artwork width uses `Dimensions.get('window').width` at runtime, not hardcoded pixel value
@@ -194,12 +194,12 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 
 **Dependencies:** US-1 (done), US-2 (done)
 
-**Dev Team Status:** in-progress
+**Dev Team Status:** done
 **Dev Team Notes:**
 AC-4.1 implemented 2026-03-01. Updated `app/player/[surahId].tsx` with the full PRD player layout: back button (top, calls router.back()), large artwork centered (width = SCREEN_WIDTH * 0.85, computed at runtime via Dimensions.get('window').width, borderRadius: 12), surah English name (loaded via getSurahs().find()), aya indicator ("Aya 1"), and playback controls row at bottom (Prev / Play / Next Pressables). System theme applied via useColorScheme (background #000/#fff, text #fff/#000). Artwork loaded via getArtwork() from artworkMap. 26 new source-level unit tests in `__tests__/player-layout.test.ts`; all 180 tests pass.
 AC-4.2 implemented 2026-03-01. Updated `app/player/[surahId].tsx`: added `useState` for `isPlaying` (false) and `currentTrackIndex` (0). `trackCount` derived from `surah?.trackCount`. `isPrevDisabled = currentTrackIndex === 0`; `isNextDisabled = currentTrackIndex === trackCount - 1`. Prev/Next Pressables have `disabled` prop and `controlButtonDisabled` style (opacity: 0.3) applied conditionally. Play/Pause button toggles between ▶ and ⏸ via `isPlaying ? '⏸' : '▶'`; `accessibilityLabel` also toggles. All three buttons: `minWidth: 44`, `minHeight: 44`, `justifyContent: 'center'`, `alignItems: 'center'` for Apple HIG 44pt tap target compliance. Handlers: `handlePrev` decrements index, `handleNext` increments index, `handlePlayPause` calls `setIsPlaying((p) => !p)`. 32 new source-level unit tests in `__tests__/player-controls.test.ts`; all 231 tests pass.
 AC-4.3 implemented 2026-03-01. Updated `app/player/[surahId].tsx`: replaced hardcoded `>Aya 1<` with dynamic expression `>Aya {currentTrackIndex + 1}<` (1-based; updates automatically as `currentTrackIndex` state changes via `handlePrev`/`handleNext`). Artwork was already loaded via `getArtwork(surahId)` (bundled `require()`, no string URI) and surah name already loaded via `getSurahs().find().nameEnglish` — both in place from AC-4.1. Updated file header to include AC-4.3. Updated stale `expect(source).toMatch(/Aya\\s+\\d/)` in `__tests__/player-layout.test.ts` to match the dynamic expression. 17 new source-level unit tests in `__tests__/player-dynamic-content.test.ts`; all 248 tests pass.
-[OPEN: AC-4.4] Visual polish (no progress bar, no volume slider verification) deferred to AC-4.4.
+AC-4.4 implemented 2026-03-01. No source changes required — `useColorScheme` was already applied from AC-4.1 (background #000/#fff, text #fff/#000 based on isDark); no ProgressBar or Slider components are present in the player screen. Updated `app/player/[surahId].tsx` file header to document AC-4.4 and add sprint annotation. 19 new source-level unit tests in `__tests__/player-visual-polish.test.ts` covering: useColorScheme import and invocation, isDark derivation, dark/light background and text colors, container backgroundColor application, absence of ProgressBar component, absence of Slider JSX, absence of progress-bar identifiers, absence of volume-control identifiers. All 267 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**

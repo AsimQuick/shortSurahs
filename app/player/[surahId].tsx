@@ -8,13 +8,16 @@
  *              Implements AC-4.3: Dynamic content — artwork from bundled assets,
  *              surah name from data model, aya number updates when track changes
  *              (displayed as currentTrackIndex + 1, 1-based).
+ *              Implements AC-4.4: Visual polish — system light/dark theme via
+ *              useColorScheme applied to background and text colors; no progress
+ *              bar (tracks loop, no linear progress); no volume slider (system
+ *              volume used).
  *              Layout: back button (top), large artwork (>=80% screen width,
  *              computed at runtime via Dimensions.get('window').width), surah
  *              English name, aya indicator, and playback controls (bottom).
- *              Follows system light/dark theme via useColorScheme.
  *              Audio wiring (TrackPlayer) implemented in US-5 (AC-5.x).
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3
+ * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4
  */
 
 import { useState } from 'react';
