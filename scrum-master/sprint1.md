@@ -5,7 +5,7 @@
 **Sprint Duration:** 2026-02-28 → 2026-03-14
 **Velocity (planned):** 6 user stories, 26 story points
 **Phase:** development
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 **Last Updated By:** tester (US-2 AC-2.1 CI defect — Iteration 1)
 
 ---
@@ -155,6 +155,7 @@ defect-found
 - **Severity:** Blocker (`npm ci` exits with ERESOLVE; dependency installation fails before lint, type-check, or tests can run)
 - **CI stage that failed:** Install dependencies (`npm ci`)
 - **CI stages that did not run:** Lint, type-check, tests — all skipped due to install failure
+- **Failed CI runs:** https://github.com/AsimQuick/shortSurahs/actions/runs/22527833868 and https://github.com/AsimQuick/shortSurahs/actions/runs/22527827747
 
 **Root cause:** Installing `expo-router@~55.0.3` (AC-2.1) introduced a transitive peer dependency conflict. The dependency chain is:
 
@@ -165,7 +166,20 @@ expo-router → @radix-ui/react-tabs → @radix-ui/react-roving-focus → @radix
 
 All of these `@radix-ui` packages declare `peerDependencies: { react-dom: "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }`. npm resolved `react-dom@19.2.4` to satisfy those peers. However, `react-dom@19.2.4` itself declares `peerDependencies: { react: "^19.2.4" }` — meaning it requires `react >= 19.2.4`.
 
-The project's `package.json` pins `react` at `"19.2.0"`. Since `19.2.0 < 19.2.4`, the constraint is not met and npm's strict resolver (used by `npm ci`) aborts with ERESOLVE.
+The project's `package.json` pinned `react` at `"19.2.0"`. Since `19.2.0 < 19.2.4`, the constraint is not met and npm's strict resolver (used by `npm ci`) aborts with ERESOLVE.
+
+**npm error output (key lines):**
+```
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error While resolving: react-dom@19.2.4
+npm error Found: react@19.2.0
+npm error Could not resolve dependency:
+npm error peer react@"^19.2.4" from react-dom@19.2.4
+npm error Conflicting peer dependency: react@19.2.4
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+```
 
 **This is not a requirements gap.** AC-2.1 is correctly specified. The defect is a patch-version mismatch in `react` introduced when `expo-router` was installed without simultaneously updating `react` to the version that satisfies its transitive peer dependencies.
 
@@ -204,7 +218,7 @@ resolved
 
 ### Acceptance Criteria
 
-**AC-3.1: List layout matches PRD design**
+- [x] **AC-3.1: List layout matches PRD design**
 - Vertical scrollable list
 - Each row displays: artwork thumbnail, English name, Arabic name
 - Layout follows the PRD pattern:
