@@ -5,13 +5,15 @@
  *              Tapping a row navigates to the player screen for that surah.
  *              Implements AC-3.1: List layout matches PRD design.
  *              Implements AC-2.3: Tap navigates to player screen.
+ *              Implements AC-3.2: Artwork rendering — bundled require(), rounded corners, cover.
  * @project shortSurahs
- * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3
+ * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2
  */
 
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getSurahs } from '../data/dataUtils';
+import { getArtwork } from '../data/artworkMap';
 import type { Surah } from '../types';
 
 function SurahRow({ item, onPress }: { item: Surah; onPress: () => void }) {
@@ -20,7 +22,7 @@ function SurahRow({ item, onPress }: { item: Surah; onPress: () => void }) {
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={onPress}
     >
-      <Image style={styles.artwork} source={{ uri: item.artwork }} />
+      <Image style={styles.artwork} source={getArtwork(item.id)} resizeMode="cover" />
       <View style={styles.nameContainer}>
         <Text style={styles.nameEnglish}>{item.nameEnglish}</Text>
         <Text style={styles.nameArabic}>{item.nameArabic}</Text>
@@ -66,6 +68,7 @@ const styles = StyleSheet.create({
   artwork: {
     width: 56,
     height: 56,
+    borderRadius: 8,
   },
   nameContainer: {
     marginLeft: 12,
