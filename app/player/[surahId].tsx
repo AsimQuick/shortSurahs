@@ -5,14 +5,16 @@
  *              Implements AC-4.2: Playback controls — 44pt minimum hit areas,
  *              disabled states at track boundaries (first/last track), and
  *              Play/Pause icon toggle based on isPlaying state.
+ *              Implements AC-4.3: Dynamic content — artwork from bundled assets,
+ *              surah name from data model, aya number updates when track changes
+ *              (displayed as currentTrackIndex + 1, 1-based).
  *              Layout: back button (top), large artwork (>=80% screen width,
  *              computed at runtime via Dimensions.get('window').width), surah
  *              English name, aya indicator, and playback controls (bottom).
  *              Follows system light/dark theme via useColorScheme.
  *              Audio wiring (TrackPlayer) implemented in US-5 (AC-5.x).
- *              Dynamic aya indicator (track index updates) implemented in AC-4.3.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2
+ * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3
  */
 
 import { useState } from 'react';
@@ -84,8 +86,8 @@ export default function PlayerScreen() {
         {surah?.nameEnglish ?? (surahId as string)}
       </Text>
 
-      {/* Below surah name: Aya indicator (dynamic update in AC-4.3) */}
-      <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>Aya 1</Text>
+      {/* Below surah name: Aya indicator — AC-4.3: 1-based track index */}
+      <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>Aya {currentTrackIndex + 1}</Text>
 
       {/* Bottom: Playback controls — AC-4.2 */}
       <View style={styles.controls}>
