@@ -269,6 +269,7 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
     mockReset.mockImplementation(async () => { callOrder.push('reset'); });
     mockAdd.mockImplementation(async () => { callOrder.push('add'); });
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('fatiha');
 
@@ -277,37 +278,42 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
   });
 
   test('add() is called with 6 tracks for fatiha (trackCount = 6)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('fatiha');
     expect(mockAdd).toHaveBeenCalledTimes(1);
-    const tracks = mockAdd.mock.calls[0][0] as Array<{ title: string; artist: string }>;
+    const tracks = mockAdd.mock.calls[0][0] as { title: string; artist: string }[];
     expect(tracks).toHaveLength(6);
   });
 
   test('add() is called with 5 tracks for ikhlas (trackCount = 5)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('ikhlas');
     expect(mockAdd).toHaveBeenCalledTimes(1);
-    const tracks = mockAdd.mock.calls[0][0] as Array<{ title: string }>;
+    const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
     expect(tracks).toHaveLength(5);
   });
 
   test('track titles are "Aya 1" through "Aya N" (1-based)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('ikhlas');
-    const tracks = mockAdd.mock.calls[0][0] as Array<{ title: string }>;
+    const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
     expect(tracks[0].title).toBe('Aya 1');
     expect(tracks[4].title).toBe('Aya 5');
   });
 
   test('all tracks have artist "shortSurahs"', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('fatiha');
-    const tracks = mockAdd.mock.calls[0][0] as Array<{ artist: string }>;
+    const tracks = mockAdd.mock.calls[0][0] as { artist: string }[];
     tracks.forEach((t) => expect(t.artist).toBe('shortSurahs'));
   });
 
   test('queue-clearing: second open with different surah resets queue (reset called twice)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('fatiha');
     await loadSurahQueue('ikhlas');
@@ -315,13 +321,14 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
   });
 
   test('queue-clearing: second open adds only new surah tracks (add called twice)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('fatiha');
     await loadSurahQueue('ikhlas');
     // First add call: 6 fatiha tracks. Second add call: 5 ikhlas tracks.
     expect(mockAdd).toHaveBeenCalledTimes(2);
-    const firstCallTracks = mockAdd.mock.calls[0][0] as Array<{ id: string }>;
-    const secondCallTracks = mockAdd.mock.calls[1][0] as Array<{ id: string }>;
+    const firstCallTracks = mockAdd.mock.calls[0][0] as { id: string }[];
+    const secondCallTracks = mockAdd.mock.calls[1][0] as { id: string }[];
     expect(firstCallTracks).toHaveLength(6);
     expect(secondCallTracks).toHaveLength(5);
     firstCallTracks.forEach((t) => expect(t.id).toMatch(/^fatiha-/));
@@ -329,6 +336,7 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
   });
 
   test('loadSurahQueue returns early (no add) for unknown surahId', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('unknown-surah');
     expect(mockAdd).not.toHaveBeenCalled();
