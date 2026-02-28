@@ -17,10 +17,12 @@
  *              English name, aya indicator, and playback controls (bottom).
  *              Audio wiring (TrackPlayer) implemented in US-5 (AC-5.x).
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4
+ *              Implements AC-5.2: Loads surah tracks into TrackPlayer queue
+ *              on mount via loadSurahQueue() (clears previous queue first).
+ * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4; US-5 AC-5.2
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -33,6 +35,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
+import { loadSurahQueue } from '../../services/trackQueue';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ARTWORK_SIZE = SCREEN_WIDTH * 0.85;
@@ -50,6 +53,11 @@ export default function PlayerScreen() {
   const surah = getSurahs().find((s) => s.id === surahId);
   const artwork = getArtwork(surahId as string);
   const trackCount = surah?.trackCount ?? 0;
+
+  // AC-5.2: Load surah queue on mount; clears any previous surah's queue first.
+  useEffect(() => {
+    loadSurahQueue(surahId as string).catch(() => {});
+  }, [surahId]);
 
   // AC-4.2: Local playback UI state — wired to TrackPlayer in US-5 (AC-5.x)
   const [isPlaying, setIsPlaying] = useState(false);

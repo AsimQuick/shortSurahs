@@ -218,7 +218,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 
 #### Acceptance Criteria
 
-- [ ] **AC-5.1: Install and configure react-native-track-player**
+- [x] **AC-5.1: Install and configure react-native-track-player**
   - `react-native-track-player` installed
   - TrackPlayer service registered and initialized on app start
   - Playback capability configured for play, pause, skip-next, skip-previous
@@ -280,6 +280,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 **Dev Team Status:** in-progress
 **Dev Team Notes:**
 AC-5.1 implemented 2026-03-01. Installed `react-native-track-player@^4.1.2` (resolved to 4.1.2). Created `services/playbackService.ts` exporting `PlaybackService` — registers remote event handlers for Event.RemotePlay, Event.RemotePause, Event.RemoteNext, Event.RemotePrevious, each delegating to the corresponding TrackPlayer API. Created `services/trackPlayerSetup.ts` exporting `setupTrackPlayer()` — calls `TrackPlayer.setupPlayer()` then `TrackPlayer.updateOptions()` with Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.SkipToPrevious (and compactCapabilities: Play, Pause). Updated `app/_layout.tsx`: `TrackPlayer.registerPlaybackService(() => PlaybackService)` called at module level; `setupTrackPlayer()` called inside a `useEffect` with a `.catch()` to silently swallow duplicate-setup errors on fast-refresh. 34 new source-level unit tests in `__tests__/trackplayer-setup.test.ts`; all 301 tests pass.
+AC-5.2 implemented 2026-03-01. Created `data/audioMap.ts` with a static `require()` map covering all 24 bundled audio tracks (fatiha×6, falaq×6, ikhlas×5, nas×7), exporting `getAudioAsset(surahFolder, trackNum)`. Created `services/trackQueue.ts` exporting `loadSurahQueue(surahId)` — calls `TrackPlayer.reset()` to clear any existing queue, then builds track objects (id, url via getAudioAsset(), title "Aya N", artist "shortSurahs", artwork via getArtwork()) and calls `TrackPlayer.add()`. Updated `app/player/[surahId].tsx`: imported `useEffect` and `loadSurahQueue`; added `useEffect(() => { loadSurahQueue(surahId).catch(() => {}); }, [surahId])` to load the queue on mount and whenever surahId changes. 44 new unit + behavioral integration tests in `__tests__/trackplayer-load-queue.test.ts`; mandatory queue-clearing integration test asserts `TrackPlayer.reset()` is called before each `TrackPlayer.add()` and that a second open with a different surahId adds only the new surah's tracks. All 345 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
