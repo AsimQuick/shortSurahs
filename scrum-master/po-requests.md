@@ -1,8 +1,7 @@
 # Product Owner Requests — Items Requiring Human Action
 
-**Sprint:** Sprint 1
-**Date:** 2026-02-28
-**Open requests:** 0 / 4 (all resolved)
+**Last Updated:** 2026-03-01
+**Open requests:** 1 / 5 (REQ-5 open)
 
 ---
 
@@ -70,3 +69,30 @@ To test on physical devices (especially background audio and lock screen control
 
 **Question:** Do you have an Expo account and Apple Developer account set up? This isn't needed until we're ready for device testing but will be required before Sprint 1 acceptance.
 **Status:** resolved — I will add them to the CLAUDE.md in the scrum-master directory in due time.
+
+---
+
+## REQ-5: EAS Build must be configured before US-6 Phase 4 (Sprint 3)
+
+**Sprint:** Sprint 3
+**Priority:** P0 — Blocks US-6 acceptance
+**Action needed:** Setup credentials and eas.json before US-6 development begins
+
+US-6 (Background & Lock Screen Audio) is planned for Sprint 3 Phase 4. The story-level DoD requires:
+
+> "Manual device testing performed on physical iOS and Android devices (background audio and lock screen behaviors cannot be verified in simulators)"
+
+This cannot be satisfied without EAS Build configured. Specifically:
+
+1. **Expo account** — needed for `eas build` command
+2. **Apple Developer account** — needed for iOS device builds
+3. **`eas.json` configuration** — build profiles for development and preview
+4. **Physical test devices** — at least one iOS and one Android device
+
+**Timeline:** EAS Build must be ready before US-5 is complete (end of Phase 3), so that US-6 development and testing can proceed without delay in Phase 4.
+
+**Relationship to REQ-4:** This is a concrete timeline-bound follow-up to REQ-4. REQ-4 was resolved with "in due time" — Sprint 3 Phase 4 is that time.
+
+**Question:** Will EAS Build credentials and configuration be ready by the time US-5 is complete in Sprint 3? If not, US-6 acceptance will be blocked and should be deferred to Sprint 4.
+
+**Status:** open

@@ -250,3 +250,174 @@ Rather than completing all ACs for US-3 before starting US-4, consider a minimal
 **Total carry-forward:** ~18 story points of feature work.
 
 ---
+
+---
+
+## Sprint 2 — Audio Playback Core
+
+**Sprint Duration:** 2026-03-01 -> 2026-03-15
+**Retrospective Date:** 2026-03-01
+**Retrospective Author:** tester
+
+---
+
+### Sprint Outcome
+
+Sprint 2 partially delivered. The sprint goal ("working audio playback with looping, a polished surah list, a Now Playing screen, and background audio") was not fully met, but significant progress was made on the core audio infrastructure.
+
+**Stories fully done:** US-3 (~3 pts), US-4 (5 pts) — 8 story points
+**Stories partially done:** US-5 (3 of 8 ACs implemented — AC-5.1, AC-5.2, AC-5.3)
+**Stories not started:** US-6 (0 of 4 ACs)
+
+**PRs merged:** 11 (PRs #15 through #25)
+**CI result:** All 11 PRs passed CI (zero CI failures on merged code)
+**Tests at sprint close:** 383 tests across 17 suites, all passing
+**Dev-Tester loop iterations consumed:** 2 (both on AC-5.2 — ESLint violation then TypeScript TS2769 type error; both were code defects, both correctly consumed iterations)
+
+The P0 story (US-5) has a working audio foundation: TrackPlayer is installed and configured, tracks are loaded from bundled assets with queue-clearing semantics, and RepeatMode.Track auto-starts playback. However, the interactive playback controls (Next/Previous/Play-Pause) are not wired to TrackPlayer, Zustand is not installed, and error handling is absent. A user opening the app today will hear the first aya loop — but cannot advance tracks or pause.
+
+The Tester Sprint Status is `PARTIAL`.
+
+---
+
+### Missed Checks
+
+**MC-9: The duplicate-PR pattern for the same AC recurred (US-4 AC-4.1: PRs #16 and #17).**
+PR #16 implemented the AC-4.1 player layout. PR #17 was a follow-up commit that updated the AC checkbox and sprint summary table — it did not add tests or change source behavior. This is the same pattern as Sprint 1 (PR #10 / PR #12 for US-2 AC-2.1). Both PRs passed CI; no quality defect resulted. However, having two PRs for a single AC creates audit trail ambiguity and inflates the merged-PR count. MC-7 from Sprint 1 documented this pattern and recommended the `feature/US-X-AC-Y` branch convention, but the convention was not enforced.
+
+Future process addition: Documentation-only follow-up commits (checkbox updates, summary table edits) should be included in the original feature PR or squashed into it, not opened as a second PR. The Project Lead should enforce single-PR-per-AC as a merge condition.
+
+**MC-10: CF-5 (PR template with US-6 manual test checklist) remained open through the entire sprint.**
+CF-5 was identified in Sprint 1 retrospective (PI-4), carried forward as a sprint-level DoD item, and listed as a pre-US-6 requirement. At sprint close, `.github/` contains only `workflows/` — no `pull_request_template.md` exists. US-6 was never started so no PR was opened without it, but the omission means Sprint 3 must add this file before the first US-6 PR.
+
+Future process addition: CF-5 is a non-negotiable gate before any US-6 PR. The Project Lead should block US-6 branch creation until the PR template exists on `main`. Add a pre-sprint checklist item: "Verify `.github/pull_request_template.md` exists if US-6 is in the sprint."
+
+**MC-11: US-5 AC-5.4 through AC-5.8 were not implemented, leaving UI controls (AC-4.2) disconnected from the audio layer.**
+The player screen (US-4) renders Prev/Next/Play-Pause buttons with correct disabled states and UI state toggling (local React state). However, these buttons are not wired to TrackPlayer. Pressing Next only increments `currentTrackIndex` in local state — it does not call `TrackPlayer.skipToNext()` or re-enable looping. A user pressing Next will see the aya number change but the audio will not advance. This gap between the UI layer (US-4) and the audio layer (US-5) is the most significant user-facing defect at sprint close.
+
+Future process addition: When a story's UI layer (US-4) is marked done but its audio-wiring story (US-5) is incomplete, the story summaries and sprint notes must explicitly call out that the UI controls are "display-only" until the audio wiring is completed. The Tester should verify this distinction is documented in the sprint file so no stakeholder interprets the UI controls as functionally wired.
+
+**MC-12: Zustand was listed as a US-5 AC (AC-5.7) but no install or store scaffold was added even in partial AC implementations.**
+AC-5.7 requires zustand to be installed and a player store to track `currentSurahId`, `currentTrackIndex`, and `isPlaying`. None of AC-5.1 through AC-5.3 laid any groundwork for the Zustand store. The current `currentTrackIndex` and `isPlaying` state lives in local `useState` inside the player component — this will need to be migrated when AC-5.7 is implemented. If AC-5.4 through AC-5.6 are implemented before AC-5.7, they will use local state and then need a second migration pass.
+
+Future process addition: When a story contains a state-management AC (like AC-5.7), consider implementing it early in the AC sequence rather than last. Installing Zustand and scaffolding the store before wiring button handlers (AC-5.4/5.5/5.6) would prevent a two-phase local-state-then-store migration.
+
+---
+
+### Process Improvements
+
+**PI-10: Add a "UI-audio integration gap" check to the quality gate for any story that bridges UI controls and an audio layer.**
+When a UI story (US-4) is marked done but the corresponding audio story (US-5) is incomplete, the Tester should add an explicit note to the sprint file clarifying that the controls are display-only. This prevents stakeholders from misreading "US-4: done" as "controls work end-to-end."
+
+**PI-11: For state-management ACs in a multi-AC story, implement the store scaffold early rather than last.**
+When AC-N requires a state store and AC-1 through AC-N-1 involve behavior that will need to read/write that store, install and scaffold the store in the first AC. This avoids a two-pass implementation (local state first, then migrate to store). Apply in Sprint 3 for AC-5.7: install Zustand and create the store shell as part of AC-5.4 or as a dedicated zero-point preflight step before AC-5.4.
+
+**PI-12: Enforce single-PR-per-AC as a merge condition.**
+Documentation-only follow-up PRs (updating checkboxes, sprint summary tables) inflate the PR count and create audit trail confusion. The Project Lead should require that all changes for a single AC — including documentation updates — be in one PR. If a documentation correction is needed after merge, it should be noted in the sprint file rather than opened as a new PR.
+
+---
+
+### Carry-Forward Action Items (Sprint 3 Input)
+
+| ID | Action | Owner | Priority | Notes |
+|----|--------|-------|----------|-------|
+| CF-15 | Implement US-5 AC-5.4: Next behavior — wire Next button to TrackPlayer.skipToNext(), re-enable loop, increment index | Dev Team | P0 — core playback |  |
+| CF-16 | Implement US-5 AC-5.5: Previous behavior — wire Prev button to TrackPlayer.skipToPrevious(), re-enable loop, decrement index | Dev Team | P0 — core playback |  |
+| CF-17 | Implement US-5 AC-5.6: Play/Pause — wire Play/Pause to TrackPlayer.play()/pause(), verify position retention | Dev Team | P0 — core playback |  |
+| CF-18 | Implement US-5 AC-5.7: Zustand store — install zustand, create player store, migrate isPlaying/currentTrackIndex from local useState | Dev Team | P0 — state management | Consider implementing before AC-5.4/5.5/5.6 (PI-11) |
+| CF-19 | Implement US-5 AC-5.8: Error handling — missing track skip+log, empty surah guard, last-track-missing halt | Dev Team | P1 |  |
+| CF-20 | Implement US-6: all 4 ACs (Background Audio) | Dev Team | P1 | Depends on US-5 fully done |
+| CF-21 | Add `.github/pull_request_template.md` with US-6 manual test checklist | Dev Team | P0 — gate before US-6 PR | CF-5 still open from Sprint 1 |
+
+---
+
+### Sprint 2 CI Summary
+
+| PR | AC | CI Result | Tests Added | Cumulative Tests |
+|----|-----|-----------|-------------|-----------------|
+| #15 | US-3 AC-3.2 | PASS | 14 | 154 |
+| #16 | US-4 AC-4.1 (scaffold) | PASS | 26 | 180 |
+| #17 | US-4 AC-4.1 (checkbox update) | PASS | 0 | 180 |
+| #18 | US-3 AC-3.3 | PASS | 19 | 199 |
+| #19 | US-4 AC-4.2 | PASS | 32 | 231 |
+| #20 | US-4 AC-4.3 | PASS | 17 | 248 |
+| #21 | US-4 AC-4.4 | PASS | 19 | 267 |
+| #22 | US-5 AC-5.1 | PASS | 34 | 301 |
+| #23 | US-5 AC-5.2 | PASS (after 2 defect iterations) | 44 | 345 |
+| #24 | US-3 AC-3.4 | PASS | 21 | 366 |
+| #25 | US-5 AC-5.3 | PASS | 17 | 383 |
+
+All 11 Sprint 2 PRs: CI green. Zero force-merges. Zero skipped checks.
+
+---
+
+---
+
+## Sprint 2 — Product Owner Retrospective
+
+**Review Date:** 2026-03-01
+**Review Author:** product-owner
+
+---
+
+### Sprint Outcome (PO Perspective)
+
+Sprint 2 delivered meaningful progress but not the sprint goal. A user opening the app today sees a polished surah list with bundled artwork and system theming, can tap into a Now Playing screen with large artwork and controls, and hears the first aya loop automatically. But the user cannot advance tracks, pause audio from the player screen with audio-layer effect, or use background playback. The sprint delivered the "looks right" layer (US-3, US-4) and the audio infrastructure (AC-5.1–5.3), but not the "works right" interactive layer (AC-5.4–5.8) or background audio (US-6).
+
+**Accepted:** US-3 (~3 pts) + US-4 (5 pts) = 8 story points
+**Not accepted:** US-5 (partial — 3/8 ACs, DoD not met), US-6 (not started)
+**Velocity:** 8 / ~18 = 44% (up from 23% in Sprint 1)
+
+---
+
+### What Went Well
+
+**WW-5: Velocity doubled from Sprint 1 (6 -> 8 pts).** The team executed meaningfully faster. Process improvements (walking skeleton build order, parallel Phase 1, first-PR preflight) reduced friction. The PI recommendations from Sprint 1 retro were applied and had measurable effect.
+
+**WW-6: US-3 and US-4 both passed the quality gate on first review — zero rework.** This validates the Sprint 1 requirements validation process. Every AC that reached development was specific, CI-verifiable, and correctly implemented. The PO-Tester validation loop is the project's most valuable process investment.
+
+**WW-7: Audio infrastructure is architecturally sound.** TrackPlayer install, bundled asset maps (24 audio tracks, 4 artwork images), queue-clearing semantics, RepeatMode.Track, and auto-play — this is the hardest infrastructure to get right and it shipped cleanly. The remaining 5 US-5 ACs are behavioral wiring on top of this foundation, not new architecture.
+
+**WW-8: Test quality is excellent — 383 tests, zero regressions, 100% CI green.** Test count grew from 140 to 383 (+243). All 11 PRs passed CI. The Dev-Tester loop consumed only 2 iterations in the entire sprint (both legitimate code defects on AC-5.2). The team's CI discipline is exemplary.
+
+**WW-9: The Tester's retrospective analysis is thorough and actionable.** MC-9 through MC-12 identify real process gaps. PI-11 (scaffold Zustand early) is a particularly high-value recommendation that prevents a local-state migration tax in Sprint 3.
+
+---
+
+### What Didn't Go Well
+
+**WDW-5: US-5 remains incomplete after two sprints.** The P0 story has been in-flight since Sprint 1. Only 3 of 8 ACs are done after two sprints. The team has strong infrastructure but has not yet delivered the interactive playback experience. This must be the singular focus of Sprint 3.
+
+**WDW-6: The UI-audio integration gap creates a misleading user experience (MC-11).** The player screen renders professional-looking Prev/Next/Play-Pause buttons that update the UI but do not affect audio. A user pressing Next sees "Aya 2" but still hears Aya 1 looping. This is worse than showing disabled controls — it looks broken. Sprint 3 must wire AC-5.4/5.5/5.6 as early as possible.
+
+**WDW-7: Zustand (AC-5.7) was sequenced last in the AC order, forcing a future migration.** The current `isPlaying` and `currentTrackIndex` state lives in local `useState`. When AC-5.7 adds Zustand, all the wiring from AC-5.4/5.5/5.6 will need to be migrated from local state to the store. The PO should have flagged AC-5.7's ordering during sprint planning. Agree with Tester PI-11: implement the store scaffold first in Sprint 3.
+
+**WDW-8: CF-5 (PR template) has been open for two sprints.** This was identified in Sprint 1 (PI-4), carried as a Sprint 2 DoD item, and is still unresolved. It's a 5-minute task that blocks US-6. This is a process failure — low-effort action items should not persist across two sprints.
+
+---
+
+### Process Improvements (PO Recommendations for Sprint 3)
+
+**PO-PI-6: Use 8 points as the Sprint 3 velocity baseline.** Two data points now: Sprint 1 delivered 6 pts, Sprint 2 delivered 8 pts. Plan no more than 10 story points for Sprint 3.
+
+**PO-PI-7: Implement AC-5.7 (Zustand) as the first Sprint 3 task, before AC-5.4/5.5/5.6.** Install Zustand, create the player store with `currentSurahId`, `currentTrackIndex`, `isPlaying`, and migrate the player screen's local state. Then wire Next/Prev/Play-Pause directly to the store + TrackPlayer. This eliminates the local-state-then-migrate tax.
+
+**PO-PI-8: Complete all US-5 ACs before starting US-6.** US-6 depends on US-5 and cannot be meaningfully tested until playback works end-to-end. Do not split the team's attention.
+
+**PO-PI-9: Resolve CF-5 (PR template) as a Sprint 3 zero-point preflight.** Two-sprint-old action items erode process credibility. Create the PR template file before the first feature PR.
+
+**PO-PI-10: Add a "display-only controls" warning to the sprint file whenever a UI story ships without its audio wiring counterpart.** This prevents stakeholders from misreading "US-4: done" as "controls work end-to-end."
+
+---
+
+### Carry-Forward Backlog (Sprint 3 Input)
+
+| Priority | Story | Remaining Work | Points |
+|----------|-------|----------------|--------|
+| P0 | US-5 | AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8 (5 remaining ACs) | ~5 (partial) |
+| P1 | US-6 | All 4 ACs (Background Audio) | 2 |
+| Process | CF-5/CF-21 | PR template with US-6 manual test checklist | — |
+
+**Total carry-forward:** ~7 story points of feature work (within 8-pt velocity baseline).
+
+---
