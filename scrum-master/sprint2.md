@@ -155,7 +155,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 
 #### Acceptance Criteria
 
-- [ ] **AC-4.1: Layout matches PRD player design**
+- [x] **AC-4.1: Layout matches PRD player design**
   - Top: Back button to return to surah list
   - Middle: Artwork width is at least 80% of screen width (`width >= 80% screenWidth`, computed from `Dimensions.get('window').width` at runtime -- not a hardcoded pixel value) with rounded corners (`borderRadius > 0`)
   - Below artwork: Surah name (English)
@@ -348,7 +348,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 | Story | Title | Points | Priority | Dependencies | Status |
 |-------|-------|--------|----------|--------------|--------|
 | US-3 | Surah List Screen (remaining) | ~3 | P1 | US-1 (done), US-2 (done) | not-started |
-| US-4 | Player Screen UI | 5 | P1 | US-1 (done), US-2 (done) | not-started |
+| US-4 | Player Screen UI | 5 | P1 | US-1 (done), US-2 (done) | in-progress |
 | US-5 | Audio Playback | 8 | P0 | US-4 | not-started |
 | US-6 | Background Audio | 2 | P1 | US-5 | not-started |
 | **Total** | | **~18** | | | |
