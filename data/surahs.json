@@ -1,0 +1,34 @@
+[
+  {
+    "id": "fatiha",
+    "nameEnglish": "Al-Fatiha",
+    "nameArabic": "الفاتحة",
+    "trackCount": 6,
+    "artwork": "assets/images/fatiha.jpg",
+    "folder": "fatiha"
+  },
+  {
+    "id": "falaq",
+    "nameEnglish": "Al-Falaq",
+    "nameArabic": "الفلق",
+    "trackCount": 6,
+    "artwork": "assets/images/falaq.jpg",
+    "folder": "falaq"
+  },
+  {
+    "id": "ikhlas",
+    "nameEnglish": "Al-Ikhlas",
+    "nameArabic": "الإخلاص",
+    "trackCount": 5,
+    "artwork": "assets/images/ikhlas.jpg",
+    "folder": "ikhlas"
+  },
+  {
+    "id": "nas",
+    "nameEnglish": "An-Nas",
+    "nameArabic": "الناس",
+    "trackCount": 7,
+    "artwork": "assets/images/nas.jpg",
+    "folder": "nas"
+  }
+]
