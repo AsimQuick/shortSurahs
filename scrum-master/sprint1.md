@@ -48,15 +48,16 @@
 - [ ] Code includes structured metadata header comments
 
 ### Dev Team Status
-resolved
+in-progress
 
 ### Dev Team Notes
 - AC-1.1 complete: `data/surahs.json` created with all 4 surahs (fatiha/6, falaq/6, ikhlas/5, nas/7). All fields match PRD schema.
 - CI infrastructure resolved per Tester pre-dev audit: `eslint.config.js` added (Expo flat config), `jest` + `eslint` + `eslint-config-expo` added to devDependencies, `"test": "jest"` script added to `package.json`, jest preset `jest-expo` configured.
 - 32 unit tests written in `__tests__/surahs.json.test.js` — all pass. Tests cover: file existence, JSON validity, entry count, all 4 surah IDs, full schema field presence, exact nameEnglish/nameArabic/trackCount/folder/artwork values per AC-1.1.
 - Note: JSON does not support comments; metadata header requirement is satisfied for all .js files (eslint.config.js, test file). `surahs.json` is a data file — no metadata header added to avoid invalid JSON.
-- AC-1.2 and AC-1.3 pending (separate ACs).
 - **CI defect fix (iteration 1):** Added `globals` package import and a `files`-scoped block in `eslint.config.js` targeting `__tests__/**/*.js` and `**/*.test.js`, injecting `globals.jest` and `globals.node`. Resolves 33 ESLint `no-undef` errors (`__dirname`, `describe`, `beforeAll`, `test`, `expect`). `eslint .` exits 0; all 32 tests still pass.
+- AC-1.2 complete: `types/index.ts` created with `Surah` and `Track` interfaces. `Surah` fields: `id`, `nameEnglish`, `nameArabic`, `trackCount`, `artwork`, `folder`. `Track` fields: `id`, `url`, `title`, `artist`, `artwork`. `url` and `artwork` typed as `string | number` to support bundled `require()` assets (number) and string paths. Types exported and metadata header included. 17 unit tests written in `__tests__/types.test.ts` — all pass (49 total). `eslint .` exits 0.
+- AC-1.3 pending (separate AC).
 
 ### Tester Status
 defect-found
