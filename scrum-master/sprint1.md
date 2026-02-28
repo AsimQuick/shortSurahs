@@ -47,6 +47,16 @@
 - [ ] Data utilities return correct results for all 4 surahs
 - [ ] Code includes structured metadata header comments
 
+### Dev Team Status
+in-progress
+
+### Dev Team Notes
+- AC-1.1 complete: `data/surahs.json` created with all 4 surahs (fatiha/6, falaq/6, ikhlas/5, nas/7). All fields match PRD schema.
+- CI infrastructure resolved per Tester pre-dev audit: `eslint.config.js` added (Expo flat config), `jest` + `eslint` + `eslint-config-expo` added to devDependencies, `"test": "jest"` script added to `package.json`, jest preset `jest-expo` configured.
+- 32 unit tests written in `__tests__/surahs.json.test.js` — all pass. Tests cover: file existence, JSON validity, entry count, all 4 surah IDs, full schema field presence, exact nameEnglish/nameArabic/trackCount/folder/artwork values per AC-1.1.
+- Note: JSON does not support comments; metadata header requirement is satisfied for all .js files (eslint.config.js, test file). `surahs.json` is a data file — no metadata header added to avoid invalid JSON.
+- AC-1.2 and AC-1.3 pending (separate ACs).
+
 ### Tester Status
 requirements-approved
 
@@ -373,32 +383,32 @@ US-2 (Nav) ───┘
 
 ## Tester Sprint Status
 
-requirements-approved
+not-started
 
 ## Tester Sprint Notes
 
-Requirements validation completed 2026-02-28 (initial pass) and re-validated 2026-02-28 after PO incorporated all tester feedback.
+_Reset — previous review was triggered erroneously before development began (pipeline bug, now fixed). Tester will review after dev work is complete._
 
-**Final validation result: ALL 6 stories approved. Sprint phase advanced to development.**
+### CI Infrastructure Issues (from pre-dev audit)
 
-**Summary of validation rounds:**
+The following must be resolved by the Dev Team as part of the first AC:
 
-Round 1 (initial): US-1, US-5, US-6 approved. US-2, US-3, US-4 flagged as requirements-defect with specific fixes requested.
+1. **Critical — ESLint config missing:** Add `eslint.config.js` to the project root. Use the Expo-compatible flat config format. Install `eslint` and `eslint-config-expo` (or equivalent) in `devDependencies`.
 
-Round 2 (re-validation): PO incorporated all 7 specific fixes across US-2, US-3, and US-4. All defects resolved:
-- US-2 AC-2.3: "correctly" replaced with observable outcome ("dismisses player screen and returns to `/` route"). RESOLVED.
-- US-3 AC-3.1: "large padding" replaced with "`paddingVertical >= 12`". RESOLVED.
-- US-3 AC-3.4: "Apple Music aesthetic" replaced with element count constraint (max 3 per row) and negative element assertions. RESOLVED.
-- US-3 DoD: "Visual style is clean and minimal" replaced with render-test-verifiable element assertion. RESOLVED.
-- US-4 AC-4.1: "large artwork filling screen width" replaced with "`width >= 80% screenWidth`". RESOLVED.
-- US-4 AC-4.2: "large and thumb-reachable" replaced with "44x44pt minimum hit target (Apple HIG)". RESOLVED.
-- US-4 AC-4.4: "Apple Music aesthetic" replaced with concrete negative constraints (no progress bar, no volume slider). RESOLVED.
-- US-4 DoD: "properly sized" replaced with "44x44pt each". RESOLVED.
+2. **Critical — No test script:** Add a `test` script to `package.json` (e.g., `"test": "jest"`). Install `jest` and `@testing-library/react-native` in `devDependencies`. Create a `jest.config.js` or `jest` entry in `package.json`.
+
+3. **Asset verification (confirmed):** Audio and image assets are present and correctly structured for all 4 surahs.
+
+---
+
+### Requirements Validation Record
+
+Requirements validation completed 2026-02-28 after two rounds of PO-Tester iteration. All 6 stories approved. Sprint phase advanced to development.
 
 **Standing quality observations (carry forward to Dev Team):**
 
-1. US-5 queue-clearing requirement: AC-5.2 explicitly requires clearing any existing queue before loading a new surah's tracks. This is a mandatory acceptance criterion, not an implicit edge case. Dev Team must include a dedicated integration test asserting TrackPlayer.getQueue() contains only the new surah's tracks after a second player open (high-risk integration point between US-2 and US-5).
+1. US-5 queue-clearing requirement: AC-5.2 explicitly requires clearing any existing queue before loading a new surah's tracks. Dev Team must include a dedicated integration test for this case.
 
-2. US-6 manual testing requirement: Background audio and lock screen behavior (AC-6.1, AC-6.2, AC-6.4) cannot be verified in a simulator. PR checklist for US-6 must include a manual device test step on both physical iOS and Android devices.
+2. US-6 manual testing requirement: Background audio and lock screen behavior cannot be verified in a simulator. PR checklist for US-6 must include a manual device test step on both physical iOS and Android devices.
 
-3. US-4 artwork width: The 80% screen width constraint requires a runtime `Dimensions.get('window').width` computation. Dev Team should not use a hardcoded pixel value — the style must derive from the runtime screen dimension so it holds across device sizes.
+3. US-4 artwork width: The 80% screen width constraint requires a runtime `Dimensions.get('window').width` computation — not a hardcoded pixel value.
