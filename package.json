@@ -1,7 +1,7 @@
 {
   "name": "shortsurahs",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "expo": "~55.0.4",
+    "expo-router": "~55.0.3",
     "expo-status-bar": "~55.0.4",
     "jest-expo": "~55.0.9",
     "react": "19.2.0",

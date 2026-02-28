@@ -35,7 +35,7 @@
 - `Track` type defined with fields: `id`, `url`, `title`, `artist`, `artwork`
 - Types exported from a shared types file
 
-**AC-1.3: Data loading utility**
+- [x] **AC-1.3: Data loading utility**
 - Function `getSurahs()` returns all surahs from `surahs.json`
 - Function `getTracksForSurah(surahId)` returns ordered track list for a given surah
 - Track URLs point to bundled `assets/audio/{folder}/{nn}.mp3` files
@@ -146,6 +146,12 @@ requirements-approved
 - AC-2.2: APPROVED — route paths are exact strings. Testable by verifying file existence at `app/index.tsx` and `app/player/[surahId].tsx`, and asserting `surahId` is passed as a route parameter.
 - AC-2.3: APPROVED — previously flagged defect ("correctly" undefined) is resolved. AC now reads "dismisses the player screen and returns the user to the surah list screen (`/` route)" — the expected post-press state is concrete and observable. All three navigation scenarios are testable.
 - DoD: APPROVED — "No console errors during navigation" is verifiable via Metro/device logs. All other items are file/configuration checks.
+
+### Dev Team Status
+in-progress
+
+### Dev Team Notes
+- AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 
 ---
 
