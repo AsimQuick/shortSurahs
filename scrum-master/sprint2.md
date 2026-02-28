@@ -175,7 +175,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
   - Surah name displayed from data model
   - Aya number updates when track changes (Aya = track index)
 
-- [x] **AC-4.4: Visual polish**
+- [x] - [x] **AC-4.4: Visual polish**
   - Follows system theme (light/dark via `useColorScheme` applied to background and text colors)
   - No progress bar rendered in the player screen (tracks loop -- no linear progress)
   - No volume slider rendered in the player screen (system volume used)
@@ -277,9 +277,9 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 
 **Dependencies:** US-4 (player screen must exist for control wiring)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty -- Dev Team fills this in_
+AC-5.1 implemented 2026-03-01. Installed `react-native-track-player@^4.1.2` (resolved to 4.1.2). Created `services/playbackService.ts` exporting `PlaybackService` — registers remote event handlers for Event.RemotePlay, Event.RemotePause, Event.RemoteNext, Event.RemotePrevious, each delegating to the corresponding TrackPlayer API. Created `services/trackPlayerSetup.ts` exporting `setupTrackPlayer()` — calls `TrackPlayer.setupPlayer()` then `TrackPlayer.updateOptions()` with Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.SkipToPrevious (and compactCapabilities: Play, Pause). Updated `app/_layout.tsx`: `TrackPlayer.registerPlaybackService(() => PlaybackService)` called at module level; `setupTrackPlayer()` called inside a `useEffect` with a `.catch()` to silently swallow duplicate-setup errors on fast-refresh. 34 new source-level unit tests in `__tests__/trackplayer-setup.test.ts`; all 301 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
