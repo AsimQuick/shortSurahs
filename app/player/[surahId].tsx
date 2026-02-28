@@ -15,13 +15,18 @@
  *              Layout: back button (top), large artwork (>=80% screen width,
  *              computed at runtime via Dimensions.get('window').width), surah
  *              English name, aya indicator, and playback controls (bottom).
+ *              Implements AC-5.2: Loads surah tracks into TrackPlayer queue
+ *              on mount via loadSurahQueue() (clears previous queue first).
  *              Implements AC-5.3: Loop behavior (PRD Rule 1) — isPlaying
  *              initialises to true because loadSurahQueue() starts playback
  *              automatically (RepeatMode.Track + TrackPlayer.play()).
+ *              Implements AC-5.4: Next behavior (PRD Rule 2) — handleNext()
+ *              calls skipToTrack(currentTrackIndex + 1) to stop current loop,
+ *              skip to next track, re-enable loop, and start playback.
+ *              Next button is disabled on last track: audio-layer no-op via
+ *              !isNextDisabled guard + visually disabled per AC-4.2.
  * @project shortSurahs
- *              Implements AC-5.2: Loads surah tracks into TrackPlayer queue
- *              on mount via loadSurahQueue() (clears previous queue first).
- * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2, AC-4.3, AC-4.4; US-5 AC-5.2, AC-5.3
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4
  */
 
 import { useEffect, useState } from 'react';
@@ -37,7 +42,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
-import { loadSurahQueue } from '../../services/trackQueue';
+import { loadSurahQueue, skipToTrack } from '../../services/trackQueue';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ARTWORK_SIZE = SCREEN_WIDTH * 0.85;
@@ -74,8 +79,11 @@ export default function PlayerScreen() {
     }
   }
 
-  function handleNext() {
+  // AC-5.4: Next — stop current loop, skip to next track, re-enable loop, start playback.
+  // Audio-layer no-op: skipToTrack is only called when !isNextDisabled.
+  async function handleNext() {
     if (!isNextDisabled) {
+      await skipToTrack(currentTrackIndex + 1).catch(() => {});
       setCurrentTrackIndex((i) => i + 1);
     }
   }
