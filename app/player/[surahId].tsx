@@ -2,15 +2,20 @@
  * @file app/player/[surahId].tsx
  * @description Player screen — Now Playing layout for surah memorization.
  *              Implements AC-4.1: Layout matches PRD player design.
+ *              Implements AC-4.2: Playback controls — 44pt minimum hit areas,
+ *              disabled states at track boundaries (first/last track), and
+ *              Play/Pause icon toggle based on isPlaying state.
  *              Layout: back button (top), large artwork (>=80% screen width,
  *              computed at runtime via Dimensions.get('window').width), surah
  *              English name, aya indicator, and playback controls (bottom).
  *              Follows system light/dark theme via useColorScheme.
- *              Audio wiring and control functionality implemented in US-5 (AC-5.x).
+ *              Audio wiring (TrackPlayer) implemented in US-5 (AC-5.x).
+ *              Dynamic aya indicator (track index updates) implemented in AC-4.3.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1
+ * @sprint Sprint 2 — US-4 AC-4.1, AC-4.2
  */
 
+import { useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -39,6 +44,30 @@ export default function PlayerScreen() {
 
   const surah = getSurahs().find((s) => s.id === surahId);
   const artwork = getArtwork(surahId as string);
+  const trackCount = surah?.trackCount ?? 0;
+
+  // AC-4.2: Local playback UI state — wired to TrackPlayer in US-5 (AC-5.x)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+
+  const isPrevDisabled = currentTrackIndex === 0;
+  const isNextDisabled = currentTrackIndex === trackCount - 1;
+
+  function handlePrev() {
+    if (!isPrevDisabled) {
+      setCurrentTrackIndex((i) => i - 1);
+    }
+  }
+
+  function handleNext() {
+    if (!isNextDisabled) {
+      setCurrentTrackIndex((i) => i + 1);
+    }
+  }
+
+  function handlePlayPause() {
+    setIsPlaying((p) => !p);
+  }
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -55,19 +84,37 @@ export default function PlayerScreen() {
         {surah?.nameEnglish ?? (surahId as string)}
       </Text>
 
-      {/* Below surah name: Aya indicator */}
+      {/* Below surah name: Aya indicator (dynamic update in AC-4.3) */}
       <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>Aya 1</Text>
 
-      {/* Bottom: Playback controls */}
+      {/* Bottom: Playback controls — AC-4.2 */}
       <View style={styles.controls}>
-        <Pressable style={styles.controlButton}>
-          <Text style={[styles.controlText, { color: textColor }]}>Prev</Text>
+        <Pressable
+          style={[styles.controlButton, isPrevDisabled && styles.controlButtonDisabled]}
+          onPress={handlePrev}
+          disabled={isPrevDisabled}
+          accessibilityLabel="Previous"
+        >
+          <Text style={[styles.controlText, { color: textColor }]}>⏮</Text>
         </Pressable>
-        <Pressable style={styles.controlButton}>
-          <Text style={[styles.controlText, { color: textColor }]}>Play</Text>
+
+        <Pressable
+          style={styles.controlButton}
+          onPress={handlePlayPause}
+          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+        >
+          <Text style={[styles.controlText, { color: textColor }]}>
+            {isPlaying ? '⏸' : '▶'}
+          </Text>
         </Pressable>
-        <Pressable style={styles.controlButton}>
-          <Text style={[styles.controlText, { color: textColor }]}>Next</Text>
+
+        <Pressable
+          style={[styles.controlButton, isNextDisabled && styles.controlButtonDisabled]}
+          onPress={handleNext}
+          disabled={isNextDisabled}
+          accessibilityLabel="Next"
+        >
+          <Text style={[styles.controlText, { color: textColor }]}>⏭</Text>
         </Pressable>
       </View>
     </View>
@@ -114,9 +161,15 @@ const styles = StyleSheet.create({
     gap: 32,
   },
   controlButton: {
-    padding: 12,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  controlButtonDisabled: {
+    opacity: 0.3,
   },
   controlText: {
-    fontSize: 18,
+    fontSize: 24,
   },
 });

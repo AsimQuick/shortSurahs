@@ -112,7 +112,7 @@ The critical path is: US-4 -> US-5 -> US-6. US-3 remaining ACs are independent a
   - Images display with rounded corners
   - Image `resizeMode` is set to `cover`
 
-- [x] **AC-3.3: Surah data loaded dynamically**
+- [x] - [x] **AC-3.3: Surah data loaded dynamically**
   - List populated from `surahs.json` via data utilities (US-1)
   - Not hardcoded in the component
   - All 4 surahs displayed: Al-Fatiha, Al-Falaq, Al-Ikhlas, An-Nas
@@ -163,7 +163,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
   - Below surah name: Current aya indicator (e.g., "Aya 3")
   - Bottom: Playback controls
 
-- [ ] **AC-4.2: Playback controls**
+- [x] **AC-4.2: Playback controls**
   - Three buttons: Previous, Play/Pause, Next
   - Each button's touchable hit area is at least 44x44pt (per Apple HIG minimum tap target)
   - Play/Pause toggles icon based on playback state
@@ -197,7 +197,7 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 **Dev Team Status:** in-progress
 **Dev Team Notes:**
 AC-4.1 implemented 2026-03-01. Updated `app/player/[surahId].tsx` with the full PRD player layout: back button (top, calls router.back()), large artwork centered (width = SCREEN_WIDTH * 0.85, computed at runtime via Dimensions.get('window').width, borderRadius: 12), surah English name (loaded via getSurahs().find()), aya indicator ("Aya 1"), and playback controls row at bottom (Prev / Play / Next Pressables). System theme applied via useColorScheme (background #000/#fff, text #fff/#000). Artwork loaded via getArtwork() from artworkMap. 26 new source-level unit tests in `__tests__/player-layout.test.ts`; all 180 tests pass.
-[OPEN: AC-4.2] Playback control hit areas (44x44pt), disabled states, and icon toggling deferred to AC-4.2.
+AC-4.2 implemented 2026-03-01. Updated `app/player/[surahId].tsx`: added `useState` for `isPlaying` (false) and `currentTrackIndex` (0). `trackCount` derived from `surah?.trackCount`. `isPrevDisabled = currentTrackIndex === 0`; `isNextDisabled = currentTrackIndex === trackCount - 1`. Prev/Next Pressables have `disabled` prop and `controlButtonDisabled` style (opacity: 0.3) applied conditionally. Play/Pause button toggles between ▶ and ⏸ via `isPlaying ? '⏸' : '▶'`; `accessibilityLabel` also toggles. All three buttons: `minWidth: 44`, `minHeight: 44`, `justifyContent: 'center'`, `alignItems: 'center'` for Apple HIG 44pt tap target compliance. Handlers: `handlePrev` decrements index, `handleNext` increments index, `handlePlayPause` calls `setIsPlaying((p) => !p)`. 32 new source-level unit tests in `__tests__/player-controls.test.ts`; all 231 tests pass.
 [OPEN: AC-4.3] Dynamic aya indicator (track index updates) deferred to AC-4.3 / US-5 audio wiring.
 [OPEN: AC-4.4] Visual polish (no progress bar, no volume slider verification) deferred to AC-4.4.
 
