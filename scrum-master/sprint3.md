@@ -263,9 +263,9 @@ Reviewed: AC-6.1 through AC-6.4. Removed redundant "Audio does not stop when pho
 - Carried forward through Sprint 2 (CF-5 in Sprint 2 DoD, CF-21 in Sprint 2 carry-forward)
 - Two sprints open -- resolving as Sprint 3 Phase 0 preflight
 
-**Dev Team Status:** not-started
+**Dev Team Status:** done
 **Dev Team Notes:**
-_empty -- Dev Team fills this in_
+AC-1 complete. Created `.github/pull_request_template.md` with Summary, Acceptance Criterion, Test Plan, and US-6 Manual Test Checklist sections. Checklist covers: background audio (iOS), background audio (Android), lock screen controls (iOS), lock screen controls (Android), and metadata display (surah name, aya number, artwork). Added `__tests__/pr-template.test.ts` with 19 static-assertion tests (file existence, all checklist sections, checkbox format, Summary and Test Plan sections). All 402 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
