@@ -116,7 +116,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 
 ### Acceptance Criteria
 
-**AC-2.1: Install and configure Expo Router**
+- [x] **AC-2.1: Install and configure Expo Router**
 - `expo-router` installed and configured in `app.json`
 - File-based routing set up under `app/` directory
 - Root layout wraps the app with required providers
@@ -315,12 +315,13 @@ The Iteration 3 infrastructure failure does not invalidate the Iteration 2 PASS.
 ---
 
 ### Dev Team Status
-resolved
+in-progress
 
 ### Dev Team Notes
 - AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 - **CI defect fix (iteration 1):** Bumped `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies and regenerated `package-lock.json` via `npm install`. Root cause: `expo-router` transitively pulled in `react-dom@19.2.4` (via `@radix-ui` packages), which declares `peerDependencies: { react: "^19.2.4" }`. Since `19.2.0 < 19.2.4`, `npm ci`'s strict resolver aborted with ERESOLVE. Patch-level bump to `19.2.4` satisfies the constraint without affecting Expo SDK 55 compatibility.
 - **CI re-trigger (iteration 3):** No code changes required. Tester classified Iteration 3 CI failure as a transient CI infrastructure failure — zero-log failure, job terminated before any output was captured, no actionable error output produced. Per Tester required action, CI pipeline re-triggered by pushing this commit. No implementation files modified since Iteration 2 PASS at commit `0594ded`. All 117 tests, lint, and type-check were green at that commit and remain unchanged.
+- AC-2.2 complete: `app/player/[surahId].tsx` created as a dynamic Expo Router route for the player screen. Uses `useLocalSearchParams<{ surahId: string }>()` from `expo-router` to read `surahId` from the route params. Placeholder render (`<Text>{surahId}</Text>`) displays the surahId; full player UI delivered in US-4. `app/index.tsx` remains unchanged — tap navigation wired to rows in AC-2.3. 9 unit tests written in `__tests__/route-structure.test.ts` — all pass (126 total). Tests cover: `app/index.tsx` existence (the "/" route), `app/player/` directory existence, `app/player/[surahId].tsx` existence (the "/player/[surahId]" route), player route default export, expo-router import, `useLocalSearchParams` import and usage, surahId destructuring, and surahId referenced in JSX. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 
 ---
 
