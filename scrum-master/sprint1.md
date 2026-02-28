@@ -252,6 +252,12 @@ requirements-approved
 - AC-3.5: APPROVED — navigation target is an exact route. Press state (TouchableOpacity/Pressable opacity change) is verifiable via component test.
 - DoD: APPROVED — previously flagged defect ("Visual style is clean and minimal" subjective) is resolved. DoD now reads "No UI elements other than artwork, English name, and Arabic name are rendered per row (verified by component render test)" — an objectively assertable CI gate.
 
+### Dev Team Status
+in-progress
+
+### Dev Team Notes
+- AC-3.1 complete: `app/index.tsx` replaced placeholder with full AC-3.1 layout. Uses `FlatList` for vertical scrollable list. Each row is a `View` with `flexDirection: 'row'` containing an `Image` (artwork thumbnail, `source={{ uri: item.artwork }}`) and a `View` with two `Text` elements for `nameEnglish` and `nameArabic`. Row `paddingVertical: 12` satisfies the >= 12pt requirement. Data loaded via `getSurahs()` from `data/dataUtils`. Artwork source uses string URI path; AC-3.2 will convert to bundled `require()` assets with rounded corners and `resizeMode: 'cover'`. 11 source-level unit tests written in `__tests__/surah-list-layout.test.ts` — all pass (117 total). Tests cover: file existence, default export, FlatList usage and import, Image usage and import, `nameEnglish`/`nameArabic` references, `flexDirection: 'row'`, `paddingVertical` presence and value >= 12. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
+
 ---
 
 ## US-4: Player Screen UI — Now Playing Layout
