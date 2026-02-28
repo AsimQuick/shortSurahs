@@ -48,7 +48,7 @@
 - [ ] Code includes structured metadata header comments
 
 ### Dev Team Status
-in-progress
+resolved
 
 ### Dev Team Notes
 - AC-1.1 complete: `data/surahs.json` created with all 4 surahs (fatiha/6, falaq/6, ikhlas/5, nas/7). All fields match PRD schema.
@@ -56,9 +56,10 @@ in-progress
 - 32 unit tests written in `__tests__/surahs.json.test.js` — all pass. Tests cover: file existence, JSON validity, entry count, all 4 surah IDs, full schema field presence, exact nameEnglish/nameArabic/trackCount/folder/artwork values per AC-1.1.
 - Note: JSON does not support comments; metadata header requirement is satisfied for all .js files (eslint.config.js, test file). `surahs.json` is a data file — no metadata header added to avoid invalid JSON.
 - AC-1.2 and AC-1.3 pending (separate ACs).
+- **CI defect fix (iteration 1):** Added `globals` package import and a `files`-scoped block in `eslint.config.js` targeting `__tests__/**/*.js` and `**/*.test.js`, injecting `globals.jest` and `globals.node`. Resolves 33 ESLint `no-undef` errors (`__dirname`, `describe`, `beforeAll`, `test`, `expect`). `eslint .` exits 0; all 32 tests still pass.
 
 ### Tester Status
-requirements-approved
+defect-found
 
 ### Tester Notes
 - AC-1.1: APPROVED — all 4 surahs named, exact trackCounts specified and match verified asset inventory in scrum-master.md. Fully testable via file existence check and JSON schema validation.
@@ -66,6 +67,34 @@ requirements-approved
 - AC-1.3: APPROVED — function signatures specified, behavior is concrete (ordered list, bundled URLs, no hardcoded paths). Testable via unit tests and static analysis.
 - DoD: APPROVED — all items are verifiable. TypeScript compilation covers type correctness. Data utility correctness can be asserted via unit tests.
 - Quality strategy note: `getTracksForSurah` should be tested for all 4 surahIds including boundary track (nas track 7). Dev Team should assert that returned URL format matches `assets/audio/{folder}/{nn}.mp3` exactly (2-digit zero-padded filenames per PRD Section 7.2).
+
+---
+
+**CI DEFECT — Dev-Tester Loop Iteration 1 of 3**
+
+- **Classification:** Code bug — not a requirements issue
+- **Severity:** High (blocks CI gate; story cannot merge)
+- **CI stage that failed:** Lint (ESLint) — Tests pass (32/32)
+- **Run:** https://github.com/AsimQuick/shortSurahs/actions/runs/22526818861
+
+**Root cause:** `eslint.config.js` uses `eslint-config-expo/flat` but does not declare Jest or Node.js globals for test files. ESLint reports 33 `no-undef` errors on `__tests__/surahs.json.test.js`:
+  - `__dirname` — Node.js global not declared
+  - `describe`, `beforeAll`, `test`, `expect` — Jest globals not declared
+
+**Required fix (Dev Team):** Add a `files`-scoped config block in `eslint.config.js` targeting `__tests__/**/*.js` (and `**/*.test.js`) that injects `globals.jest` and `globals.node`. Example:
+```js
+const globals = require('globals');
+// inside defineConfig([...]):
+{
+  files: ['__tests__/**/*.js', '**/*.test.js'],
+  languageOptions: {
+    globals: { ...globals.jest, ...globals.node },
+  },
+},
+```
+The `globals` package is already a transitive dependency of `eslint-config-expo`.
+
+**Verification:** After the fix, `npm run lint` (or `eslint .`) must exit 0 with no `no-undef` errors in test files. All 32 tests must continue to pass.
 
 ---
 
