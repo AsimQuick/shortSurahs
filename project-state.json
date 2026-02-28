@@ -16,9 +16,22 @@
   "blocked_by": null,
   "human_requests": [],
   "sprint_summary": {},
-  "token_spend": {},
-  "cycle_count": 0,
-  "last_updated": "2026-02-28T15:50:49+00:00",
+  "token_spend": {
+    "sprint-1": {
+      "project-lead": 0,
+      "product-owner": 62214,
+      "dev": 0,
+      "tester": 41053,
+      "project-lead_cost": 0.0,
+      "product-owner_cost": 5.4939,
+      "dev_cost": 0.0,
+      "tester_cost": 2.4284,
+      "total": 103267,
+      "cost_usd": 7.9223
+    }
+  },
+  "cycle_count": 4,
+  "last_updated": "2026-02-28T16:57:42+00:00",
   "log": [
     {
       "timestamp": "2026-02-28T15:43:58+00:00",
@@ -33,6 +46,118 @@
       "action": "Standup complete. Entering planning phase.",
       "tokens": 0,
       "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T15:57:56+00:00",
+      "agent": "product-owner",
+      "action": "Sprint planning for sprint-1. Success: False",
+      "tokens": 16752,
+      "cost_usd": 1.2677
+    },
+    {
+      "timestamp": "2026-02-28T15:57:56+00:00",
+      "agent": "project-lead",
+      "action": "PO failed during planning: ",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:09:25+00:00",
+      "agent": "project-lead",
+      "action": "Manual resume from error state.",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:14:26+00:00",
+      "agent": "product-owner",
+      "action": "Sprint planning for sprint-1. Success: False",
+      "tokens": 17444,
+      "cost_usd": 1.2232
+    },
+    {
+      "timestamp": "2026-02-28T16:14:26+00:00",
+      "agent": "project-lead",
+      "action": "PO failed during planning: ",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:23:00+00:00",
+      "agent": "project-lead",
+      "action": "Human input received. Resuming pipeline.",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:26:17+00:00",
+      "agent": "product-owner",
+      "action": "Sprint planning for sprint-1. Success: True",
+      "tokens": 7745,
+      "cost_usd": 0.9565
+    },
+    {
+      "timestamp": "2026-02-28T16:29:53+00:00",
+      "agent": "tester",
+      "action": "Requirements validation iteration 1. Success: True",
+      "tokens": 9155,
+      "cost_usd": 0.6166
+    },
+    {
+      "timestamp": "2026-02-28T16:33:05+00:00",
+      "agent": "product-owner",
+      "action": "Fixing requirements defects (iteration 1)",
+      "tokens": 10737,
+      "cost_usd": 0.8788
+    },
+    {
+      "timestamp": "2026-02-28T16:36:41+00:00",
+      "agent": "tester",
+      "action": "Requirements validation iteration 2. Success: True",
+      "tokens": 9803,
+      "cost_usd": 0.5465
+    },
+    {
+      "timestamp": "2026-02-28T16:38:20+00:00",
+      "agent": "product-owner",
+      "action": "Fixing requirements defects (iteration 2)",
+      "tokens": 3586,
+      "cost_usd": 0.3497
+    },
+    {
+      "timestamp": "2026-02-28T16:40:04+00:00",
+      "agent": "tester",
+      "action": "Requirements validation iteration 3. Success: True",
+      "tokens": 4677,
+      "cost_usd": 0.2325
+    },
+    {
+      "timestamp": "2026-02-28T16:40:04+00:00",
+      "agent": "project-lead",
+      "action": "PO\u2194Tester loop exhausted after 3 iterations. Escalating to human.",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:49:09+00:00",
+      "agent": "project-lead",
+      "action": "Human input received. Resuming pipeline.",
+      "tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "timestamp": "2026-02-28T16:52:01+00:00",
+      "agent": "product-owner",
+      "action": "Sprint planning for sprint-1. Success: True",
+      "tokens": 5950,
+      "cost_usd": 0.818
+    },
+    {
+      "timestamp": "2026-02-28T16:57:42+00:00",
+      "agent": "tester",
+      "action": "Requirements validation iteration 1. Success: True",
+      "tokens": 17418,
+      "cost_usd": 1.0328
     }
   ]
 }

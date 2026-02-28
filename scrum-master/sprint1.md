@@ -1,0 +1,404 @@
+# Sprint 1 — Core MVP
+
+**Sprint Goal:** Deliver a working offline Quran memorization player with surah selection, looping audio playback, and background audio support on iOS and Android.
+
+**Sprint Duration:** 2026-02-28 → 2026-03-14
+**Velocity (planned):** 6 user stories, 26 story points
+**Phase:** development
+**Last Updated:** 2026-02-28
+**Last Updated By:** tester
+
+---
+
+## US-1: Data Layer — surahs.json & Data Loading
+
+**Priority:** P0 (Blocker — all other stories depend on this)
+**Story Points:** 3
+**Labels:** foundation, data
+
+> As a developer, I need a structured data layer so that the app loads surah metadata from `surahs.json` instead of hardcoding paths.
+
+### Acceptance Criteria
+
+**AC-1.1: Create `data/surahs.json`**
+- File exists at `data/surahs.json`
+- Contains entries for all 4 bundled surahs: fatiha, falaq, ikhlas, nas
+- Each entry matches the PRD schema: `id`, `nameEnglish`, `nameArabic`, `trackCount`, `artwork`, `folder`
+- `trackCount` matches the actual number of mp3 files in each folder:
+  - fatiha: 6
+  - falaq: 6
+  - ikhlas: 5
+  - nas: 7
+
+**AC-1.2: TypeScript types**
+- `Surah` type defined matching the PRD data model
+- `Track` type defined with fields: `id`, `url`, `title`, `artist`, `artwork`
+- Types exported from a shared types file
+
+**AC-1.3: Data loading utility**
+- Function `getSurahs()` returns all surahs from `surahs.json`
+- Function `getTracksForSurah(surahId)` returns ordered track list for a given surah
+- Track URLs point to bundled `assets/audio/{folder}/{nn}.mp3` files
+- No hardcoded paths in components
+
+### Definition of Done
+- [ ] `data/surahs.json` valid and matches actual assets
+- [ ] TypeScript types compile without errors
+- [ ] Data utilities return correct results for all 4 surahs
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- AC-1.1: APPROVED — all 4 surahs named, exact trackCounts specified and match verified asset inventory in scrum-master.md. Fully testable via file existence check and JSON schema validation.
+- AC-1.2: APPROVED — exact field names specified for both types. Testable via TypeScript compilation.
+- AC-1.3: APPROVED — function signatures specified, behavior is concrete (ordered list, bundled URLs, no hardcoded paths). Testable via unit tests and static analysis.
+- DoD: APPROVED — all items are verifiable. TypeScript compilation covers type correctness. Data utility correctness can be asserted via unit tests.
+- Quality strategy note: `getTracksForSurah` should be tested for all 4 surahIds including boundary track (nas track 7). Dev Team should assert that returned URL format matches `assets/audio/{folder}/{nn}.mp3` exactly (2-digit zero-padded filenames per PRD Section 7.2).
+
+---
+
+## US-2: Navigation — Expo Router Setup
+
+**Priority:** P0 (Blocker — screens depend on navigation)
+**Story Points:** 3
+**Labels:** foundation, navigation
+
+> As a user, I need to navigate between the surah list and the player screen so that I can select a surah and start memorizing.
+
+### Acceptance Criteria
+
+**AC-2.1: Install and configure Expo Router**
+- `expo-router` installed and configured in `app.json`
+- File-based routing set up under `app/` directory
+- Root layout wraps the app with required providers
+
+**AC-2.2: Define route structure**
+- `/` — Surah List screen (index)
+- `/player/[surahId]` — Player screen (dynamic route)
+- Navigation from list to player passes `surahId` parameter
+
+**AC-2.3: Navigation works**
+- Tapping a surah on the list screen navigates to `/player/{surahId}`
+- Back button on player screen returns to surah list
+- Hardware back button (Android) dismisses the player screen and returns the user to the surah list screen (`/` route)
+
+### Definition of Done
+- [ ] Expo Router configured and routes defined
+- [ ] Forward and back navigation works on iOS and Android
+- [ ] No console errors during navigation
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- Re-validated 2026-02-28 after PO incorporated tester feedback.
+- AC-2.1: APPROVED — configuration items are observable in `app.json` and file system. Testable via code review and TypeScript compilation.
+- AC-2.2: APPROVED — route paths are exact strings. Testable by verifying file existence at `app/index.tsx` and `app/player/[surahId].tsx`, and asserting `surahId` is passed as a route parameter.
+- AC-2.3: APPROVED — previously flagged defect ("correctly" undefined) is resolved. AC now reads "dismisses the player screen and returns the user to the surah list screen (`/` route)" — the expected post-press state is concrete and observable. All three navigation scenarios are testable.
+- DoD: APPROVED — "No console errors during navigation" is verifiable via Metro/device logs. All other items are file/configuration checks.
+
+---
+
+## US-3: Surah List Screen — Apple Music Style
+
+**Priority:** P1
+**Story Points:** 5
+**Labels:** ui, screen
+
+> As a user, I want to see a clean list of available surahs with artwork so that I can quickly find and select the surah I want to memorize.
+
+### Acceptance Criteria
+
+**AC-3.1: List layout matches PRD design**
+- Vertical scrollable list
+- Each row displays: artwork thumbnail, English name, Arabic name
+- Layout follows the PRD pattern:
+  ```
+  [Artwork]  Al-Fatiha
+             الفاتحة
+  ```
+- Row vertical padding is at least 12pt (`paddingVertical >= 12`)
+
+**AC-3.2: Artwork rendering**
+- Artwork loaded from bundled `assets/images/{surahId}.jpg`
+- Images display with rounded corners
+- Image `resizeMode` is set to `cover`
+
+**AC-3.3: Surah data loaded dynamically**
+- List populated from `surahs.json` via data utilities (US-1)
+- Not hardcoded in the component
+- All 4 surahs displayed: Al-Fatiha, Al-Falaq, Al-Ikhlas, An-Nas
+
+**AC-3.4: Visual polish**
+- Follows system theme (light/dark via `useColorScheme` applied to background and text colors)
+- No more than 3 UI elements per row: artwork, English name, Arabic name
+- No badge, count, or metadata label elements rendered in each row
+
+**AC-3.5: Tap navigates to player**
+- Tapping a surah row navigates to the player screen for that surah
+- Visual feedback on tap (press state)
+
+### Definition of Done
+- [ ] List renders all 4 surahs with artwork, English name, Arabic name
+- [ ] Tapping navigates to player with correct surahId
+- [ ] No UI elements other than artwork, English name, and Arabic name rendered per row (verified by component render test)
+- [ ] Supports light and dark system themes
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- Re-validated 2026-02-28 after PO incorporated tester feedback.
+- AC-3.1: APPROVED — previously flagged defect ("large padding" subjective) is resolved. AC now reads "`paddingVertical >= 12`" — a concrete, style-property-level assertion verifiable in component tests or snapshot tests.
+- AC-3.2: APPROVED — asset path is an exact pattern (`assets/images/{surahId}.jpg`). File existence of 4 artwork files is verifiable. "Rounded corners" is a code-verifiable style property (borderRadius > 0). "resizeMode is `cover`" is now explicitly stated and is a concrete, testable assertion.
+- AC-3.3: APPROVED — "not hardcoded" is verifiable via static analysis (no string literals matching surah names in component code). All 4 surah names are exact values assertable in a render test.
+- AC-3.4: APPROVED — previously flagged defect ("Apple Music aesthetic" subjective) is resolved. The two concrete constraints — element count limit (3 per row) and explicit prohibition of badge/count/metadata elements — are verifiable via component render tests. System theme support via `useColorScheme` is testable by asserting the hook is called and its return value applied to background and text colors.
+- AC-3.5: APPROVED — navigation target is an exact route. Press state (TouchableOpacity/Pressable opacity change) is verifiable via component test.
+- DoD: APPROVED — previously flagged defect ("Visual style is clean and minimal" subjective) is resolved. DoD now reads "No UI elements other than artwork, English name, and Arabic name are rendered per row (verified by component render test)" — an objectively assertable CI gate.
+
+---
+
+## US-4: Player Screen UI — Now Playing Layout
+
+**Priority:** P1
+**Story Points:** 5
+**Labels:** ui, screen
+
+> As a user, I want a clean Now Playing screen with large artwork and easy-to-reach controls so that I can focus on memorization without distraction.
+
+### Acceptance Criteria
+
+**AC-4.1: Layout matches PRD player design**
+- Top: Back button to return to surah list
+- Middle: Artwork width is at least 80% of screen width (`width >= 80% screenWidth`, computed from `Dimensions.get('window').width` at runtime — not a hardcoded pixel value) with rounded corners (`borderRadius > 0`)
+- Below artwork: Surah name (English)
+- Below surah name: Current aya indicator (e.g., "Aya 3")
+- Bottom: Playback controls
+
+**AC-4.2: Playback controls**
+- Three buttons: Previous, Play/Pause, Next
+- Each button's touchable hit area is at least 44x44pt (per Apple HIG minimum tap target)
+- Play/Pause toggles icon based on playback state
+- Previous disabled when on track 1
+- Next disabled when on last track
+
+**AC-4.3: Dynamic content**
+- Artwork loaded from bundled assets for the selected surah
+- Surah name displayed from data model
+- Aya number updates when track changes (Aya = track index)
+
+**AC-4.4: Visual polish**
+- Follows system theme (light/dark via `useColorScheme` applied to background and text colors)
+- No progress bar rendered in the player screen (tracks loop — no linear progress)
+- No volume slider rendered in the player screen (system volume used)
+
+### Definition of Done
+- [ ] Player screen renders with correct artwork, surah name, aya number
+- [ ] Controls (prev/play-pause/next) are visible with touchable area at least 44x44pt each
+- [ ] Screen follows system light/dark theme
+- [ ] Back button returns to surah list
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- Re-validated 2026-02-28 after PO incorporated tester feedback.
+- AC-4.1: APPROVED — previously flagged defect ("Large artwork" imprecise) is resolved. AC now reads "Artwork width is at least 80% of screen width (`width >= 80% screenWidth`) with rounded corners (`borderRadius > 0`)" — both are concrete, code-verifiable style assertions. The five layout elements (back button, artwork, surah name, aya indicator, controls) are verifiable via render test asserting all five components are present.
+- AC-4.2: APPROVED — previously flagged defect ("large and thumb-reachable" subjective) is resolved. AC now reads "at least 44x44pt (per Apple HIG minimum tap target)" — a concrete assertion on minHeight/minWidth or padding. Icon toggle and disabled states are fully testable via unit tests.
+- AC-4.3: APPROVED — artwork path is an exact pattern, surah name comes from the data model (testable by asserting rendered text matches `nameEnglish`), aya number update on track change is verifiable via state change test.
+- AC-4.4: APPROVED — previously flagged defect ("Apple Music Now Playing aesthetic" subjective) is resolved. All remaining criteria are concrete negative constraints ("No progress bar", "No volume slider") verifiable by asserting those elements do not appear in the render output. System theme support is testable via `useColorScheme` hook usage.
+- DoD: APPROVED — previously flagged defect ("properly sized" vague) is resolved. DoD now reads "touchable area at least 44x44pt each" — an objectively assertable CI gate.
+- Quality strategy note: AC-4.1 requires a runtime screen width value to evaluate the 80% constraint. Dev Team should implement this as a style computed from `Dimensions.get('window').width` and assert the computed value in tests. Do not use a hardcoded pixel value.
+
+---
+
+## US-5: Audio Playback — TrackPlayer with Looping
+
+**Priority:** P0 (Core feature)
+**Story Points:** 8
+**Labels:** audio, core
+
+> As a user, I want each aya track to loop continuously until I press Next so that I can memorize at my own pace.
+
+### Acceptance Criteria
+
+**AC-5.1: Install and configure react-native-track-player**
+- `react-native-track-player` installed
+- TrackPlayer service registered and initialized on app start
+- Playback capability configured for play, pause, skip-next, skip-previous
+
+**AC-5.2: Load surah tracks**
+- When player screen opens, all tracks for the selected surah are loaded into the queue
+- If a queue already exists from a previous surah, it must be cleared before loading the new surah's tracks
+- Track metadata includes: title (aya number), artist ("shortSurahs"), artwork path
+- Tracks loaded from bundled assets, not streamed
+
+**AC-5.3: Loop behavior (PRD Rule 1)**
+- `RepeatMode.Track` enabled — current track loops forever
+- First track plays automatically when surah is opened
+- No manual intervention needed to start playback
+
+**AC-5.4: Next behavior (PRD Rule 2)**
+- Pressing Next: stops current loop → loads next track → enables loop → starts playback
+- Track index increments by 1
+- Next is no-op (or disabled) on the last track
+
+**AC-5.5: Previous behavior (PRD Rule 3)**
+- Pressing Previous: stops current loop → loads previous track → enables loop → starts playback
+- Track index decrements by 1
+- Previous is no-op (or disabled) on track 1
+
+**AC-5.6: Play/Pause**
+- Play resumes the current track at its current position (continues looping)
+- Pause stops playback but retains track position
+- State reflected in UI (Play/Pause icon toggle)
+
+**AC-5.7: Zustand state management**
+- `zustand` installed
+- Player store tracks: `currentSurahId`, `currentTrackIndex`, `isPlaying`
+- Store updated on every track change and play/pause event
+
+**AC-5.8: Error handling**
+- If a track file is missing: skip to next track, log error, do not crash
+- If surah has no tracks: disable Play button
+
+### Definition of Done
+- [ ] TrackPlayer initialized and playing bundled audio
+- [ ] Tracks loop continuously (RepeatMode.Track)
+- [ ] Next/Previous advance tracks with correct loop behavior
+- [ ] Play/Pause works correctly
+- [ ] Zustand store reflects current playback state
+- [ ] Missing track handled gracefully (skip + log, no crash)
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- AC-5.1: APPROVED — package installation is verifiable in package.json. TrackPlayer service registration and capability configuration are verifiable via code review and initialization test.
+- AC-5.2: APPROVED — queue load is verifiable by asserting TrackPlayer.getQueue() returns exactly `trackCount` tracks for each surah. Artist field "shortSurahs" is an exact string assertion. "Not streamed" means track URLs use local require() or file:// paths — verifiable via static analysis. Note: the explicit requirement "If a queue already exists from a previous surah, it must be cleared before loading the new surah's tracks" directly covers the re-open scenario — Dev Team must include a dedicated integration test for this case.
+- AC-5.3: APPROVED — RepeatMode.Track is a specific API constant, verifiable in code. Autoplay on open is verifiable by checking TrackPlayer.getState() equals State.Playing after mount.
+- AC-5.4: APPROVED — four-step sequence is precise and matches PRD Section 4.3 verbatim. Track index increment is unit-testable. Boundary behavior note: "Next is no-op (or disabled)" describes audio-engine behavior; the visual disabled state is governed by AC-4.2 in US-4. Dev Team must ensure that the audio-layer no-op is paired with the visually disabled button state required by AC-4.2 — a silent tap handler alone does not satisfy AC-4.2.
+- AC-5.5: APPROVED — mirrors AC-5.4 with decrement direction and track 1 boundary. The four-step sequence matches PRD Section 4.4. Note: the "Previous is no-op (or disabled) on track 1" boundary condition extends the PRD — Section 4.4 does not include this constraint. The boundary assertion is a mandatory test case. Same visual disabled-state note as AC-5.4 applies.
+- AC-5.6: APPROVED — position retention on pause is verifiable by asserting TrackPlayer.getProgress().position before and after pause/resume cycle. UI icon toggle is verifiable via state test.
+- AC-5.7: APPROVED — exact store field names specified. Store update on every event is verifiable by asserting Zustand state after each player action.
+- AC-5.8: APPROVED — skip-plus-log behavior is concrete. "Do not crash" is verifiable by asserting no unhandled exception is thrown. Disable Play on empty surah is a UI state assertion. Edge case note: if the missing track is the last track, there is no next track to skip to — Dev Team should handle this as "log error, halt playback gracefully" since no skip target exists.
+- DoD: APPROVED — "Play/Pause works correctly" maps directly to three AC-5.6 assertions the Dev Team must implement: (1) Play resumes at the same playback position as before pause (assert getProgress().position within an acceptable delta); (2) Pause halts playback without resetting track position; (3) UI icon matches `isPlaying` in Zustand store. All other DoD items are specific and verifiable.
+- Quality strategy note: The queue-clearing scenario (re-opening the player with a different surah) is explicitly covered by AC-5.2 — it is a mandatory acceptance criterion, not an implicit edge case. Dev Team must include a dedicated integration test asserting TrackPlayer.getQueue() contains only the new surah's tracks after a second player open. This is a high-risk integration point between the navigation layer (US-2) and the audio layer (US-5).
+
+---
+
+## US-6: Background & Lock Screen Audio
+
+**Priority:** P1
+**Story Points:** 2
+**Labels:** audio, platform
+
+> As a user, I want audio to continue playing when I lock my phone or switch apps so that I can memorize hands-free.
+
+### Acceptance Criteria
+
+**AC-6.1: Background audio continues**
+- Audio does not stop when app is minimized
+- Audio does not stop when screen is locked
+- Audio does not stop when phone is idle
+
+**AC-6.2: Lock screen controls**
+- Lock screen shows: track title, artwork, play/pause/next/previous
+- Lock screen controls trigger the same actions as in-app controls
+- Metadata (surah name, aya number) displayed on lock screen
+
+**AC-6.3: iOS audio session**
+- Audio session category set correctly for background playback
+- `UIBackgroundModes` includes `audio` in `app.json` / Info.plist
+
+**AC-6.4: Android foreground service**
+- Notification shows current track info
+- Notification controls (play/pause/next/prev) work
+- Service keeps audio alive in background
+
+### Definition of Done
+- [ ] Audio continues when app backgrounded on iOS
+- [ ] Audio continues when app backgrounded on Android
+- [ ] Lock screen controls work on both platforms
+- [ ] Correct metadata shown on lock screen / notification
+- [ ] Manual device testing performed on physical iOS and Android devices (background audio and lock screen behaviors cannot be verified in simulators)
+- [ ] Code includes structured metadata header comments
+
+### Tester Status
+requirements-approved
+
+### Tester Notes
+- AC-6.1: APPROVED with observation — "phone is idle" is not a distinct behavioral state from "screen locked" at the OS level; both reduce to the same TrackPlayer background service requirement. The effective test count is two scenarios: (1) app minimized (backgrounded); (2) screen locked/idle. Both require manual device testing and cannot be verified by unit tests or simulators. Dev Team should note these as manual verification items.
+- AC-6.2: APPROVED — lock screen elements (title, artwork, controls, metadata) are determined by the TrackPlayer metadata set in AC-5.2. Correctness of lock screen display requires manual device testing on both platforms. "Same actions as in-app controls" is verifiable by asserting that lock screen control events fire the same handler functions as in-app buttons.
+- AC-6.3: APPROVED — `UIBackgroundModes` containing `audio` in `app.json` is a static, code-verifiable assertion. Audio session category is a code-review item.
+- AC-6.4: APPROVED — Android foreground service notification content and controls are determined by TrackPlayer configuration. Verifiable via code review of the TrackPlayer service setup. Notification controls triggering correct actions is verifiable via integration test.
+- DoD: APPROVED — all DoD items for this story require either manual device testing (background/lock screen behavior) or code review (configuration). This is expected for platform audio integration.
+- Quality strategy note: AC-6.1 and AC-6.4 behaviors cannot be verified in a simulator — they require physical device testing on both iOS and Android. This should be documented as a manual test step in the DoD or in the PR checklist for this story.
+
+---
+
+## Sprint 1 Summary
+
+| Story | Title | Points | Priority | Dependencies |
+|-------|-------|--------|----------|--------------|
+| US-1 | Data Layer | 3 | P0 | None |
+| US-2 | Navigation | 3 | P0 | None |
+| US-3 | Surah List Screen | 5 | P1 | US-1, US-2 |
+| US-4 | Player Screen UI | 5 | P1 | US-1, US-2 |
+| US-5 | Audio Playback | 8 | P0 | US-1, US-4 |
+| US-6 | Background Audio | 2 | P1 | US-5 |
+| **Total** | | **26** | | |
+
+### Dependency Graph
+
+```
+US-1 (Data) ──┬──→ US-3 (List Screen)
+              ├──→ US-4 (Player UI) ──→ US-5 (Audio) ──→ US-6 (Background)
+US-2 (Nav) ───┘
+```
+
+### Out of Scope (Sprint 2+)
+- CarPlay / Android Auto integration (PRD Flow 4, Sections 10.x)
+- Additional surahs beyond the initial 4
+- Performance optimization (PRD Section 14 — validate after MVP)
+- Custom theming beyond system light/dark
+
+---
+
+## Tester Sprint Status
+
+requirements-approved
+
+## Tester Sprint Notes
+
+Requirements validation completed 2026-02-28 (initial pass) and re-validated 2026-02-28 after PO incorporated all tester feedback.
+
+**Final validation result: ALL 6 stories approved. Sprint phase advanced to development.**
+
+**Summary of validation rounds:**
+
+Round 1 (initial): US-1, US-5, US-6 approved. US-2, US-3, US-4 flagged as requirements-defect with specific fixes requested.
+
+Round 2 (re-validation): PO incorporated all 7 specific fixes across US-2, US-3, and US-4. All defects resolved:
+- US-2 AC-2.3: "correctly" replaced with observable outcome ("dismisses player screen and returns to `/` route"). RESOLVED.
+- US-3 AC-3.1: "large padding" replaced with "`paddingVertical >= 12`". RESOLVED.
+- US-3 AC-3.4: "Apple Music aesthetic" replaced with element count constraint (max 3 per row) and negative element assertions. RESOLVED.
+- US-3 DoD: "Visual style is clean and minimal" replaced with render-test-verifiable element assertion. RESOLVED.
+- US-4 AC-4.1: "large artwork filling screen width" replaced with "`width >= 80% screenWidth`". RESOLVED.
+- US-4 AC-4.2: "large and thumb-reachable" replaced with "44x44pt minimum hit target (Apple HIG)". RESOLVED.
+- US-4 AC-4.4: "Apple Music aesthetic" replaced with concrete negative constraints (no progress bar, no volume slider). RESOLVED.
+- US-4 DoD: "properly sized" replaced with "44x44pt each". RESOLVED.
+
+**Standing quality observations (carry forward to Dev Team):**
+
+1. US-5 queue-clearing requirement: AC-5.2 explicitly requires clearing any existing queue before loading a new surah's tracks. This is a mandatory acceptance criterion, not an implicit edge case. Dev Team must include a dedicated integration test asserting TrackPlayer.getQueue() contains only the new surah's tracks after a second player open (high-risk integration point between US-2 and US-5).
+
+2. US-6 manual testing requirement: Background audio and lock screen behavior (AC-6.1, AC-6.2, AC-6.4) cannot be verified in a simulator. PR checklist for US-6 must include a manual device test step on both physical iOS and Android devices.
+
+3. US-4 artwork width: The 80% screen width constraint requires a runtime `Dimensions.get('window').width` computation. Dev Team should not use a hardcoded pixel value — the style must derive from the runtime screen dimension so it holds across device sizes.
