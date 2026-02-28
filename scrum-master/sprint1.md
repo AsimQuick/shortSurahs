@@ -6,7 +6,7 @@
 **Velocity (planned):** 6 user stories, 26 story points
 **Phase:** development
 **Last Updated:** 2026-02-28
-**Last Updated By:** tester
+**Last Updated By:** tester (US-2 AC-2.1 CI defect — Iteration 1)
 
 ---
 
@@ -138,7 +138,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - [ ] Code includes structured metadata header comments
 
 ### Tester Status
-requirements-approved
+defect-found
 
 ### Tester Notes
 - Re-validated 2026-02-28 after PO incorporated tester feedback.
@@ -147,11 +147,50 @@ requirements-approved
 - AC-2.3: APPROVED — previously flagged defect ("correctly" undefined) is resolved. AC now reads "dismisses the player screen and returns the user to the surah list screen (`/` route)" — the expected post-press state is concrete and observable. All three navigation scenarios are testable.
 - DoD: APPROVED — "No console errors during navigation" is verifiable via Metro/device logs. All other items are file/configuration checks.
 
+---
+
+**CI DEFECT — Dev-Tester Loop: Iteration 1 of 3**
+
+- **Classification:** Code bug — not a requirements issue
+- **Severity:** Blocker (`npm ci` exits with ERESOLVE; dependency installation fails before lint, type-check, or tests can run)
+- **CI stage that failed:** Install dependencies (`npm ci`)
+- **CI stages that did not run:** Lint, type-check, tests — all skipped due to install failure
+
+**Root cause:** Installing `expo-router@~55.0.3` (AC-2.1) introduced a transitive peer dependency conflict. The dependency chain is:
+
+```
+expo-router → @radix-ui/react-tabs → @radix-ui/react-roving-focus → @radix-ui/react-collection
+                                   → @radix-ui/react-dialog
+```
+
+All of these `@radix-ui` packages declare `peerDependencies: { react-dom: "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }`. npm resolved `react-dom@19.2.4` to satisfy those peers. However, `react-dom@19.2.4` itself declares `peerDependencies: { react: "^19.2.4" }` — meaning it requires `react >= 19.2.4`.
+
+The project's `package.json` pins `react` at `"19.2.0"`. Since `19.2.0 < 19.2.4`, the constraint is not met and npm's strict resolver (used by `npm ci`) aborts with ERESOLVE.
+
+**This is not a requirements gap.** AC-2.1 is correctly specified. The defect is a patch-version mismatch in `react` introduced when `expo-router` was installed without simultaneously updating `react` to the version that satisfies its transitive peer dependencies.
+
+**Required fix (Dev Team):** Upgrade `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies:
+
+```json
+"react": "19.2.4"
+```
+
+Then regenerate `package-lock.json` by running `npm install` (not `npm ci`). Commit both `package.json` and the updated `package-lock.json`. This is a patch-level bump within the React 19 minor and is safe for Expo SDK 55.
+
+**Verification:** After the fix:
+1. `npm ci` must complete with exit code 0 (no ERESOLVE).
+2. `npx tsc --noEmit` must exit 0 with no errors.
+3. `npm test` must run all 106 tests (93 from US-1 + 13 from AC-2.1) and pass.
+4. `npx eslint . --max-warnings 0` must exit 0.
+
+---
+
 ### Dev Team Status
-in-progress
+resolved
 
 ### Dev Team Notes
 - AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
+- **CI defect fix (iteration 1):** Bumped `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies and regenerated `package-lock.json` via `npm install`. Root cause: `expo-router` transitively pulled in `react-dom@19.2.4` (via `@radix-ui` packages), which declares `peerDependencies: { react: "^19.2.4" }`. Since `19.2.0 < 19.2.4`, `npm ci`'s strict resolver aborted with ERESOLVE. Patch-level bump to `19.2.4` satisfies the constraint without affecting Expo SDK 55 compatibility.
 
 ---
 
