@@ -138,7 +138,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - [ ] Code includes structured metadata header comments
 
 ### Tester Status
-blocked
+done (AC-2.1)
 
 ### Tester Notes
 - Re-validated 2026-02-28 after PO incorporated tester feedback.
@@ -280,6 +280,37 @@ The failure report carries no log output whatsoever. A zero-log CI failure means
 **Note on Dev-Tester Loop cap:** Iteration 3 of 3 is the final permitted iteration. The loop cannot be extended. Resolution of a persistent CI infrastructure failure requires Project Lead intervention, not Dev Team code changes. The Iteration 2 quality gate decision remains valid for the code at commit `0594ded` — this failure does not invalidate that PASS.
 
 **Tester Status: blocked** — Quality gate cannot be re-evaluated without actionable CI failure output. Recommend CI re-trigger before any code changes are made.
+
+---
+
+**PROJECT LEAD RECOVERY — Dev-Tester Loop Exhaustion Resolution (2026-03-01)**
+
+- **Trigger:** Dev-Tester loop exhausted (3/3 iterations) with Tester status `blocked` due to CI infrastructure failure at Iteration 3
+- **Classification:** Process artifact — not a code defect, not a requirements gap
+
+**Root cause analysis:**
+
+The 3-iteration loop was consumed as follows:
+1. **Iteration 1:** Genuine code bug (ERESOLVE peer dependency conflict). Correctly identified and fixed by Dev Team. Loop iteration properly spent.
+2. **Iteration 2:** CI fully green. Quality gate met. AC-2.1 verified correct. This was the terminal state for the code.
+3. **Iteration 3:** Transient CI infrastructure failure — zero-log GitHub Actions runner failure. No code changed between iterations 2 and 3. The loop's final iteration was consumed by an infrastructure issue outside anyone's control.
+
+**Evidence supporting resolution:**
+
+| Factor | Evidence |
+|--------|----------|
+| Code unchanged since Iteration 2 PASS | Confirmed — `package.json`, `package-lock.json`, `app/_layout.tsx`, `app/index.tsx`, `__tests__/router-config.test.ts`, `app.json` all identical |
+| CI re-trigger succeeded | Run `22528577563` (commit `d9df405`) — all stages green, 117 tests pass |
+| Both agents agree no code defect | Tester Notes (Iter 3): "not a code bug and not a requirements issue"; Dev Team Notes: "no code changes required" |
+| Iteration 2 quality gate was explicit PASS | Tester wrote: "AC-2.1 quality gate is met. Implementation is correct, CI is green" |
+
+**Decision: Accept Iteration 2 quality gate. AC-2.1 is DONE.**
+
+The Iteration 3 infrastructure failure does not invalidate the Iteration 2 PASS. The re-triggered CI run confirms the code remains correct. No re-scoping, no deferral, no AC revision needed.
+
+**Process improvement note:** The Dev-Tester loop should distinguish between code defects (which consume an iteration) and infrastructure failures (which should not). Infrastructure-only failures should be retried without counting against the loop cap. This will be addressed in the retrospective.
+
+**Tester Status override:** `blocked` → `done` (AC-2.1). AC-2.2 and AC-2.3 remain `requirements-approved` and are ready for development.
 
 ---
 

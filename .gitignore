@@ -46,3 +46,8 @@ coverage/
 # Build artifacts
 *.log
 logs/
+
+# DevRAG
+models/
+devrag-config.json
+devrag-vectors.db
