@@ -20,7 +20,7 @@
 
 ### Acceptance Criteria
 
-**AC-1.1: Create `data/surahs.json`**
+- [x] **AC-1.1: Create `data/surahs.json`**
 - File exists at `data/surahs.json`
 - Contains entries for all 4 bundled surahs: fatiha, falaq, ikhlas, nas
 - Each entry matches the PRD schema: `id`, `nameEnglish`, `nameArabic`, `trackCount`, `artwork`, `folder`
@@ -30,7 +30,7 @@
   - ikhlas: 5
   - nas: 7
 
-**AC-1.2: TypeScript types**
+- [x] **AC-1.2: TypeScript types**
 - `Surah` type defined matching the PRD data model
 - `Track` type defined with fields: `id`, `url`, `title`, `artist`, `artwork`
 - Types exported from a shared types file
@@ -57,8 +57,8 @@ resolved
 - Note: JSON does not support comments; metadata header requirement is satisfied for all .js files (eslint.config.js, test file). `surahs.json` is a data file — no metadata header added to avoid invalid JSON.
 - **CI defect fix (iteration 1):** Added `globals` package import and a `files`-scoped block in `eslint.config.js` targeting `__tests__/**/*.js` and `**/*.test.js`, injecting `globals.jest` and `globals.node`. Resolves 33 ESLint `no-undef` errors (`__dirname`, `describe`, `beforeAll`, `test`, `expect`). `eslint .` exits 0; all 32 tests still pass.
 - AC-1.2 complete: `types/index.ts` created with `Surah` and `Track` interfaces. `Surah` fields: `id`, `nameEnglish`, `nameArabic`, `trackCount`, `artwork`, `folder`. `Track` fields: `id`, `url`, `title`, `artist`, `artwork`. `url` and `artwork` typed as `string | number` to support bundled `require()` assets (number) and string paths. Types exported and metadata header included. 17 unit tests written in `__tests__/types.test.ts` — all pass (49 total). `eslint .` exits 0.
-- AC-1.3 pending (separate AC).
 - **CI defect fix (iteration 2):** Added `@types/jest: "^29.5.0"` to `devDependencies` in `package.json`. This resolves all 38 TypeScript errors (TS2582/TS2304) in `__tests__/types.test.ts` caused by missing Jest type definitions. Also extended ESLint `files` glob in `eslint.config.js` to include `__tests__/**/*.ts` and `**/*.test.ts` to ensure `.ts` test files receive Jest/Node globals. Verification: `npx tsc --noEmit` exits 0, `npm test` passes 49 tests (32 + 17), `npx eslint . --max-warnings 0` exits 0.
+- AC-1.3 complete: `data/dataUtils.ts` created with `getSurahs()` and `getTracksForSurah(surahId)`. `getSurahs()` returns the full `Surah[]` from `surahs.json`. `getTracksForSurah()` generates ordered `Track[]` with URLs following `assets/audio/{folder}/{nn}.mp3` (2-digit zero-padded, per PRD Section 7.2), title `Aya {n}`, artist `shortSurahs`, and artwork from the surah entry. Returns empty array for unknown surahId. 44 unit tests written in `__tests__/dataUtils.test.ts` — all pass (93 total). Tests cover: all 4 surahIds, exact track counts, ordered ayah titles, URL zero-padding, id format, artist field, boundary tracks (including nas track 7 per Tester quality strategy note), and unknown surahId edge cases. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0. US-1 complete.
 
 ### Tester Status
 defect-found
