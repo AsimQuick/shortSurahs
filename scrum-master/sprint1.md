@@ -121,7 +121,7 @@ The version should align with the installed `jest` version (`^29.7.0`). After ru
 - File-based routing set up under `app/` directory
 - Root layout wraps the app with required providers
 
-**AC-2.2: Define route structure**
+- [x] **AC-2.2: Define route structure**
 - `/` — Surah List screen (index)
 - `/player/[surahId]` — Player screen (dynamic route)
 - Navigation from list to player passes `surahId` parameter
@@ -315,13 +315,14 @@ The Iteration 3 infrastructure failure does not invalidate the Iteration 2 PASS.
 ---
 
 ### Dev Team Status
-in-progress
+resolved
 
 ### Dev Team Notes
 - AC-2.1 complete: `expo-router` (~55.0.3) installed via `npx expo install`. `package.json` `main` updated to `expo-router/entry`. `app.json` updated with `scheme: "shortsurahs"` and `plugins: ["expo-router"]` (plugin auto-added by `expo install`). `app/_layout.tsx` created with root Stack navigator (`headerShown: false`). `app/index.tsx` created as a placeholder index route (full implementation in US-3). 13 unit tests written in `__tests__/router-config.test.ts` — all pass (106 total). Tests cover: expo-router in dependencies, `main` entry point, `app.json` scheme and plugin, `app/` directory existence, `_layout.tsx` and `index.tsx` file existence, layout exports default function, layout imports Stack from expo-router, index exports default function. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
 - **CI defect fix (iteration 1):** Bumped `react` from `"19.2.0"` to `"19.2.4"` in `package.json` dependencies and regenerated `package-lock.json` via `npm install`. Root cause: `expo-router` transitively pulled in `react-dom@19.2.4` (via `@radix-ui` packages), which declares `peerDependencies: { react: "^19.2.4" }`. Since `19.2.0 < 19.2.4`, `npm ci`'s strict resolver aborted with ERESOLVE. Patch-level bump to `19.2.4` satisfies the constraint without affecting Expo SDK 55 compatibility.
 - **CI re-trigger (iteration 3):** No code changes required. Tester classified Iteration 3 CI failure as a transient CI infrastructure failure — zero-log failure, job terminated before any output was captured, no actionable error output produced. Per Tester required action, CI pipeline re-triggered by pushing this commit. No implementation files modified since Iteration 2 PASS at commit `0594ded`. All 117 tests, lint, and type-check were green at that commit and remain unchanged.
 - AC-2.2 complete: `app/player/[surahId].tsx` created as a dynamic Expo Router route for the player screen. Uses `useLocalSearchParams<{ surahId: string }>()` from `expo-router` to read `surahId` from the route params. Placeholder render (`<Text>{surahId}</Text>`) displays the surahId; full player UI delivered in US-4. `app/index.tsx` remains unchanged — tap navigation wired to rows in AC-2.3. 9 unit tests written in `__tests__/route-structure.test.ts` — all pass (126 total). Tests cover: `app/index.tsx` existence (the "/" route), `app/player/` directory existence, `app/player/[surahId].tsx` existence (the "/player/[surahId]" route), player route default export, expo-router import, `useLocalSearchParams` import and usage, surahId destructuring, and surahId referenced in JSX. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0.
+- AC-2.3 complete: `app/index.tsx` updated — `SurahRow` converted from `View` to `Pressable` with visual press feedback (`opacity: 0.6` on press via style function). `useRouter()` added; each row's `onPress` calls `router.push({ pathname: '/player/[surahId]', params: { surahId: item.id } })`. `app/player/[surahId].tsx` updated — `useRouter()` added with a `Pressable` back button calling `router.back()`. Hardware back button (Android) is handled automatically by the Expo Router Stack navigator in `app/_layout.tsx` — no additional code required. 14 unit tests written in `__tests__/navigation.test.ts` — all pass (140 total). Tests cover: `useRouter` import and call in index, `router.push` usage, `/player/[surahId]` as navigation target, `item.id` passed as surahId param, `Pressable` presence and `onPress` handler in index; `useRouter` import and call in player, `router.back()` call, `Pressable` and `onPress` in player; Stack navigator presence in `_layout.tsx` for Android hardware back handling. `npx tsc --noEmit` exits 0; `npx eslint . --max-warnings 0` exits 0. US-2 complete.
 
 ---
 
