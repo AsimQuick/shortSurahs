@@ -1,26 +1,25 @@
 # shortSurahs
 
 ## Product Vision
-[Captured during standup — Project Lead will fill this in]
+A distraction-free Quran memorization app that plays looping ayah tracks offline — on phone and in the car.
 
 ## Product Pillars
-- [Pillar 1]
-- [Pillar 2]
-- [Pillar 3]
+- **Offline-first** — All audio bundled locally, zero network dependency
+- **Simplicity** — Minimal Apple Music-style UI, no clutter
+- **Memorization-focused** — Loop-until-ready playback model
 
 ## Technology Stack
-- Stack: react-native-expo
-- [Details captured during standup]
+- **Framework:** React Native Expo (SDK 53+)
+- **Architecture:** Continuous Native Generation (CNG)
+- **Audio Engine:** react-native-track-player (lock screen, CarPlay, Android Auto, background audio)
+- **State Management:** Zustand
+- **Platforms:** iOS, Android, Apple CarPlay, Android Auto
+- **Backend:** None — offline-first, no login, no streaming
 
-## Docker Rules (ALL AGENTS MUST FOLLOW)
-- ALL services (databases, caches, queues) run INSIDE Docker containers
-- NEVER run `apt install postgresql`, `brew install redis`, or install any service on the host machine
-- ALL services are defined in `docker-compose.yml`
-- Connect to services via Docker network hostnames (`db`, `redis`, `web`) — NOT `localhost`
-- To start services: `docker compose up -d`
-- To run tests: `docker compose run --rm web pytest` (or stack equivalent)
-- The ONLY things that run on the host: git, claude, gh CLI, and the Project Lead script
-- If you need a new service, add it to `docker-compose.yml` — do not install it on the host
+## Docker Rules
+- Docker is **not applicable** for this project (pure mobile app, no backend services)
+- Dev workflow: `npx expo start`, EAS builds
+- The ONLY things that run on the host: git, claude, gh CLI, Expo CLI, and the Project Lead script
 
 ## Project Conventions
 - Commit format: `[US-X] Description of change`
