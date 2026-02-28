@@ -282,42 +282,45 @@ Requirements approved -- carried forward from Sprint 1 (2026-02-28). Re-validate
 AC-5.1 implemented 2026-03-01. Installed `react-native-track-player@^4.1.2` (resolved to 4.1.2). Created `services/playbackService.ts` exporting `PlaybackService` — registers remote event handlers for Event.RemotePlay, Event.RemotePause, Event.RemoteNext, Event.RemotePrevious, each delegating to the corresponding TrackPlayer API. Created `services/trackPlayerSetup.ts` exporting `setupTrackPlayer()` — calls `TrackPlayer.setupPlayer()` then `TrackPlayer.updateOptions()` with Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.SkipToPrevious (and compactCapabilities: Play, Pause). Updated `app/_layout.tsx`: `TrackPlayer.registerPlaybackService(() => PlaybackService)` called at module level; `setupTrackPlayer()` called inside a `useEffect` with a `.catch()` to silently swallow duplicate-setup errors on fast-refresh. 34 new source-level unit tests in `__tests__/trackplayer-setup.test.ts`; all 301 tests pass.
 AC-5.2 implemented 2026-03-01. Created `data/audioMap.ts` with a static `require()` map covering all 24 bundled audio tracks (fatiha×6, falaq×6, ikhlas×5, nas×7), exporting `getAudioAsset(surahFolder, trackNum)`. Created `services/trackQueue.ts` exporting `loadSurahQueue(surahId)` — calls `TrackPlayer.reset()` to clear any existing queue, then builds track objects (id, url via getAudioAsset(), title "Aya N", artist "shortSurahs", artwork via getArtwork()) and calls `TrackPlayer.add()`. Updated `app/player/[surahId].tsx`: imported `useEffect` and `loadSurahQueue`; added `useEffect(() => { loadSurahQueue(surahId).catch(() => {}); }, [surahId])` to load the queue on mount and whenever surahId changes. 44 new unit + behavioral integration tests in `__tests__/trackplayer-load-queue.test.ts`; mandatory queue-clearing integration test asserts `TrackPlayer.reset()` is called before each `TrackPlayer.add()` and that a second open with a different surahId adds only the new surah's tracks. All 345 tests pass.
 CI lint fix 2026-03-01 (iteration 1). Fixed 14 ESLint violations in `__tests__/trackplayer-load-queue.test.ts` identified by Tester. Option A (dynamic import) was attempted first but failed — Jest CJS environment rejects `import()` without `--experimental-vm-modules`. Applied Option B per Tester guidance: added `eslint-disable-next-line @typescript-eslint/no-require-imports` above each of the 8 `require('../services/trackQueue')` calls in the behavioral test describe block; replaced all 6 `Array<T>` generic annotations with `T[]` shorthand on the affected cast lines. ESLint now passes `--max-warnings 0`; all 345 tests still pass.
+CI type fix 2026-03-01 (iteration 2). Fixed TS2769 in `services/trackQueue.ts` identified by Tester. RNTP v4.1.2 type definitions declare `Track.url` and `Track.artwork` as `string` only; `getAudioAsset()` returns a bundled require() number and `getArtwork()` returns `number | undefined`. Applied `as unknown as string` double-cast to both fields (lines 39 and 42) — the correct TypeScript idiom when runtime contract and type definition disagree. No logic changes, no test changes. `npx tsc --noEmit` passes; all 345 tests still pass.
 
 **Tester Status:** defect-found
 **Tester Notes:**
-Dev-Tester Loop: Iteration 1 of 3
+Dev-Tester Loop: Iteration 2 of 3
 
-Diagnosis: code bug in test file -- all 345 tests pass locally; the CI failure is a lint failure, not a test failure.
+Iteration 1 recap: ESLint lint failure fixed by Dev Team (eslint-disable comments + Array<T> -> T[] rewrites). All 345 tests and lint pass locally per Dev Team notes.
 
-CI FAILURE: Lint step exits with code 1 on both CI runs (22530429908, 22530435843).
-Failing file: __tests__/trackplayer-load-queue.test.ts
-14 ESLint warnings treated as errors under --max-warnings 0 flag:
+Diagnosis: code bug in services/trackQueue.ts -- TypeScript type error, not a lint or test failure.
 
-  Violation type 1 -- @typescript-eslint/no-require-imports (8 occurrences):
-  Lines 272, 280, 288, 296, 304, 311, 318, 332 each use require('../services/trackQueue').
-  The behavioral integration tests use jest.resetModules() + require() to re-load the module
-  after mocks are installed. This is a valid Jest pattern for testing module-level side effects,
-  but the project ESLint config forbids require() style imports project-wide with zero exceptions.
+CI FAILURE: Type check step exits with code 2.
+Failing file: services/trackQueue.ts
+Error: TS2769 at line 46 -- No overload matches this call to TrackPlayer.add().
 
-  Violation type 2 -- @typescript-eslint/array-type (6 occurrences):
-  Lines 283, 291, 298, 306, 323, 324 use Array<T> generic syntax.
-  ESLint rule requires T[] shorthand instead.
+Root cause: The track objects built on lines 35-44 have url typed as `number` (due to
+`as number` cast on line 39). RNTP v4.1.2 TypeScript types declare Track.url as `string`
+only -- they do not include `number` in the union. TypeScript therefore rejects the
+`tracks` array as incompatible with `AddTrack[]`.
 
-Severity: major -- blocks CI merge; no test failures, all 345 pass locally.
+The RNTP runtime does accept local asset refs (numbers from require()) for url at runtime,
+but the v4.1.2 type definitions do not reflect this. The `as number` cast on line 39 locks
+the url field's TypeScript type to `number`, making it irreconcilable with `string`.
 
-Recommended fix (Dev Team must choose one option):
+Severity: major -- blocks CI merge; runtime behavior is correct, but tsc --noEmit fails.
 
-  Option A (preferred -- lint-clean): Replace all require('../services/trackQueue') calls in the
-  behavioral test describe block with a dynamic import() pattern compatible with jest.resetModules().
-  Declare loadSurahQueue at describe scope, then inside each test re-assign via
-  dynamic import after jest.resetModules(). Also replace all Array<T> with T[] on the 6 affected lines.
+Recommended fix (single option -- minimal change to source file):
 
-  Option B (inline disable): Add eslint-disable-next-line @typescript-eslint/no-require-imports
-  above each of the 8 require() calls, and replace Array<T> with T[] on the 6 affected lines.
-  Acceptable if dynamic import rewrite proves incompatible with the jest.resetModules mock lifecycle.
+  In services/trackQueue.ts, change the url cast on line 39 from:
+    url: getAudioAsset(surah.folder, nn) as number,
+  to:
+    url: getAudioAsset(surah.folder, nn) as unknown as string,
 
-No source file changes are needed. Only __tests__/trackplayer-load-queue.test.ts requires edits.
-After fix, Dev Team must run: npx eslint . --max-warnings 0 locally before pushing.
+  This tells TypeScript to treat the bundled asset ref as a string (matching RNTP's type
+  definition) while preserving the actual number value at runtime. No logic changes, no
+  test changes required. The `as unknown as string` double-cast is the correct TypeScript
+  idiom when the runtime contract and the type definition disagree.
+
+  After fix, Dev Team must run: npx tsc --noEmit locally before pushing to confirm the
+  type check passes. Also re-run npm test to confirm all 345 tests still pass.
 
 ---
 

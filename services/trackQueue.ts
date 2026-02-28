@@ -36,10 +36,10 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     const nn = String(i + 1).padStart(2, '0');
     return {
       id: `${surah.id}-${nn}`,
-      url: getAudioAsset(surah.folder, nn) as number,
+      url: getAudioAsset(surah.folder, nn) as unknown as string,
       title: `Aya ${i + 1}`,
       artist: 'shortSurahs',
-      artwork: getArtwork(surahId),
+      artwork: getArtwork(surahId) as unknown as string,
     };
   });
 
