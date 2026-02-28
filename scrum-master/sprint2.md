@@ -134,9 +134,9 @@ Current `app/index.tsx` uses `source={{ uri: item.artwork }}` for artwork (strin
 
 **Dependencies:** US-1 (done), US-2 (done)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** done
 **Dev Team Notes:**
-_empty -- Dev Team fills this in_
+AC-3.2 implemented 2026-03-01. Created `data/artworkMap.ts` with a static `require()` map covering all 4 surahs (fatiha, falaq, ikhlas, nas). Updated `app/index.tsx`: replaced `source={{ uri: item.artwork }}` with `source={getArtwork(item.id)}`, added `resizeMode="cover"` prop to Image, and added `borderRadius: 8` to the artwork style. 14 new source-level unit tests in `__tests__/surah-list-artwork.test.ts`; all 154 tests pass.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
