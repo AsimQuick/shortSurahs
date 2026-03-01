@@ -9,7 +9,7 @@
  *                displayed as 1-based; not a hardcoded "Aya 1" literal)
  *              Tests are source-level assertions (testEnvironment: "node").
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.3
+ * @sprint Sprint 2 — US-4 AC-4.3; Sprint 3 — US-5 AC-5.7 (state migration update)
  */
 
 import * as fs from 'fs';
@@ -96,16 +96,19 @@ describe('AC-4.3 — aya number updates when track changes', () => {
     expect(source).toMatch(/currentTrackIndex\s*\+\s*1/);
   });
 
-  test('currentTrackIndex state is declared and initialised to 0', () => {
-    expect(source).toMatch(/const\s+\[currentTrackIndex.*useState\(0\)/s);
+  test('currentTrackIndex is read from Zustand store (AC-5.7: migrated from useState)', () => {
+    // AC-5.7: currentTrackIndex is sourced from usePlayerStore, not local useState(0).
+    expect(source).toMatch(/usePlayerStore\s*\(.*currentTrackIndex/s);
   });
 
   test('aya indicator updates on Previous: handlePrev decrements currentTrackIndex', () => {
-    expect(source).toMatch(/i\s*-\s*1/);
+    // AC-5.7: direct subtraction currentTrackIndex - 1 replaces functional updater (i) => i - 1.
+    expect(source).toMatch(/currentTrackIndex\s*-\s*1/);
   });
 
   test('aya indicator updates on Next: handleNext increments currentTrackIndex', () => {
-    expect(source).toMatch(/i\s*\+\s*1/);
+    // AC-5.7: currentTrackIndex + 1 appears in both the aya indicator JSX and handleNext.
+    expect(source).toMatch(/currentTrackIndex\s*\+\s*1/);
   });
 
   test('setCurrentTrackIndex is the setter used to drive aya indicator updates', () => {

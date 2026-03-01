@@ -102,7 +102,9 @@ describe('AC-5.5 — app/player/[surahId].tsx: handlePrev wiring', () => {
   });
 
   test('handlePrev updates currentTrackIndex by -1', () => {
-    expect(playerSource).toMatch(/setCurrentTrackIndex\s*\(\s*\(i\)\s*=>\s*i\s*-\s*1\s*\)/);
+    // AC-5.7: direct subtraction setCurrentTrackIndex(currentTrackIndex - 1) replaces
+    // functional updater (i) => i - 1 (Zustand setter takes a value, not a callback).
+    expect(playerSource).toMatch(/setCurrentTrackIndex\s*\(\s*currentTrackIndex\s*-\s*1\s*\)/);
   });
 
   test('file header documents AC-5.5', () => {

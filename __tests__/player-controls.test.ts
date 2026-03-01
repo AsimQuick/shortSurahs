@@ -8,8 +8,10 @@
  *              - Previous disabled when on first track (currentTrackIndex === 0)
  *              - Next disabled when on last track (currentTrackIndex === trackCount - 1)
  *              Tests are source-level assertions (testEnvironment: "node").
+ *              Updated for AC-5.7: state assertions updated to reflect migration
+ *              from local useState to Zustand store (usePlayerStore).
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.2
+ * @sprint Sprint 2 — US-4 AC-4.2; Sprint 3 — US-5 AC-5.7 (state migration update)
  */
 
 import * as fs from 'fs';
@@ -29,16 +31,18 @@ beforeAll(() => {
 // ---------------------------------------------------------------------------
 
 describe('AC-4.2 — isPlaying state', () => {
-  test('useState is imported from react', () => {
-    expect(source).toMatch(/import.*useState.*from\s+['"]react['"]/);
+  test('useEffect is imported from react (AC-5.2: queue load on mount)', () => {
+    // AC-5.7: useState migrated to Zustand; useEffect is still imported for loadSurahQueue.
+    expect(source).toMatch(/import.*useEffect.*from\s+['"]react['"]/);
   });
 
   test('isPlaying state variable is declared', () => {
     expect(source).toContain('isPlaying');
   });
 
-  test('isPlaying is initialized to true (auto-play on mount, AC-5.3)', () => {
-    expect(source).toMatch(/useState\(true\)/);
+  test('isPlaying is read from Zustand store (AC-5.7: migrated from useState)', () => {
+    // AC-5.7: isPlaying is sourced from usePlayerStore, not local useState(true).
+    expect(source).toMatch(/usePlayerStore\s*\(.*isPlaying/s);
   });
 
   test('setIsPlaying setter is defined', () => {
@@ -50,8 +54,8 @@ describe('AC-4.2 — isPlaying state', () => {
   });
 
   test('handlePlayPause negates isPlaying via setIsPlaying', () => {
-    // Matches functional updater pattern: setIsPlaying((p) => !p)
-    expect(source).toContain('setIsPlaying((p) => !p)');
+    // AC-5.7: direct negation setIsPlaying(!isPlaying) replaces functional updater.
+    expect(source).toContain('setIsPlaying(!isPlaying)');
   });
 });
 
@@ -64,8 +68,9 @@ describe('AC-4.2 — currentTrackIndex state', () => {
     expect(source).toContain('currentTrackIndex');
   });
 
-  test('currentTrackIndex is initialized to 0 (first track)', () => {
-    expect(source).toMatch(/useState\(0\)/);
+  test('currentTrackIndex is read from Zustand store (AC-5.7: migrated from useState)', () => {
+    // AC-5.7: currentTrackIndex is sourced from usePlayerStore, not local useState(0).
+    expect(source).toMatch(/usePlayerStore\s*\(.*currentTrackIndex/s);
   });
 
   test('setCurrentTrackIndex setter is defined', () => {
@@ -131,7 +136,8 @@ describe('AC-4.2 — Previous button disabled on first track', () => {
   });
 
   test('handlePrev decrements currentTrackIndex by 1', () => {
-    expect(source).toMatch(/i\s*-\s*1/);
+    // AC-5.7: direct subtraction currentTrackIndex - 1 replaces functional updater (i) => i - 1.
+    expect(source).toMatch(/currentTrackIndex\s*-\s*1/);
   });
 
   test('Previous button onPress is bound to handlePrev', () => {
@@ -161,7 +167,8 @@ describe('AC-4.2 — Next button disabled on last track', () => {
   });
 
   test('handleNext increments currentTrackIndex by 1', () => {
-    expect(source).toMatch(/i\s*\+\s*1/);
+    // AC-5.7: direct addition currentTrackIndex + 1 replaces functional updater (i) => i + 1.
+    expect(source).toMatch(/currentTrackIndex\s*\+\s*1/);
   });
 
   test('Next button onPress is bound to handleNext', () => {
