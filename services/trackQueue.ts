@@ -14,11 +14,13 @@
  *              loops forever, then calls TrackPlayer.play() to start playback
  *              automatically (no manual intervention required).
  *              Implements AC-5.4: Next behavior (PRD Rule 2).
+ *              Implements AC-5.5: Previous behavior (PRD Rule 3).
  *              skipToTrack(index) stops the current track, skips to the queue
  *              index, re-enables RepeatMode.Track, and starts playback.
+ *              Used for both Next (index + 1) and Previous (index - 1) navigation.
  *              Call sequence: skip -> setRepeatMode(Track) -> play.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
@@ -61,6 +63,7 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
 /**
  * Skips to the track at the given queue index, re-enables loop, and starts playback.
  * Implements AC-5.4: Next behavior (PRD Rule 2).
+ * Implements AC-5.5: Previous behavior (PRD Rule 3).
  * Call sequence: skip -> setRepeatMode(Track) -> play.
  *
  * @param index - Zero-based queue index to skip to
