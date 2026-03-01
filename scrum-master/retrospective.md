@@ -421,3 +421,105 @@ Sprint 2 delivered meaningful progress but not the sprint goal. A user opening t
 **Total carry-forward:** ~7 story points of feature work (within 8-pt velocity baseline).
 
 ---
+
+---
+
+## Sprint 3 — Interactive Playback & Background Audio
+
+**Sprint Duration:** 2026-03-15 -> 2026-03-29
+**Retrospective Date:** 2026-03-01
+**Retrospective Author:** product-owner
+
+---
+
+### Sprint Outcome (PO Perspective)
+
+Sprint 3 delivered the most significant milestone since project inception: US-5 (Audio Playback) is fully complete. All 8 acceptance criteria are done, merged, and verified. A user can now open the app, select a surah, hear looping aya audio, advance tracks with Next, go back with Previous, pause and resume at the same position, and encounter graceful error handling for missing or empty tracks. The interactive playback loop — the product's core value proposition — works end-to-end.
+
+US-6 (Background Audio, 2 pts) was not started. This was expected per PO-PI-8: US-5 had to be fully complete before US-6 could begin. US-6 carries forward to Sprint 4 with all prerequisites satisfied.
+
+**Accepted:** US-5 remaining ACs (~5 pts) + CF-5/CF-21 (0 pts) = ~5 story points
+**Not accepted:** US-6 (not started, 2 pts)
+**Velocity:** ~5 / ~7 = 71% (up from 44% in Sprint 2, 23% in Sprint 1)
+
+---
+
+### What Went Well
+
+**WW-10: US-5 is complete — the product's reason to exist now works.** After three sprints of incremental progress (infrastructure in Sprint 2, behavioral wiring in Sprint 3), interactive audio playback is fully functional. This is the single most important delivery in the project's history. Every subsequent sprint builds on a working core.
+
+**WW-11: Test quality remains exemplary.** Tests grew from 383 to 545 (+162, +42%). All 6 Sprint 3 PRs passed CI. Zero regressions across 23 test suites. The AC-5.7 Zustand migration — the highest-regression-risk change — passed all 70 behavioral tests from the button-wiring ACs.
+
+**WW-12: Process debt cleared — CF-5 (PR template) resolved after two sprints.** The Sprint 3 Phase 0 preflight approach worked: resolve low-effort action items before the first feature PR. Two-sprint-old process debt eliminated in a single task.
+
+**WW-13: Single-PR-per-AC (PI-12) enforced successfully.** PRs #27 through #32 each cover exactly one AC. The duplicate-PR pattern from Sprints 1 and 2 (MC-7, MC-9) was eliminated. Clean audit trail.
+
+**WW-14: The Tester correctly differentiated infrastructure noise from real defects.** Six zero-log ghost failures on AC-5.4 were classified as PI-6 infrastructure issues. The one genuine defect (AC-5.7 ESLint) was correctly identified, root-caused, and resolved in one iteration. This precision prevented false circuit-breaker triggers and kept the sprint on track.
+
+**WW-15: Velocity trend is positive.** 23% → 44% → 71%. The team is consistently delivering a higher proportion of planned work each sprint. Process improvements are having measurable effect.
+
+---
+
+### What Didn't Go Well
+
+**WDW-9: Build order was not followed — PI-7/PI-11 negated.** The sprint plan specified AC-5.7 (Zustand) as Phase 1, before AC-5.4/5.5/5.6. In practice, the button-wiring ACs were implemented first using local `useState`, then AC-5.7 became a migration task. The 70 behavioral tests mitigated regression risk and no defect resulted, but the deliberate process improvement was undermined. The orchestration script must enforce phase sequencing (PI-15).
+
+**WDW-10: Six zero-log ghost CI failures drained Tester capacity.** Each ghost failure triggered a full investigation cycle: CI evidence collection, implementation integrity re-verification, quality gate re-assessment, diagnostic write-up. Six cycles × substantial per-cycle effort = significant Tester capacity consumed confirming "nothing is wrong." PI-14 escalation threshold was exceeded but human investigation has not occurred.
+
+**WDW-11: Third consecutive sprint where the sprint goal was not fully met.** Sprint 1: NOT MET. Sprint 2: PARTIAL. Sprint 3: PARTIAL. The team delivers real value every sprint, but consistently underdelivers against the stated goal. This pattern suggests sprint goals are set too ambitiously relative to actual throughput. Goals should be achievable, not aspirational — a consistently unmet goal erodes credibility.
+
+**WDW-12: Local preflight (PI-9) missed ESLint on AC-5.7.** The `react-hooks/exhaustive-deps` violation was caught by CI, not local preflight. The PI-9 checklist explicitly includes `npx eslint . --max-warnings 0`. This was not run before push. The process exists; compliance is the gap.
+
+---
+
+### Process Improvements (PO Recommendations for Sprint 4)
+
+**PO-PI-11: Enforce build order via orchestration script (formalizing PI-15).** When a sprint plan specifies Phase N before Phase N+1, the orchestration script must not start Phase N+1 ACs until Phase N is complete. This prevents the Phase 1 → Phase 2 sequencing violation that occurred in Sprint 3.
+
+**PO-PI-12: Human owner must investigate GitHub Actions ghost failures before Sprint 4 begins.** Six zero-log ghost failures on a single AC is an infrastructure reliability problem that PI-14 identified but hasn't resolved. Root cause must be identified (is it a GitHub Actions runner issue? A webhook misfire? An orchestration script bug?) and fixed before Sprint 4. This is a P0 pre-sprint action item for the human owner.
+
+**PO-PI-13: Sprint 4 scope should be US-6 only (2 pts).** With US-5 complete, US-6 is the last remaining MVP story. 2 points against an 8-point velocity baseline is conservative and appropriate. Manual device testing (physical iOS and Android) is required by DoD and cannot be automated — budget time for it.
+
+**PO-PI-14: Sprint goals must be achievable, not aspirational.** For Sprint 4, the goal should be singular and concrete: "Deliver background audio and lock screen controls on iOS and Android." No secondary objectives. The team should experience a fully-met sprint goal for the first time.
+
+---
+
+### Carry-Forward Backlog (Sprint 4 Input)
+
+| Priority | Story | Remaining Work | Points |
+|----------|-------|----------------|--------|
+| P0 | US-6 | All 4 ACs (Background Audio & Lock Screen) | 2 |
+| Process | PI-14 | Human owner GitHub Actions infrastructure investigation | — |
+
+**Total carry-forward:** 2 story points of feature work. This is the final MVP story.
+
+**MVP Status:** 5 of 6 stories complete (US-1, US-2, US-3, US-4, US-5). Sprint 4 completion = MVP shippable.
+
+---
+
+### Sprint 3 CI Summary
+
+| PR | AC | CI Result | Tests Added | Cumulative Tests |
+|----|-----|-----------|-------------|-----------------|
+| #27 | CF-5/CF-21 | PASS | 19 | 402 |
+| #28 | AC-5.4 (Next) | PASS | 23 | 425 |
+| #29 | AC-5.5 (Previous) | PASS | 23 | 448 |
+| #30 | AC-5.6 (Play/Pause) | PASS | 24 | 472 |
+| #31 | AC-5.7 (Zustand) | PASS (after 1 defect iteration) | 44 | 516 |
+| #32 | AC-5.8 (Error handling) | PASS | 29 | 545 |
+
+All 6 Sprint 3 PRs: CI green. Zero force-merges. Zero skipped checks. Single PR per AC enforced.
+
+---
+
+### Velocity Trend (3 Sprints)
+
+| Sprint | Planned | Delivered | Velocity % | Tests at Close |
+|--------|---------|-----------|------------|----------------|
+| Sprint 1 | 26 pts | 6 pts | 23% | 140 |
+| Sprint 2 | ~18 pts | 8 pts | 44% | 383 |
+| Sprint 3 | ~7 pts | ~5 pts | 71% | 545 |
+
+Cumulative: 19 story points delivered across 3 sprints. Average ~6.3 pts/sprint.
+
+---

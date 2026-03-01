@@ -5,9 +5,10 @@
 **Sprint Duration:** 2026-03-15 -> 2026-03-29
 **Velocity (baseline from Sprints 1-2):** 8 story points
 **Planned Story Points:** ~7 (US-5 remaining ~5 + US-6 2) -- within velocity baseline, no deferral plan needed
-**Phase:** development
+**Phase:** retrospective
 **Last Updated:** 2026-03-01
 **Last Updated By:** tester
+**Stories Done:** CF-5/CF-21, US-5 (AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8)
 
 ---
 
@@ -138,7 +139,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
   - Player store tracks: `currentSurahId`, `currentTrackIndex`, `isPlaying`
   - Store updated on every track change and play/pause event
 
-- [x] **AC-5.8: Error handling**
+- [x] - [x] **AC-5.8: Error handling**
   - If a track file is missing: skip to next track, log error, do not crash
   - If surah has no tracks: disable Play button
   - Edge case: if the missing track is the last track (no next track to skip to), log error and halt playback gracefully
@@ -147,7 +148,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 - [x] TrackPlayer initialized and playing bundled audio
 - [x] Tracks loop continuously (RepeatMode.Track)
 - [x] Next advances tracks with correct loop behavior (AC-5.4 done)
-- [ ] Previous advances tracks with correct loop behavior (AC-5.5 pending)
+- [x] Previous advances tracks with correct loop behavior (AC-5.5 done)
 - [x] Play/Pause works correctly: (1) Play resumes at same position as before pause, (2) Pause halts without resetting position, (3) UI icon matches isPlaying state
 - [x] Zustand store reflects current playback state
 - [x] Missing track handled gracefully (skip + log, no crash)
@@ -185,7 +186,7 @@ Post-merge ghost CI failure (PI-6, 2026-03-01): "CI FAILED for US-5 AC-5.4" repo
 Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for US-5 AC-5.4" on `main` with no failure logs. Same zero-log infrastructure ghost pattern — sixth total occurrence for AC-5.4 (three pre-merge + three post-merge). Tester prior diagnosis (Iterations 1 and 2 post-merge) confirmed: no code defect, no requirements defect, no action required. No code changes made. 472/472 tests pass. Per PI-14, escalation to human owner for GitHub Actions infrastructure investigation is warranted. AC-5.4 status remains done.
 AC-5.8 complete. Implemented three error-handling behaviors in `services/trackQueue.ts` and `app/player/[surahId].tsx`: (1) Missing track skip+log: refactored `loadSurahQueue()` to detect `undefined` from `getAudioAsset()`, log via `console.error`, skip missing tracks, and continue with valid tracks — replaces `Array.from()` block with a `for` loop that pushes only valid tracks into `validTracks[]`. (2) All-tracks-missing halt: after building `validTracks`, if empty, logs error and returns without calling `TrackPlayer.add()` or `play()`. (3) Empty surah guard: added `trackCount === 0` early-return in `loadSurahQueue()` with `console.error` log — Play button in `app/player/[surahId].tsx` disabled via `isPlayDisabled = trackCount === 0` with `disabled={isPlayDisabled}` and `controlButtonDisabled` style applied. (4) `handleMissingTrack(missingIndex, trackCount)` exported from `trackQueue.ts`: if `missingIndex < trackCount - 1`, logs error and calls `skipToTrack(missingIndex + 1)`; if last track, logs error and calls `TrackPlayer.pause()` (graceful halt). Updated `__tests__/trackplayer-load-queue.test.ts` (1 test updated: `url: getAudioAsset(` pattern → split into `getAudioAsset(` + `url: audioAsset` to reflect AC-5.8 refactor). Added `__tests__/trackplayer-error-handling.test.ts` with 24 tests (source-level: handleMissingTrack export, parameters, console.error, skipToTrack call, pause call, AC-5.8 header, isPlayDisabled, disabled prop; behavioral: not-last-track skip sequence, last-track halt, missing-track-in-queue filtering, all-tracks-missing halt). All 545 tests pass. `npx eslint . --max-warnings 0` clean. `npx tsc --noEmit` clean.
 
-**Tester Status:** defect-found
+**Tester Status:** done
 **Tester Notes:**
 ---
 - AC-5.7 DEFECT INVOCATION — Date: 2026-03-01
@@ -343,6 +344,41 @@ AC-5.8 complete. Implemented three error-handling behaviors in `services/trackQu
 - PI-14 ESCALATION NOTE: This is the sixth zero-log ghost occurrence for AC-5.4 (three pre-merge + three post-merge). The PI-14 escalation threshold (3+ recurrences on a single branch) was exceeded at the fourth occurrence. This pattern has now persisted across two branches (`feature/US-5-AC-5.4` and `main`). The human owner must investigate the GitHub Actions infrastructure root cause. No further Dev-Tester loop iterations should be opened for ghost failures on this story — the escalation path is now the human owner, not the tester.
 
 ---
+- FINAL QUALITY GATE DECISION — US-5 COMPLETE — Date: 2026-03-01
+- Review Author: tester
+- CI EVIDENCE (all Sprint 3 PRs verified via `gh pr checks`):
+  - PR #27 (CF-5/CF-21): both CI checks `completed success`
+  - PR #28 (AC-5.4): both CI checks `completed success`
+  - PR #29 (AC-5.5): both CI checks `completed success`
+  - PR #30 (AC-5.6): both CI checks `completed success`
+  - PR #31 (AC-5.7): both CI checks `completed success` (after 1 genuine defect iteration resolved)
+  - PR #32 (AC-5.8): both CI checks `completed success`
+  - HEAD of `main` (run 22533246100): `completed success`, 36s, 545/545 tests across 23 suites
+- DEFINITION OF DONE VERIFICATION:
+  - All 5 remaining US-5 ACs merged to main: AC-5.4 (PR #28), AC-5.5 (PR #29), AC-5.6 (PR #30), AC-5.7 (PR #31), AC-5.8 (PR #32)
+  - CI passing on `main` at HEAD: run 22533246100, `completed success`
+  - Test count: 545 tests, 23 suites, 0 failures — up from 383 at Sprint 2 close (+162 tests this sprint)
+  - Coverage threshold: 70% minimum met (confirmed by CI run 22533246100 passing coverage gate)
+  - Lint: `npx eslint . --max-warnings 0` clean (confirmed by Dev Team for AC-5.8 close; AC-5.7 defect resolved in Iteration 1)
+  - TypeScript: `npx tsc --noEmit` clean (confirmed by Dev Team for AC-5.8 close)
+  - Code file headers: all Sprint 3 files (`store/playerStore.ts`, `services/trackQueue.ts`, `app/player/[surahId].tsx`) include structured metadata header comments documenting their respective ACs
+  - No hardcoded audio paths: confirmed — all audio loaded via `getAudioAsset()` from `audioMap`, all artwork via `getArtwork()` from `artworkMap`
+  - Single PR per AC: enforced — PRs #27 through #32 each cover exactly one AC; no documentation-only follow-up PRs
+  - PR template on `main` before US-6: `.github/pull_request_template.md` merged via PR #27 before any US-5 or US-6 feature PRs
+- AC-BY-AC VERIFICATION:
+  - AC-5.4 (Next behavior): `skipToTrack(currentTrackIndex + 1)` called in `handleNext()` with `!isNextDisabled` guard; `disabled={isNextDisabled}` on Next Pressable; `isNextDisabled = currentTrackIndex === trackCount - 1`; 23 tests in `__tests__/trackplayer-next.test.ts`
+  - AC-5.5 (Previous behavior): `skipToTrack(currentTrackIndex - 1)` called in `handlePrev()` with `!isPrevDisabled` guard; `disabled={isPrevDisabled}` on Prev Pressable; `isPrevDisabled = currentTrackIndex === 0`; 23 tests in `__tests__/trackplayer-prev.test.ts`
+  - AC-5.6 (Play/Pause): `togglePlayPause(isPlaying)` calls `TrackPlayer.pause()` (not stop/reset — retains position) or `TrackPlayer.play()`; UI icon toggles between pause and play symbols; 24 tests in `__tests__/trackplayer-playpause.test.ts`
+  - AC-5.7 (Zustand): `store/playerStore.ts` exports `usePlayerStore` with `currentSurahId`, `currentTrackIndex`, `isPlaying` and three setters; `app/player/[surahId].tsx` reads all three state fields from store (no `useState` for playback state); `setCurrentSurahId` in `useEffect` resets index and isPlaying on surah change; 44 tests in `__tests__/zustand-player-store.test.ts`
+  - AC-5.8 (Error handling): `loadSurahQueue()` uses `for` loop to skip tracks where `getAudioAsset()` returns `undefined`, logs each skip via `console.error`, halts if `validTracks.length === 0`; `trackCount === 0` early-return guard; `handleMissingTrack(missingIndex, trackCount)` exported — skips to next or calls `TrackPlayer.pause()` for last-track case; `isPlayDisabled = trackCount === 0` applied to Play/Pause button; 24 tests in `__tests__/trackplayer-error-handling.test.ts`
+- SYSTEMS THINKING — REGRESSION CHECK:
+  - AC-5.7 Zustand migration updated `handleNext`/`handlePrev`/`handlePlayPause` from local state to store setters. The 23+23+24=70 behavioral tests from AC-5.4/5.5/5.6 were updated in AC-5.7 to assert against Zustand store reads — these tests continued to pass throughout.
+  - AC-5.8 refactored `loadSurahQueue()` from `Array.from()` to a `for` loop with missing-track filtering. `__tests__/trackplayer-load-queue.test.ts` was updated (1 test) to reflect the new pattern. All prior AC-5.2/5.3 behaviors (reset, add, setRepeatMode, play) are preserved.
+  - No regression to US-1 through US-4 from any Sprint 3 change — the 23 test suites at HEAD include all prior sprint tests and they all pass.
+- US-6 STATUS: not-started. Prerequisites now met: US-5 fully complete (all 8 ACs done), `.github/pull_request_template.md` on `main`. US-6 can begin in Sprint 4.
+- QUALITY GATE DECISION: US-5 is DONE. All acceptance criteria met, all CI checks green, all DoD items satisfied. No open defects. No regressions detected.
+
+---
 
 ### US-6: Background & Lock Screen Audio (Carry-Forward)
 
@@ -429,9 +465,9 @@ Reviewed: AC-6.1 through AC-6.4. Removed redundant "Audio does not stop when pho
 **Dev Team Notes:**
 AC-1 complete. Created `.github/pull_request_template.md` with Summary, Acceptance Criterion, Test Plan, and US-6 Manual Test Checklist sections. Checklist covers: background audio (iOS), background audio (Android), lock screen controls (iOS), lock screen controls (Android), and metadata display (surah name, aya number, artwork). Added `__tests__/pr-template.test.ts` with 19 static-assertion tests (file existence, all checklist sections, checkbox format, Summary and Test Plan sections). All 402 tests pass.
 
-**Tester Status:** requirements-approved
+**Tester Status:** done
 **Tester Notes:**
-Reviewed: AC-CF-5.1. File existence and checklist content are statically verifiable. No issues found. Approved.
+Reviewed: AC-CF-5.1. File path `.github/pull_request_template.md` verified on `main` (PR #27, merged 2026-02-28T23:34:35Z, CI pass). Template includes Summary, Acceptance Criterion, Test Plan sections and a US-6 Manual Test Checklist covering: background audio (iOS), background audio (Android), lock screen controls (iOS), lock screen controls (Android), and metadata display (surah name, aya number, artwork). All five required checklist areas present. 19 static-assertion tests in `__tests__/pr-template.test.ts` all passing. Quality gate: PASS.
 
 ---
 
@@ -490,10 +526,10 @@ The sprint plan specified AC-5.7 (Zustand store) as Phase 1 — before AC-5.4/5.
 
 | Story | Title | Points | Priority | Dependencies | Phase | Status | GitHub |
 |-------|-------|--------|----------|--------------|-------|--------|--------|
-| CF-5/CF-21 | PR Template (preflight) | 0 | P0 (gate) | none | Phase 0 | done | #26 |
-| US-5 (remaining) | Audio Playback — 5 remaining ACs | ~5 | P0 | US-4 (done) | Phases 1-3 | in-progress (AC-5.4/5.5/5.6 done; AC-5.7, AC-5.8 pending) | #5 |
-| US-6 | Background & Lock Screen Audio | 2 | P1 | US-5 (all ACs) | Phase 4 | not-started | #6 |
-| **Total** | | **~7** | | | | | |
+| CF-5/CF-21 | PR Template (preflight) | 0 | P0 (gate) | none | Phase 0 | done | #27 |
+| US-5 (remaining) | Audio Playback — 5 remaining ACs | ~5 | P0 | US-4 (done) | Phases 1-3 | done (AC-5.4/5.5/5.6/5.7/5.8 all done) | #5 |
+| US-6 | Background & Lock Screen Audio | 2 | P1 | US-5 (all ACs) | Phase 4 | not-started (carry-forward to Sprint 4) | #6 |
+| **Total** | | **~5** | | | | | |
 
 ---
 
@@ -512,12 +548,110 @@ The sprint plan specified AC-5.7 (Zustand store) as Phase 1 — before AC-5.4/5.
 ### Dev Team Sprint Notes:
 _empty -- Dev Team fills this in_
 
-### Tester Sprint Status: requirements-approved
+### Tester Sprint Status: done
 ### Tester Sprint Notes:
-Requirements validation complete (2026-03-01). All 3 backlog items reviewed: CF-5/CF-21, US-5 (AC-5.4–AC-5.8), US-6 (AC-6.1–AC-6.4). Minor wording fixes applied directly to AC-5.4, AC-5.5, and AC-6.1. No scope defects identified. Sprint backlog cleared for development.
+Sprint 3 quality gate assessment complete (2026-03-01). Review Author: tester.
+
+SPRINT OUTCOME: PARTIAL — US-5 fully done, US-6 not started (carry-forward to Sprint 4).
+
+US-5 QUALITY GATE: PASS. All 5 remaining ACs implemented, merged to `main`, and verified by CI.
+- AC-5.4 (Next behavior): PR #28, CI pass, 23 tests. Six zero-log ghost CI failures on AC-5.4 across two branches (three pre-merge + three post-merge) — all classified PI-6 (zero-log infrastructure ghost), none counted as code-defect iterations. One genuine code defect on AC-5.7 (ESLint react-hooks/exhaustive-deps warning — missing `setCurrentSurahId` in useEffect dependency array). Resolved in one Dev-Tester iteration. No circuit breaker triggered.
+- AC-5.5 (Previous behavior): PR #29, CI pass, 23 tests.
+- AC-5.6 (Play/Pause): PR #30, CI pass, 24 tests. `TrackPlayer.pause()` used (not stop/reset) to preserve track position — position-retention requirement verified by test.
+- AC-5.7 (Zustand): PR #31, CI pass after 1 genuine defect iteration, 44 tests. `store/playerStore.ts` created with `usePlayerStore` tracking `currentSurahId`, `currentTrackIndex`, `isPlaying`. Local `useState` fully removed from player screen. Defect: missing `setCurrentSurahId` in `useEffect` dependency array — ESLint caught at CI, not local preflight. Fix: added setter to dep array (safe — Zustand setters are referentially stable).
+- AC-5.8 (Error handling): PR #32, CI pass, 24 tests. Three behaviors implemented: missing-track skip+log, all-tracks-missing halt, empty-surah Play button disable.
+
+CI SUMMARY:
+- Sprint 3 PRs (#27 through #32): all 6 PRs, all CI checks `completed success`
+- HEAD of `main` (run 22533246100): `completed success`, 545 tests, 23 suites, 0 failures
+- Coverage: 70% threshold met (CI gate passed)
+- Lint: `npx eslint . --max-warnings 0` clean at AC-5.8 close
+- TypeScript: `npx tsc --noEmit` clean at AC-5.8 close
+- Tests grew from 383 (Sprint 2 close) to 545 at Sprint 3 close (+162 tests, +42%)
+
+CF-5/CF-21 QUALITY GATE: PASS. `.github/pull_request_template.md` on `main` (PR #27). Template covers all five required US-6 checklist areas. 19 static-assertion tests passing.
+
+US-6 STATUS: Not started. Prerequisites now satisfied — US-5 fully done, PR template on `main`. Carry-forward to Sprint 4 with no scope changes required.
+
+DOD GAPS — SPRINT 3:
+1. Build order deviation: AC-5.4/5.5/5.6 implemented before AC-5.7 (Zustand), contrary to Phase 1 plan (PO-PI-7, PI-11). This created a migration task rather than greenfield scaffolding. The 70 behavioral tests from AC-5.4/5.5/5.6 provided the regression safety net during AC-5.7 migration. No quality failure resulted, but the process improvement was negated for this sprint.
+2. Dev Team local preflight missed ESLint: AC-5.7 ESLint defect (`react-hooks/exhaustive-deps`) was not caught locally before push, indicating `npx eslint . --max-warnings 0` was not run as part of the PI-9 preflight. CI caught it correctly.
+3. US-6 not delivered: Sprint goal ("complete interactive audio playback and background audio support") is partially met. Interactive playback is complete; background audio is not. US-6 carry-forward is expected per PO-PI-8 (US-5 must be fully done first) and fits within Sprint 4 velocity.
+4. Ghost CI infrastructure: Six zero-log ghost failures on AC-5.4 (three pre-merge + three post-merge) consumed multiple Tester invocations without any code defect. PI-14 escalation threshold exceeded. Human owner investigation of GitHub Actions infrastructure is recommended before Sprint 4 begins.
+
+SYSTEMS THINKING:
+- No regressions detected in US-1 through US-4 from Sprint 3 changes. All 23 test suites at HEAD pass.
+- AC-5.8 refactored `loadSurahQueue()` — queue-clearing semantics (AC-5.2) preserved via `reset()` call before the new `for` loop.
+- AC-5.7 Zustand migration removed all local `useState` for playback state — `handleNext`/`handlePrev`/`handlePlayPause` now read from and write to the global store. No component isolation concerns for this app's architecture (single player screen).
 
 ### PO Sprint Review Notes:
-_empty -- PO fills this in after sprint completion_
+
+**Review Date:** 2026-03-01
+**Review Author:** product-owner
+
+**Sprint Outcome (PO Perspective):**
+
+Sprint 3 delivered the core product's interactive playback experience. A user can now open the app, pick a surah, hear looping aya audio, advance tracks with Next, go back with Previous, pause/resume at the same position, and encounter graceful error handling for missing tracks. US-5 — the product's reason to exist — is FULLY DONE after spanning three sprints. All 8 acceptance criteria are complete, verified by CI, and merged to `main`.
+
+US-6 (Background Audio, 2 pts) was not started. This was expected and acceptable per PO-PI-8: US-5 had to be fully complete before US-6 could begin, and US-5's final AC (AC-5.8) was the last item merged this sprint. US-6 carries forward to Sprint 4 with no scope changes and all prerequisites satisfied (US-5 done, PR template on `main`).
+
+The sprint goal was "interactive playback AND background audio" — partially met. Interactive playback: YES. Background audio: NO.
+
+**Accepted:** US-5 remaining ACs (~5 pts) + CF-5/CF-21 (0 pts) = ~5 story points
+**Not accepted:** US-6 (not started, 2 pts)
+**Velocity:** ~5 / ~7 = 71% (up from 44% in Sprint 2, 23% in Sprint 1)
+**Cumulative velocity trend:** 6 → 8 → 5 story points (Sprint 1 → 2 → 3)
+
+---
+
+**What Went Well:**
+
+**WW-10: The P0 core feature (US-5) is complete.** After three sprints of incremental progress — infrastructure in Sprint 2, behavioral wiring in Sprint 3 — the product's central value proposition works end-to-end. A user can select a surah, hear looping audio, control playback with Next/Prev/Play-Pause, and experience graceful error recovery. This is the most significant milestone since project inception.
+
+**WW-11: Test quality continues to be exemplary.** Tests grew from 383 to 545 (+162, +42%). All 6 Sprint 3 PRs passed CI. Zero regressions across 23 test suites. The AC-5.7 Zustand migration — the highest-regression-risk change this sprint — passed all 70 behavioral tests from AC-5.4/5.5/5.6 without modification beyond expected store-reference updates.
+
+**WW-12: CF-5 (PR template) was finally resolved.** After being open for two sprints, the PR template was delivered as the first Sprint 3 task (Phase 0 preflight). Two-sprint-old process debt cleared. US-6 prerequisites are now fully satisfied.
+
+**WW-13: Single-PR-per-AC (PI-12) was enforced successfully.** PRs #27 through #32 each cover exactly one AC. No documentation-only follow-up PRs. The duplicate-PR pattern from Sprints 1 and 2 (MC-7, MC-9) was eliminated. This is a clear process win.
+
+**WW-14: The Tester's ghost-failure handling was precise and efficient.** Six zero-log ghost failures on AC-5.4 were correctly classified as PI-6 infrastructure issues, not code defects. The one genuine defect (AC-5.7 ESLint) was correctly distinguished, diagnosed with root cause analysis, and resolved in a single iteration. The Tester's ability to differentiate infrastructure noise from real defects prevented false circuit-breaker triggers and kept the sprint moving.
+
+---
+
+**What Didn't Go Well:**
+
+**WDW-9: Build order was not followed — PI-7/PI-11 negated.** The sprint plan specified AC-5.7 (Zustand) as Phase 1, before AC-5.4/5.5/5.6. In practice, the button-wiring ACs were implemented first using local `useState`, then AC-5.7 became a migration task. The 70 behavioral tests provided a safety net and no regression occurred, but the deliberate process improvement was undermined. The orchestration script must enforce phase sequencing (PI-15).
+
+**WDW-10: Six zero-log ghost CI failures consumed significant Tester capacity.** Each ghost failure triggered a full Tester investigation cycle — CI evidence collection, implementation integrity re-verification, quality gate re-assessment. Multiplied by six occurrences, this represents substantial Tester effort spent confirming "nothing is wrong." PI-14 escalation threshold was exceeded at the fourth occurrence but human investigation has not yet occurred.
+
+**WDW-11: Third consecutive sprint where the sprint goal was not fully met.** Sprint 1: NOT MET. Sprint 2: PARTIAL. Sprint 3: PARTIAL. The team is delivering real value each sprint, but consistently underdelivering relative to the stated goal. Either sprint goals should be scoped more conservatively, or the team should acknowledge that carry-forward is the norm and plan accordingly.
+
+**WDW-12: Local preflight (PI-9) missed ESLint on AC-5.7.** The Dev Team confirmed running `npm test` locally but not `npx eslint . --max-warnings 0`. CI caught the `react-hooks/exhaustive-deps` violation correctly, but the PI-9 preflight process — which explicitly includes ESLint — was not fully followed.
+
+---
+
+**Process Improvements (PO Recommendations for Sprint 4):**
+
+**PO-PI-11: Enforce build order via orchestration script.** When a sprint plan specifies Phase N before Phase N+1, the orchestration script must not start Phase N+1 ACs until Phase N is complete. This was already identified as PI-15 in the PO Recovery Assessment; formalizing it as a Sprint 4 requirement.
+
+**PO-PI-12: Human owner must investigate GitHub Actions ghost failures before Sprint 4 begins.** Six zero-log ghost failures on a single AC is an infrastructure reliability problem. PI-14 threshold was exceeded. The root cause must be identified and addressed before Sprint 4 to prevent continued Tester capacity drain. This is a P0 pre-sprint action item for the human owner, not the Dev Team or Tester.
+
+**PO-PI-13: Sprint 4 scope should be US-6 only (2 pts).** With US-5 complete, US-6 is the last remaining story in the MVP backlog. 2 points against an 8-point velocity baseline is conservative and appropriate. This sprint should focus on quality over quantity — manual device testing on physical iOS and Android devices is required (DoD) and cannot be shortcut.
+
+**PO-PI-14: Sprint goals should be achievable, not aspirational.** Three consecutive PARTIAL outcomes suggest sprint goals are set too ambitiously. For Sprint 4, the goal should be: "Deliver background audio and lock screen controls on iOS and Android." No secondary objectives.
+
+---
+
+**Carry-Forward Backlog (Sprint 4 Input):**
+
+| Priority | Story | Remaining Work | Points |
+|----------|-------|----------------|--------|
+| P0 | US-6 | All 4 ACs (Background Audio & Lock Screen) | 2 |
+| Process | PI-14 | Human owner GitHub Actions infrastructure investigation | — |
+
+**Total carry-forward:** 2 story points of feature work.
+
+**MVP Status:** 5 of 6 stories complete. US-6 is the final story. Sprint 4 completion = MVP shippable.
 
 ---
 

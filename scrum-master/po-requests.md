@@ -1,7 +1,7 @@
 # Product Owner Requests — Items Requiring Human Action
 
 **Last Updated:** 2026-03-01
-**Open requests:** 1 / 5 (REQ-5 open)
+**Open requests:** 2 / 6 (REQ-5, REQ-6 open)
 
 ---
 
@@ -94,5 +94,39 @@ This cannot be satisfied without EAS Build configured. Specifically:
 **Relationship to REQ-4:** This is a concrete timeline-bound follow-up to REQ-4. REQ-4 was resolved with "in due time" — Sprint 3 Phase 4 is that time.
 
 **Question:** Will EAS Build credentials and configuration be ready by the time US-5 is complete in Sprint 3? If not, US-6 acceptance will be blocked and should be deferred to Sprint 4.
+
+**Status:** open
+
+**Sprint 4 update:** US-5 is now complete. US-6 is the sole Sprint 4 story. EAS Build must be configured before Sprint 4 can close. Specific actions needed:
+
+1. Create or verify Expo account at https://expo.dev
+2. Create or verify Apple Developer account (for iOS builds)
+3. Run `eas login` and authenticate
+4. Create `eas.json` with development and preview build profiles
+5. Have at least one physical iOS device and one physical Android device available for testing
+
+**Deadline:** Before US-6 AC-6.1 (Phase 3 — manual device testing). Code can be written without this, but the story cannot be accepted.
+
+---
+
+## REQ-6: Investigate GitHub Actions ghost CI failures (PO-PI-12)
+
+**Sprint:** Sprint 4 (pre-sprint action item)
+**Priority:** P1 — Affects CI reliability
+**Action needed:** Root cause investigation
+
+Sprint 3 experienced 6 zero-log ghost CI failures on AC-5.4. These are GitHub Actions runner failures that produce no actionable output. While PI-6 prevents them from consuming Dev-Tester loop iterations, they still:
+
+1. Drain Tester capacity (investigation cycles per failure)
+2. Create noise in the CI audit trail
+3. Risk false-positive quality gate decisions
+
+**Possible causes to investigate:**
+- GitHub Actions runner instability (check GitHub status history)
+- Webhook misfires from the orchestration script
+- Repository-level GitHub Actions configuration issues
+- Concurrency limits on the free tier
+
+**Question:** Can you investigate and identify the root cause? If it's a GitHub infrastructure issue outside our control, document it and we'll accept the risk. If it's a configuration issue, fix it before Sprint 4 development begins.
 
 **Status:** open
