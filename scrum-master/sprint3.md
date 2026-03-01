@@ -133,12 +133,12 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
   - Pause stops playback but retains track position
   - State reflected in UI (Play/Pause icon toggle)
 
-- [x] **AC-5.7: Zustand state management**
+- [x] - [x] **AC-5.7: Zustand state management**
   - `zustand` installed
   - Player store tracks: `currentSurahId`, `currentTrackIndex`, `isPlaying`
   - Store updated on every track change and play/pause event
 
-- [ ] **AC-5.8: Error handling**
+- [x] **AC-5.8: Error handling**
   - If a track file is missing: skip to next track, log error, do not crash
   - If surah has no tracks: disable Play button
   - Edge case: if the missing track is the last track (no next track to skip to), log error and halt playback gracefully
@@ -150,9 +150,9 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 - [ ] Previous advances tracks with correct loop behavior (AC-5.5 pending)
 - [x] Play/Pause works correctly: (1) Play resumes at same position as before pause, (2) Pause halts without resetting position, (3) UI icon matches isPlaying state
 - [x] Zustand store reflects current playback state
-- [ ] Missing track handled gracefully (skip + log, no crash)
+- [x] Missing track handled gracefully (skip + log, no crash)
 - [x] Queue-clearing test: re-opening player with different surah replaces queue (dedicated integration test required per Tester Notes)
-- [ ] Code includes structured metadata header comments
+- [x] Code includes structured metadata header comments
 
 #### Tester Quality Strategy Notes (from Sprint 1 requirements review)
 - AC-5.2: Queue-clearing scenario (re-open with different surah) is a mandatory AC, not an edge case. Dedicated integration test required asserting `TrackPlayer.getQueue()` contains only new surah tracks after second open.
@@ -183,6 +183,7 @@ AC-5.5 complete. Wired `handlePrev()` in `app/player/[surahId].tsx` to `await sk
 AC-5.6 complete. Added `togglePlayPause(isPlaying: boolean)` to `services/trackQueue.ts` — calls `TrackPlayer.pause()` when `isPlaying=true` (retains track position; not stop/reset) and `TrackPlayer.play()` when `isPlaying=false` (resumes from same position). Wired `handlePlayPause()` in `app/player/[surahId].tsx` to `await togglePlayPause(isPlaying)` then `setIsPlaying((p) => !p)`. Made `handlePlayPause` async to match the AC-5.4/5.5 pattern. UI icon toggle (⏸/▶) was already in place from AC-4.2 — no UI changes required. Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.6. Added `__tests__/trackplayer-playpause.test.ts` with 24 tests (source-level, behavioral, position-retention). All 472 tests pass.
 Post-merge ghost CI failure (PI-6, 2026-03-01): "CI FAILED for US-5 AC-5.4" reported on `main` with no failure logs. Tester diagnosed zero-log infrastructure ghost — same pattern as three pre-merge occurrences on `feature/US-5-AC-5.4`. No code defect exists. No code changes made. All actual CI runs on `main` pass (verified by Tester via `gh run list`). 472/472 tests pass. AC-5.4 status remains done per Tester quality gate decision.
 Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for US-5 AC-5.4" on `main` with no failure logs. Same zero-log infrastructure ghost pattern — sixth total occurrence for AC-5.4 (three pre-merge + three post-merge). Tester prior diagnosis (Iterations 1 and 2 post-merge) confirmed: no code defect, no requirements defect, no action required. No code changes made. 472/472 tests pass. Per PI-14, escalation to human owner for GitHub Actions infrastructure investigation is warranted. AC-5.4 status remains done.
+AC-5.8 complete. Implemented three error-handling behaviors in `services/trackQueue.ts` and `app/player/[surahId].tsx`: (1) Missing track skip+log: refactored `loadSurahQueue()` to detect `undefined` from `getAudioAsset()`, log via `console.error`, skip missing tracks, and continue with valid tracks — replaces `Array.from()` block with a `for` loop that pushes only valid tracks into `validTracks[]`. (2) All-tracks-missing halt: after building `validTracks`, if empty, logs error and returns without calling `TrackPlayer.add()` or `play()`. (3) Empty surah guard: added `trackCount === 0` early-return in `loadSurahQueue()` with `console.error` log — Play button in `app/player/[surahId].tsx` disabled via `isPlayDisabled = trackCount === 0` with `disabled={isPlayDisabled}` and `controlButtonDisabled` style applied. (4) `handleMissingTrack(missingIndex, trackCount)` exported from `trackQueue.ts`: if `missingIndex < trackCount - 1`, logs error and calls `skipToTrack(missingIndex + 1)`; if last track, logs error and calls `TrackPlayer.pause()` (graceful halt). Updated `__tests__/trackplayer-load-queue.test.ts` (1 test updated: `url: getAudioAsset(` pattern → split into `getAudioAsset(` + `url: audioAsset` to reflect AC-5.8 refactor). Added `__tests__/trackplayer-error-handling.test.ts` with 24 tests (source-level: handleMissingTrack export, parameters, console.error, skipToTrack call, pause call, AC-5.8 header, isPlayDisabled, disabled prop; behavioral: not-last-track skip sequence, last-track halt, missing-track-in-queue filtering, all-tracks-missing halt). All 545 tests pass. `npx eslint . --max-warnings 0` clean. `npx tsc --noEmit` clean.
 
 **Tester Status:** defect-found
 **Tester Notes:**

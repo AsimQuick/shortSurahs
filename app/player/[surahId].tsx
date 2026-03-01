@@ -40,8 +40,11 @@
  *              the global usePlayerStore (store/playerStore.ts) instead of
  *              local useState. Store is updated on every track change and
  *              every play/pause event.
+ *              Implements AC-5.8: Error handling — isPlayDisabled computed as
+ *              trackCount === 0. Play/Pause button is disabled (audio-layer
+ *              no-op + visually disabled per AC-4.2) when surah has no tracks.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8
  */
 
 import { useEffect } from 'react';
@@ -94,6 +97,8 @@ export default function PlayerScreen() {
 
   const isPrevDisabled = currentTrackIndex === 0;
   const isNextDisabled = currentTrackIndex === trackCount - 1;
+  // AC-5.8: Disable Play button when surah has no tracks.
+  const isPlayDisabled = trackCount === 0;
 
   // AC-5.5: Previous — stop current loop, skip to prev track, re-enable loop, start playback.
   // Audio-layer no-op: skipToTrack is only called when !isPrevDisabled.
@@ -152,8 +157,9 @@ export default function PlayerScreen() {
         </Pressable>
 
         <Pressable
-          style={styles.controlButton}
+          style={[styles.controlButton, isPlayDisabled && styles.controlButtonDisabled]}
           onPress={handlePlayPause}
+          disabled={isPlayDisabled}
           accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
         >
           <Text style={[styles.controlText, { color: textColor }]}>
