@@ -133,7 +133,7 @@ Phase 3 is the verification and manual testing phase. It confirms that the confi
 
 #### Acceptance Criteria
 
-- [ ] **AC-6.1: Background audio continues**
+- [x] **AC-6.1: Background audio continues**
   - Audio does not stop when app is minimized
   - Audio does not stop when screen is locked
   - Audio does not stop when phone is idle
@@ -190,6 +190,7 @@ Phase 3 is the verification and manual testing phase. It confirms that the confi
 **Dev Team Status:** in-progress
 **Dev Team Notes:**
 AC-6.1 implemented (2026-03-01). Added `UIBackgroundModes: ["audio"]` to `expo.ios.infoPlist` in `app.json` — this is the critical iOS Info.plist key that permits background audio when the app is minimized or the screen is locked. TrackPlayer manages the audio session category internally; no explicit override was needed. Created `__tests__/background-audio-config.test.ts` with 33 static-assertion tests covering: (1) UIBackgroundModes present and contains "audio", (2) PlaybackService exports all 4 remote event handlers (RemotePlay/Pause/Next/Previous) and is registered at module level in _layout.tsx, (3) no ambient session override disabling background playback, (4) TrackPlayer capabilities (Play/Pause/SkipToNext/SkipToPrevious) configured. Total test count: 578 (24 suites), all green. Behavioral verification (audio persists when minimized, screen locked, phone idle) requires manual device testing — blocked on REQ-5 (EAS Build + physical devices). Files changed: `app.json`, `__tests__/background-audio-config.test.ts`. Branch: feature/US-6-AC-6.1.
+AC-6.2 implemented (2026-03-01). Updated `services/trackQueue.ts` to change the track title format from `"Aya N"` to `"${surah.nameEnglish} — Aya N"` (e.g. "Al-Fatiha — Aya 1") so the OS lock screen and Android notification display both the surah name and the aya number. The PlaybackService remote event handlers (RemotePlay/Pause/Next/Previous) were already wired to the same TrackPlayer actions as the in-app controls (AC-5.1), satisfying "lock screen controls trigger the same actions as in-app controls". TrackPlayer capabilities (Play/Pause/SkipToNext/SkipToPrevious) and compact capabilities (Play/Pause) already declared in `trackPlayerSetup.ts` (AC-5.1), satisfying "lock screen shows play/pause/next/previous". Artwork already set via `getArtwork()` (AC-5.2). Created `__tests__/lock-screen-controls.test.ts` with 32 tests covering: (1) title format includes surah.nameEnglish and aya number (static + behavioural), (2) artwork set in all tracks, (3) capabilities declared for all four lock screen controls, (4) remote event handlers map to same actions as in-app controls, (5) metadata headers. Also updated `__tests__/trackplayer-load-queue.test.ts` — 2 tests updated to reflect new title format. Total test count: 610 (25 suites), all green. Behavioral verification (lock screen UI appearance) requires manual device testing — blocked on REQ-5. Files changed: `services/trackQueue.ts`, `__tests__/lock-screen-controls.test.ts`, `__tests__/trackplayer-load-queue.test.ts`. Branch: feature/US-6-AC-6.2.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
