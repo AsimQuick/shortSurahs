@@ -25,8 +25,13 @@
  *              skip to next track, re-enable loop, and start playback.
  *              Next button is disabled on last track: audio-layer no-op via
  *              !isNextDisabled guard + visually disabled per AC-4.2.
+ *              Implements AC-5.5: Previous behavior (PRD Rule 3) — handlePrev()
+ *              calls skipToTrack(currentTrackIndex - 1) to stop current loop,
+ *              skip to previous track, re-enable loop, and start playback.
+ *              Previous button is disabled on first track: audio-layer no-op
+ *              via !isPrevDisabled guard + visually disabled per AC-4.2.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5
  */
 
 import { useEffect, useState } from 'react';
@@ -73,8 +78,11 @@ export default function PlayerScreen() {
   const isPrevDisabled = currentTrackIndex === 0;
   const isNextDisabled = currentTrackIndex === trackCount - 1;
 
-  function handlePrev() {
+  // AC-5.5: Previous — stop current loop, skip to prev track, re-enable loop, start playback.
+  // Audio-layer no-op: skipToTrack is only called when !isPrevDisabled.
+  async function handlePrev() {
     if (!isPrevDisabled) {
+      await skipToTrack(currentTrackIndex - 1).catch(() => {});
       setCurrentTrackIndex((i) => i - 1);
     }
   }
