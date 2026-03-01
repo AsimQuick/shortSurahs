@@ -188,7 +188,10 @@ describe('AC-5.2 — services/trackQueue.ts queue behaviour', () => {
   });
 
   test('track url uses getAudioAsset() (bundled require asset)', () => {
-    expect(trackQueueSource).toMatch(/url\s*:\s*getAudioAsset\(/);
+    // AC-5.8 refactored: getAudioAsset() result is stored in audioAsset variable
+    // (to allow missing-track detection) and then set as url: audioAsset.
+    expect(trackQueueSource).toMatch(/getAudioAsset\s*\(/);
+    expect(trackQueueSource).toMatch(/url\s*:\s*audioAsset/);
   });
 });
 
