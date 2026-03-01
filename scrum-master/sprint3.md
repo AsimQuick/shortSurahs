@@ -123,12 +123,12 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
   - Track index increments by 1
   - Next button is disabled on the last track (audio-layer no-op + visually disabled per AC-4.2)
 
-- [ ] **AC-5.5: Previous behavior (PRD Rule 3)**
+- [x] **AC-5.5: Previous behavior (PRD Rule 3)**
   - Pressing Previous: stops current loop -> loads previous track -> enables loop -> starts playback
   - Track index decrements by 1
   - Previous button is disabled on track 1 (audio-layer no-op + visually disabled per AC-4.2)
 
-- [ ] **AC-5.6: Play/Pause**
+- [x] **AC-5.6: Play/Pause**
   - Play resumes the current track at its current position (continues looping)
   - Pause stops playback but retains track position
   - State reflected in UI (Play/Pause icon toggle)
@@ -148,7 +148,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 - [x] Tracks loop continuously (RepeatMode.Track)
 - [x] Next advances tracks with correct loop behavior (AC-5.4 done)
 - [ ] Previous advances tracks with correct loop behavior (AC-5.5 pending)
-- [ ] Play/Pause works correctly: (1) Play resumes at same position as before pause, (2) Pause halts without resetting position, (3) UI icon matches isPlaying state
+- [x] Play/Pause works correctly: (1) Play resumes at same position as before pause, (2) Pause halts without resetting position, (3) UI icon matches isPlaying state
 - [ ] Zustand store reflects current playback state
 - [ ] Missing track handled gracefully (skip + log, no crash)
 - [x] Queue-clearing test: re-opening player with different surah replaces queue (dedicated integration test required per Tester Notes)
@@ -178,6 +178,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 **Dev Team Notes:**
 AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call sequence: `TrackPlayer.skip(index)` → `setRepeatMode(RepeatMode.Track)` → `play()`. Wired `handleNext()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex + 1)` with `!isNextDisabled` guard (audio-layer no-op on last track). Visual disabled state unchanged from AC-4.2. Added `__tests__/trackplayer-next.test.ts` with 23 tests (source-level + behavioral). All 425 tests pass. Iteration 1 CI failure: zero-log infrastructure ghost (PI-6, not counted). Iteration 2: Tester verified both runs pass, quality gate PASS. Iteration 3: Third "CI FAILED" with no failure logs — same zero-log ghost pattern diagnosed by Tester (PI-6). No code defects exist. AC-5.4 confirmed done by Tester across all three iterations. No code changes made in response to any ghost failure.
 AC-5.5 complete. Wired `handlePrev()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex - 1)` with `!isPrevDisabled` guard (audio-layer no-op on first track). Made `handlePrev` async — mirrors AC-5.4 `handleNext` pattern exactly. `skipToTrack` reused from AC-5.4 (no changes to service logic). Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.5. Added `__tests__/trackplayer-prev.test.ts` with 23 tests (source-level + behavioral + boundary). All 448 tests pass.
+AC-5.6 complete. Added `togglePlayPause(isPlaying: boolean)` to `services/trackQueue.ts` — calls `TrackPlayer.pause()` when `isPlaying=true` (retains track position; not stop/reset) and `TrackPlayer.play()` when `isPlaying=false` (resumes from same position). Wired `handlePlayPause()` in `app/player/[surahId].tsx` to `await togglePlayPause(isPlaying)` then `setIsPlaying((p) => !p)`. Made `handlePlayPause` async to match the AC-5.4/5.5 pattern. UI icon toggle (⏸/▶) was already in place from AC-4.2 — no UI changes required. Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.6. Added `__tests__/trackplayer-playpause.test.ts` with 24 tests (source-level, behavioral, position-retention). All 472 tests pass.
 
 **Tester Status:** done
 **Tester Notes:**

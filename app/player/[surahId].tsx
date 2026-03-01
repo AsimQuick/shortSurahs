@@ -30,8 +30,13 @@
  *              skip to previous track, re-enable loop, and start playback.
  *              Previous button is disabled on first track: audio-layer no-op
  *              via !isPrevDisabled guard + visually disabled per AC-4.2.
+ *              Implements AC-5.6: Play/Pause — handlePlayPause() calls
+ *              togglePlayPause(isPlaying) which calls TrackPlayer.pause() to
+ *              retain track position (not stop/reset), or TrackPlayer.play()
+ *              to resume from the same position. UI icon toggles between
+ *              ⏸ (pause) and ▶ (play) based on isPlaying state.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6
  */
 
 import { useEffect, useState } from 'react';
@@ -47,7 +52,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
-import { loadSurahQueue, skipToTrack } from '../../services/trackQueue';
+import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ARTWORK_SIZE = SCREEN_WIDTH * 0.85;
@@ -96,7 +101,9 @@ export default function PlayerScreen() {
     }
   }
 
-  function handlePlayPause() {
+  // AC-5.6: Play/Pause — pause retains position (TrackPlayer.pause, not stop/reset).
+  async function handlePlayPause() {
+    await togglePlayPause(isPlaying).catch(() => {});
     setIsPlaying((p) => !p);
   }
 
