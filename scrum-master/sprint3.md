@@ -180,6 +180,7 @@ AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call
 AC-5.5 complete. Wired `handlePrev()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex - 1)` with `!isPrevDisabled` guard (audio-layer no-op on first track). Made `handlePrev` async — mirrors AC-5.4 `handleNext` pattern exactly. `skipToTrack` reused from AC-5.4 (no changes to service logic). Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.5. Added `__tests__/trackplayer-prev.test.ts` with 23 tests (source-level + behavioral + boundary). All 448 tests pass.
 AC-5.6 complete. Added `togglePlayPause(isPlaying: boolean)` to `services/trackQueue.ts` — calls `TrackPlayer.pause()` when `isPlaying=true` (retains track position; not stop/reset) and `TrackPlayer.play()` when `isPlaying=false` (resumes from same position). Wired `handlePlayPause()` in `app/player/[surahId].tsx` to `await togglePlayPause(isPlaying)` then `setIsPlaying((p) => !p)`. Made `handlePlayPause` async to match the AC-5.4/5.5 pattern. UI icon toggle (⏸/▶) was already in place from AC-4.2 — no UI changes required. Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.6. Added `__tests__/trackplayer-playpause.test.ts` with 24 tests (source-level, behavioral, position-retention). All 472 tests pass.
 Post-merge ghost CI failure (PI-6, 2026-03-01): "CI FAILED for US-5 AC-5.4" reported on `main` with no failure logs. Tester diagnosed zero-log infrastructure ghost — same pattern as three pre-merge occurrences on `feature/US-5-AC-5.4`. No code defect exists. No code changes made. All actual CI runs on `main` pass (verified by Tester via `gh run list`). 472/472 tests pass. AC-5.4 status remains done per Tester quality gate decision.
+Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for US-5 AC-5.4" on `main` with no failure logs. Same zero-log infrastructure ghost pattern — sixth total occurrence for AC-5.4 (three pre-merge + three post-merge). Tester prior diagnosis (Iterations 1 and 2 post-merge) confirmed: no code defect, no requirements defect, no action required. No code changes made. 472/472 tests pass. Per PI-14, escalation to human owner for GitHub Actions infrastructure investigation is warranted. AC-5.4 status remains done.
 
 **Tester Status:** done
 **Tester Notes:**
@@ -232,6 +233,42 @@ Post-merge ghost CI failure (PI-6, 2026-03-01): "CI FAILED for US-5 AC-5.4" repo
 - RECOMMENDED FIX: None. No code change required. No CI re-trigger needed — AC-5.4 is merged to `main` and all actual CI runs pass.
 - QUALITY GATE DECISION: AC-5.4 status remains `done`. This post-merge ghost failure does not affect the quality gate. Per PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations and do not change story status.
 - NOTE ON PI-14: This is the fourth zero-log ghost occurrence associated with AC-5.4 (three pre-merge, one post-merge). Per PI-14, this pattern warrants escalation to the human owner for GitHub Actions infrastructure investigation.
+
+---
+- POST-MERGE GHOST INVOCATION — Date: 2026-03-01
+- Dev-Tester Loop: Iteration 2 of 3 (post-merge invocation series)
+- REPORTED FAILURE: "CI has FAILED" for US-5 AC-5.4 on branch `main`. Failure logs: "No failure logs available."
+- DIAGNOSIS: Code bug vs. requirements issue — NEITHER. This is a zero-log infrastructure ghost (PI-6). This is the fifth zero-log ghost associated with AC-5.4 (three pre-merge, two post-merge). Evidence collected below.
+- CLASSIFICATION: Infrastructure ghost failure (zero-log). No code defect. No requirements defect. No action required.
+- SEVERITY: None — the reported failure carries no log data and does not correspond to any actual test failure or CI execution.
+
+- CI EVIDENCE (verified via `gh pr checks 28`, `gh run list --limit 20`, and `gh run list --branch main`):
+  - PR #28 checks: both `completed success` (runs 22531592975 and 22531587864) — unchanged from prior verification.
+  - `main` branch CI history (6 runs, all `completed success`):
+    - Run 22532339593: [US-5] Fix: document post-merge ghost CI failure — `completed success`, 35s (2026-03-01T00:31:44Z)
+    - Run 22532187063: [US-5] AC-5.6: Play/Pause merge to main — `completed success`, 38s (2026-03-01T00:21:45Z)
+    - Run 22532076993: [US-5] AC-5.5: Previous behavior merge to main — `completed success`, 33s (2026-03-01T00:15:04Z)
+    - Run 22531607082: [US-5] AC-5.4: Next behavior merge to main — `completed success`, 32s (2026-02-28T23:45:13Z)
+    - Run 22531443127: [CF-5/CF-21] AC-1: PR template merge to main — `completed success`, 33s
+    - Run 22531385919: [PLANNING] sprint-3 — `completed success`, 39s
+  - Zero failed runs exist on `main`. Zero failed runs exist on any AC-5.4 branch.
+  - The only failed CI runs in the 30-run history are runs 22530435843, 22530556407, and 22530556868 — all on `feature/US-5-AC-5.2` from Sprint 2, for a TypeScript type error (`url: number` not assignable to `string`) that was resolved before that PR merged. These are unrelated to AC-5.4 and predate this sprint.
+
+- IMPLEMENTATION INTEGRITY CONFIRMED (re-verified this invocation):
+  - `services/trackQueue.ts`: `skipToTrack(index)` is exported, call sequence `TrackPlayer.skip(index)` -> `setRepeatMode(RepeatMode.Track)` -> `play()` is intact and correct per AC-5.4 requirement. File header documents AC-5.4, AC-5.5, AC-5.6 (DoD: structured metadata comments).
+  - `app/player/[surahId].tsx`: `handleNext()` is async, calls `await skipToTrack(currentTrackIndex + 1)` inside `if (!isNextDisabled)` guard. `isNextDisabled` is computed as `currentTrackIndex === trackCount - 1` (correct last-track boundary). Next Pressable has `disabled={isNextDisabled}` (visual disabled per AC-4.2).
+  - `__tests__/trackplayer-next.test.ts`: 23 tests covering source-level wiring, call sequence (skip -> setRepeatMode -> play), boundary (last track disabled), and audio-layer no-op. All tests verified present and passing.
+  - No hardcoded audio paths (DoD). No regression risk to AC-5.5 or AC-5.6 — both merged to `main` after AC-5.4 and all CI runs pass.
+
+- SYSTEMS THINKING — REGRESSION CHECK:
+  - AC-5.5 (Previous behavior) and AC-5.6 (Play/Pause) merged after AC-5.4. Both reuse `skipToTrack` from `trackQueue.ts` without modifying it. CI passed on all three post-AC-5.4 `main` commits. No regression introduced by subsequent changes.
+  - The three failed runs on `feature/US-5-AC-5.2` are Sprint 2 artifacts (TypeScript type error, resolved). They are not related to AC-5.4 and were resolved before that branch merged.
+
+- RECOMMENDED FIX: None. No code change required. No CI re-trigger needed. AC-5.4 is merged and verified on `main`. Per PI-14, the human owner should be informed that this is the fifth zero-log ghost occurrence associated with AC-5.4 — a GitHub Actions infrastructure reliability pattern that warrants investigation outside the Dev-Tester loop.
+
+- QUALITY GATE DECISION: AC-5.4 status remains `done`. This second post-merge ghost failure does not affect the quality gate. Per PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations and do not change story status. The circuit breaker (3-iteration hard stop) does not apply — zero code defect iterations have occurred.
+
+- PI-14 ESCALATION NOTE: This is the fifth zero-log ghost occurrence for AC-5.4 (three pre-merge + two post-merge). PI-14 states: "When zero-log ghost failures recur 3+ times on a single branch, escalate to human for GitHub Actions infrastructure investigation." The threshold was exceeded at the fourth occurrence. The Project Lead should surface this to the human owner for infrastructure-level investigation to prevent continued ghost invocations.
 
 ---
 
