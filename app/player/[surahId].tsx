@@ -90,7 +90,7 @@ export default function PlayerScreen() {
   useEffect(() => {
     setCurrentSurahId(surahId as string);
     loadSurahQueue(surahId as string).catch(() => {});
-  }, [surahId]);
+  }, [surahId, setCurrentSurahId]);
 
   const isPrevDisabled = currentTrackIndex === 0;
   const isNextDisabled = currentTrackIndex === trackCount - 1;

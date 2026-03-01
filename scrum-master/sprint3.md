@@ -7,7 +7,7 @@
 **Planned Story Points:** ~7 (US-5 remaining ~5 + US-6 2) -- within velocity baseline, no deferral plan needed
 **Phase:** development
 **Last Updated:** 2026-03-01
-**Last Updated By:** product-owner
+**Last Updated By:** tester
 
 ---
 
@@ -174,8 +174,9 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 
 **Dependencies:** US-4 (done)
 
-**Dev Team Status:** in-progress
+**Dev Team Status:** resolved
 **Dev Team Notes:**
+AC-5.7 defect fix (Iteration 1, 2026-03-01): Added `setCurrentSurahId` to the `useEffect` dependency array at line 93 of `app/player/[surahId].tsx` — changed `}, [surahId]);` to `}, [surahId, setCurrentSurahId]);`. Zustand setter references are referentially stable so this change does not cause extra effect executions. Fix confirmed: `npx eslint . --max-warnings 0` exits clean (zero warnings); `npm test` passes 516/516 tests across 22 suites. No other code changes required per Tester diagnosis.
 AC-5.7 complete. `zustand` (^5.0.11) was already in package.json from a prior setup; confirmed installed. Created `store/playerStore.ts` with `usePlayerStore` (zustand `create<PlayerState>`) tracking `currentSurahId` (null), `currentTrackIndex` (0), and `isPlaying` (true) plus three setters: `setCurrentSurahId` (resets index=0 and isPlaying=true on surah switch), `setCurrentTrackIndex`, `setIsPlaying`. Migrated `app/player/[surahId].tsx` from local `useState` to Zustand store: removed `useState` import, added `usePlayerStore` reads and setters, wired `setCurrentSurahId` in `useEffect`, `setCurrentTrackIndex` in `handleNext`/`handlePrev` (direct value form), and `setIsPlaying(!isPlaying)` in `handlePlayPause`. Updated legacy tests that expected pre-Zustand patterns: `__tests__/player-dynamic-content.test.ts` (3 assertions updated: `useState(0)` check → `usePlayerStore` check; `i - 1` → `currentTrackIndex - 1`; `i + 1` → `currentTrackIndex + 1`), `__tests__/trackplayer-prev.test.ts` (1 assertion updated: functional updater `(i) => i - 1` → direct `currentTrackIndex - 1`). Also added `__tests__/zustand-player-store.test.ts` with 44 tests (source-level: file structure, state fields, setters; behavioral: initial state, setCurrentSurahId, setCurrentTrackIndex, setIsPlaying). All 516 tests pass. [OPEN: AC-5.8]
 AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call sequence: `TrackPlayer.skip(index)` → `setRepeatMode(RepeatMode.Track)` → `play()`. Wired `handleNext()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex + 1)` with `!isNextDisabled` guard (audio-layer no-op on last track). Visual disabled state unchanged from AC-4.2. Added `__tests__/trackplayer-next.test.ts` with 23 tests (source-level + behavioral). All 425 tests pass. Iteration 1 CI failure: zero-log infrastructure ghost (PI-6, not counted). Iteration 2: Tester verified both runs pass, quality gate PASS. Iteration 3: Third "CI FAILED" with no failure logs — same zero-log ghost pattern diagnosed by Tester (PI-6). No code defects exist. AC-5.4 confirmed done by Tester across all three iterations. No code changes made in response to any ghost failure.
 AC-5.5 complete. Wired `handlePrev()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex - 1)` with `!isPrevDisabled` guard (audio-layer no-op on first track). Made `handlePrev` async — mirrors AC-5.4 `handleNext` pattern exactly. `skipToTrack` reused from AC-5.4 (no changes to service logic). Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.5. Added `__tests__/trackplayer-prev.test.ts` with 23 tests (source-level + behavioral + boundary). All 448 tests pass.
@@ -183,8 +184,52 @@ AC-5.6 complete. Added `togglePlayPause(isPlaying: boolean)` to `services/trackQ
 Post-merge ghost CI failure (PI-6, 2026-03-01): "CI FAILED for US-5 AC-5.4" reported on `main` with no failure logs. Tester diagnosed zero-log infrastructure ghost — same pattern as three pre-merge occurrences on `feature/US-5-AC-5.4`. No code defect exists. No code changes made. All actual CI runs on `main` pass (verified by Tester via `gh run list`). 472/472 tests pass. AC-5.4 status remains done per Tester quality gate decision.
 Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for US-5 AC-5.4" on `main` with no failure logs. Same zero-log infrastructure ghost pattern — sixth total occurrence for AC-5.4 (three pre-merge + three post-merge). Tester prior diagnosis (Iterations 1 and 2 post-merge) confirmed: no code defect, no requirements defect, no action required. No code changes made. 472/472 tests pass. Per PI-14, escalation to human owner for GitHub Actions infrastructure investigation is warranted. AC-5.4 status remains done.
 
-**Tester Status:** done
+**Tester Status:** defect-found
 **Tester Notes:**
+---
+- AC-5.7 DEFECT INVOCATION — Date: 2026-03-01
+- Dev-Tester Loop: Iteration 1 of 3
+- REPORTED FAILURE: "CI has FAILED" for US-5 AC-5.7 on branch `feature/US-5-AC-5.7`. Failure logs: "No failure logs available." (reported by orchestration script)
+- ACTUAL CI EVIDENCE: This is NOT a ghost failure. Two `completed failure` runs confirmed on `feature/US-5-AC-5.7`:
+  - Run 22532949372 (pull_request trigger, PR #31): `completed failure`, 30s, 2026-03-01T01:10:08Z
+  - Run 22532945232 (push trigger, commit 3a9e136): `completed failure`, 30s, 2026-03-01T01:09:53Z
+  - Both runs failed at the Lint step. Failure logs are present and identical across both runs.
+- DIAGNOSIS: Code bug — real ESLint warning treated as a CI error.
+- CLASSIFICATION: Genuine code defect. NOT an infrastructure ghost. PI-6 does not apply. This iteration counts as Iteration 1 of 3.
+- SEVERITY: Major — CI is blocked; the PR cannot be merged until resolved. However, the defect is a single missing dependency in a React Hook dependency array; it does not affect runtime behavior or correctness of the Zustand state management implementation.
+
+- CI FAILURE DETAIL (from `gh run view 22532949372 --log-failed`):
+  - Step: Lint (`npx eslint . --max-warnings 0`)
+  - File: `app/player/[surahId].tsx`, line 93
+  - Rule: `react-hooks/exhaustive-deps`
+  - Warning text: `React Hook useEffect has a missing dependency: 'setCurrentSurahId'. Either include it or remove the dependency array`
+  - Exit: `ESLint found too many warnings (maximum: 0)` — process exit code 1
+  - All other steps (Install, Type check, Tests) did not run because Lint is the first step after Install and it failed first.
+
+- ROOT CAUSE ANALYSIS:
+  - In `app/player/[surahId].tsx`, the `useEffect` at line 90-93 calls `setCurrentSurahId(surahId)` but the dependency array only lists `[surahId]`, omitting `setCurrentSurahId`.
+  - The `react-hooks/exhaustive-deps` rule flags any value used inside a `useEffect` that is not in the dependency array.
+  - Zustand setter references (`setCurrentSurahId`) are stable across renders (Zustand guarantees referential stability for setters), so including the setter in the dependency array is safe and idiomatic — it will not cause extra effect executions.
+  - The CI config (`--max-warnings 0`) treats all warnings as errors, so this warning is a hard CI failure.
+  - This is a code defect introduced during the AC-5.7 migration. It was not caught locally because `npm test` (jest) does not run ESLint; only `npx eslint .` does. The Dev Team's local preflight should have caught this, but did not.
+
+- SYSTEMS THINKING — REGRESSION RISK:
+  - The 516 tests all pass (Dev Team confirmed). The functional behavior of AC-5.7 (Zustand store, state fields, setters, migration from useState) is correct. The defect is lint-only; no runtime regression in AC-5.4/5.5/5.6 behavior.
+  - Fixing the dependency array on this `useEffect` is safe: Zustand setters are referentially stable, so adding `setCurrentSurahId` to `[surahId, setCurrentSurahId]` will not alter effect firing behavior.
+  - No risk to AC-5.8 or US-6 from this fix.
+
+- RECOMMENDED FIX (for Dev Team):
+  - In `app/player/[surahId].tsx`, update the `useEffect` dependency array at line 93:
+    - Current:  `}, [surahId]);`
+    - Required: `}, [surahId, setCurrentSurahId]);`
+  - Run `npx eslint . --max-warnings 0` locally to confirm the warning is resolved before pushing.
+  - Run `npm test` to confirm 516 tests still pass after the dependency array change.
+  - Push the fix to `feature/US-5-AC-5.7`. CI will re-run. No other code changes are required.
+
+- CONTEXT NOTE — "No failure logs available" from orchestration script:
+  - The Project Lead script reported "No failure logs available" — this is because the orchestration script uses a different mechanism to surface failure info than `gh run view --log-failed`. The actual GitHub Actions runs do have full failure logs, confirmed via `gh run view 22532949372 --log-failed` and `gh run view 22532945232 --log-failed`. This is a known gap in the orchestration script's log-surfacing logic, not a symptom of a ghost failure. The Tester must always verify directly via `gh run list` and `gh run view --log-failed` when the orchestration script reports "No failure logs available."
+
+---
 - Dev-Tester Loop: Iteration 3 of 3 (closing — circuit breaker not triggered, all failures are zero-log infrastructure ghosts per PI-6)
 - Date: 2026-03-01
 - ITERATION 3 DIAGNOSIS: Third reported "CI has FAILED" with "No failure logs available." This is the same zero-log infrastructure ghost pattern observed in Iterations 1 and 2. Per DoD PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations. The circuit breaker (3-iteration hard stop) applies only to genuine code-defect loops. Zero-log ghost failures have consumed zero loop iterations across all three invocations.
@@ -287,7 +332,7 @@ Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for
 
 - IMPLEMENTATION INTEGRITY CONFIRMED (no code changes since last verification):
   - `services/trackQueue.ts`: `skipToTrack(index)` exports correctly; call sequence `TrackPlayer.skip(index)` -> `setRepeatMode(RepeatMode.Track)` -> `play()` intact.
-  - `app/player/[surahId].tsx`: `handleNext()` async, guarded by `if (!isNextDisabled)`; `disabled={isNextDisabled}` on Next Pressable; `isNextDisabled` computed as `currentTrackIndex === trackCount - 1`.
+  - `app/player/[surahId].tsx`: `handleNext()` async, guarded by `if (!isNextDisabled)`; `disabled={isNextDisabled}` on Next Pressable; `isNextDisabled` computed as `currentTrackIndex === taskCount - 1`.
   - All 23 AC-5.4 tests passing. All 472 total tests passing. No regression from AC-5.5 or AC-5.6 (both merged after AC-5.4; all CI passes).
 
 - RECOMMENDED FIX: None. No code change required. No CI re-trigger needed. AC-5.4 is merged to `main` and verified across all actual CI executions.
