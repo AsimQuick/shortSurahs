@@ -6,13 +6,13 @@
  *              - loadSurahQueue() calls TrackPlayer.setRepeatMode(RepeatMode.Track)
  *                after adding tracks.
  *              - loadSurahQueue() calls TrackPlayer.play() after setRepeatMode.
- *              - app/player/[surahId].tsx initialises isPlaying state to true
- *                (auto-play is immediate — no manual intervention required).
+ *              - app/player/[surahId].tsx initialises isPlaying to true via
+ *                usePlayerStore (AC-5.7: migrated from local useState to Zustand).
  *              - File headers document AC-5.3 in both files.
  *              Source-level assertions use testEnvironment: "node".
  *              Behavioral tests mock TrackPlayer to verify call sequence.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.3
+ * @sprint Sprint 2 — US-5 AC-5.3; Sprint 3 — US-5 AC-5.7 (state migration update)
  */
 
 import * as fs from 'fs';
@@ -92,8 +92,10 @@ describe('AC-5.3 — services/trackQueue.ts: auto-play call', () => {
 // ---------------------------------------------------------------------------
 
 describe('AC-5.3 — app/player/[surahId].tsx: isPlaying initial state', () => {
-  test('isPlaying useState initialised to true (auto-play)', () => {
-    expect(playerSource).toMatch(/useState\s*\(\s*true\s*\)/);
+  test('isPlaying is sourced from usePlayerStore (initial store value is true, AC-5.7)', () => {
+    // AC-5.7: isPlaying migrated from local useState(true) to usePlayerStore.
+    // The Zustand store initialises isPlaying: true (verified in zustand-player-store tests).
+    expect(playerSource).toMatch(/usePlayerStore\s*\(.*isPlaying/s);
   });
 
   test('file header documents AC-5.3', () => {

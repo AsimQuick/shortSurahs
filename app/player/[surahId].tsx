@@ -35,11 +35,16 @@
  *              retain track position (not stop/reset), or TrackPlayer.play()
  *              to resume from the same position. UI icon toggles between
  *              ⏸ (pause) and ▶ (play) based on isPlaying state.
+ *              Implements AC-5.7: Zustand state management — currentSurahId,
+ *              currentTrackIndex, and isPlaying are read from and written to
+ *              the global usePlayerStore (store/playerStore.ts) instead of
+ *              local useState. Store is updated on every track change and
+ *              every play/pause event.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Dimensions,
   Image,
@@ -53,6 +58,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
 import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
+import { usePlayerStore } from '../../store/playerStore';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ARTWORK_SIZE = SCREEN_WIDTH * 0.85;
@@ -71,40 +77,49 @@ export default function PlayerScreen() {
   const artwork = getArtwork(surahId as string);
   const trackCount = surah?.trackCount ?? 0;
 
+  // AC-5.7: Zustand store — read playback state from global store.
+  const currentTrackIndex = usePlayerStore((s) => s.currentTrackIndex);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const setCurrentSurahId = usePlayerStore((s) => s.setCurrentSurahId);
+  const setCurrentTrackIndex = usePlayerStore((s) => s.setCurrentTrackIndex);
+  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
+
   // AC-5.2: Load surah queue on mount; clears any previous surah's queue first.
+  // AC-5.7: setCurrentSurahId resets store (index=0, isPlaying=true) to match
+  //         loadSurahQueue() auto-start behaviour.
   useEffect(() => {
+    setCurrentSurahId(surahId as string);
     loadSurahQueue(surahId as string).catch(() => {});
   }, [surahId]);
-
-  // AC-4.2 / AC-5.3: isPlaying starts true — loadSurahQueue() auto-starts playback.
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   const isPrevDisabled = currentTrackIndex === 0;
   const isNextDisabled = currentTrackIndex === trackCount - 1;
 
   // AC-5.5: Previous — stop current loop, skip to prev track, re-enable loop, start playback.
   // Audio-layer no-op: skipToTrack is only called when !isPrevDisabled.
+  // AC-5.7: Updates currentTrackIndex in Zustand store.
   async function handlePrev() {
     if (!isPrevDisabled) {
       await skipToTrack(currentTrackIndex - 1).catch(() => {});
-      setCurrentTrackIndex((i) => i - 1);
+      setCurrentTrackIndex(currentTrackIndex - 1);
     }
   }
 
   // AC-5.4: Next — stop current loop, skip to next track, re-enable loop, start playback.
   // Audio-layer no-op: skipToTrack is only called when !isNextDisabled.
+  // AC-5.7: Updates currentTrackIndex in Zustand store.
   async function handleNext() {
     if (!isNextDisabled) {
       await skipToTrack(currentTrackIndex + 1).catch(() => {});
-      setCurrentTrackIndex((i) => i + 1);
+      setCurrentTrackIndex(currentTrackIndex + 1);
     }
   }
 
   // AC-5.6: Play/Pause — pause retains position (TrackPlayer.pause, not stop/reset).
+  // AC-5.7: Updates isPlaying in Zustand store.
   async function handlePlayPause() {
     await togglePlayPause(isPlaying).catch(() => {});
-    setIsPlaying((p) => !p);
+    setIsPlaying(!isPlaying);
   }
 
   return (

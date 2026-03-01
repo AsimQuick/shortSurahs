@@ -7,7 +7,7 @@
 **Planned Story Points:** ~7 (US-5 remaining ~5 + US-6 2) -- within velocity baseline, no deferral plan needed
 **Phase:** development
 **Last Updated:** 2026-03-01
-**Last Updated By:** tester
+**Last Updated By:** product-owner
 
 ---
 
@@ -133,7 +133,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
   - Pause stops playback but retains track position
   - State reflected in UI (Play/Pause icon toggle)
 
-- [ ] **AC-5.7: Zustand state management**
+- [x] **AC-5.7: Zustand state management**
   - `zustand` installed
   - Player store tracks: `currentSurahId`, `currentTrackIndex`, `isPlaying`
   - Store updated on every track change and play/pause event
@@ -149,7 +149,7 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 - [x] Next advances tracks with correct loop behavior (AC-5.4 done)
 - [ ] Previous advances tracks with correct loop behavior (AC-5.5 pending)
 - [x] Play/Pause works correctly: (1) Play resumes at same position as before pause, (2) Pause halts without resetting position, (3) UI icon matches isPlaying state
-- [ ] Zustand store reflects current playback state
+- [x] Zustand store reflects current playback state
 - [ ] Missing track handled gracefully (skip + log, no crash)
 - [x] Queue-clearing test: re-opening player with different surah replaces queue (dedicated integration test required per Tester Notes)
 - [ ] Code includes structured metadata header comments
@@ -174,8 +174,9 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 
 **Dependencies:** US-4 (done)
 
-**Dev Team Status:** resolved
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
+AC-5.7 complete. `zustand` (^5.0.11) was already in package.json from a prior setup; confirmed installed. Created `store/playerStore.ts` with `usePlayerStore` (zustand `create<PlayerState>`) tracking `currentSurahId` (null), `currentTrackIndex` (0), and `isPlaying` (true) plus three setters: `setCurrentSurahId` (resets index=0 and isPlaying=true on surah switch), `setCurrentTrackIndex`, `setIsPlaying`. Migrated `app/player/[surahId].tsx` from local `useState` to Zustand store: removed `useState` import, added `usePlayerStore` reads and setters, wired `setCurrentSurahId` in `useEffect`, `setCurrentTrackIndex` in `handleNext`/`handlePrev` (direct value form), and `setIsPlaying(!isPlaying)` in `handlePlayPause`. Updated legacy tests that expected pre-Zustand patterns: `__tests__/player-dynamic-content.test.ts` (3 assertions updated: `useState(0)` check → `usePlayerStore` check; `i - 1` → `currentTrackIndex - 1`; `i + 1` → `currentTrackIndex + 1`), `__tests__/trackplayer-prev.test.ts` (1 assertion updated: functional updater `(i) => i - 1` → direct `currentTrackIndex - 1`). Also added `__tests__/zustand-player-store.test.ts` with 44 tests (source-level: file structure, state fields, setters; behavioral: initial state, setCurrentSurahId, setCurrentTrackIndex, setIsPlaying). All 516 tests pass. [OPEN: AC-5.8]
 AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call sequence: `TrackPlayer.skip(index)` → `setRepeatMode(RepeatMode.Track)` → `play()`. Wired `handleNext()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex + 1)` with `!isNextDisabled` guard (audio-layer no-op on last track). Visual disabled state unchanged from AC-4.2. Added `__tests__/trackplayer-next.test.ts` with 23 tests (source-level + behavioral). All 425 tests pass. Iteration 1 CI failure: zero-log infrastructure ghost (PI-6, not counted). Iteration 2: Tester verified both runs pass, quality gate PASS. Iteration 3: Third "CI FAILED" with no failure logs — same zero-log ghost pattern diagnosed by Tester (PI-6). No code defects exist. AC-5.4 confirmed done by Tester across all three iterations. No code changes made in response to any ghost failure.
 AC-5.5 complete. Wired `handlePrev()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex - 1)` with `!isPrevDisabled` guard (audio-layer no-op on first track). Made `handlePrev` async — mirrors AC-5.4 `handleNext` pattern exactly. `skipToTrack` reused from AC-5.4 (no changes to service logic). Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.5. Added `__tests__/trackplayer-prev.test.ts` with 23 tests (source-level + behavioral + boundary). All 448 tests pass.
 AC-5.6 complete. Added `togglePlayPause(isPlaying: boolean)` to `services/trackQueue.ts` — calls `TrackPlayer.pause()` when `isPlaying=true` (retains track position; not stop/reset) and `TrackPlayer.play()` when `isPlaying=false` (resumes from same position). Wired `handlePlayPause()` in `app/player/[surahId].tsx` to `await togglePlayPause(isPlaying)` then `setIsPlaying((p) => !p)`. Made `handlePlayPause` async to match the AC-5.4/5.5 pattern. UI icon toggle (⏸/▶) was already in place from AC-4.2 — no UI changes required. Updated file headers in `trackQueue.ts` and `[surahId].tsx` to document AC-5.6. Added `__tests__/trackplayer-playpause.test.ts` with 24 tests (source-level, behavioral, position-retention). All 472 tests pass.
@@ -413,14 +414,29 @@ The 3 iterations were **not** code-defect loops. All three were zero-log infrast
 | Re-scope story? | **No** — US-5 scope is unchanged |
 | Defer to next sprint? | **No** — AC-5.4 is done, not blocked |
 
-**AC-5.4 is DONE.** The branch `feature/US-5-AC-5.4` should be merged to `main` via PR. Sprint continues as planned: AC-5.7 (Phase 1) is next.
+**AC-5.4 is DONE.** Branch `feature/US-5-AC-5.4` merged to `main` (PR #28). AC-5.5 and AC-5.6 also merged subsequently. Sprint continues with AC-5.7 next.
 
-### Process Improvement (new)
+### Contributing Factor: Build Order Deviation
+
+The sprint plan specified AC-5.7 (Zustand store) as Phase 1 — before AC-5.4/5.5/5.6. This was a deliberate process improvement (PI-7, PI-11) to avoid the "local-state-then-migrate tax." In practice, AC-5.4/5.5/5.6 were implemented first using local `useState`, and AC-5.7 remains pending. Consequence: AC-5.7 is now a **migration task** (replace `useState` with Zustand store hooks) rather than greenfield scaffolding. The 70 existing behavioral tests (23 + 23 + 24 for AC-5.4/5.5/5.6) mitigate regression risk, but the deviation should be noted for the retrospective.
+
+### Sprint Forward Path
+
+| Priority | AC | Nature | Risk | Mitigations |
+|----------|----|--------|------|-------------|
+| **Next** | AC-5.7 (Zustand) | Migration — replace local `useState` with Zustand store | Medium (regression in AC-5.4/5.5/5.6 wiring) | 70 behavioral tests provide safety net |
+| Then | AC-5.8 (Error handling) | New implementation | Low | |
+| Finally | US-6 (Background audio) | New implementation (blocked until US-5 complete) | Low | |
+
+**Estimated remaining effort:** ~2 story points (AC-5.7 + AC-5.8). Sprint capacity is sufficient. No deferral needed.
+
+### Process Improvements (new)
 
 | ID | Improvement | Rationale |
 |----|-------------|-----------|
 | PI-13 | Project Lead circuit breaker must apply PI-6: only count iterations where the Tester identified a code defect (`defect-found` status). Invocations where the Tester classifies the failure as infrastructure-only (`done` status with ghost diagnosis) do not increment the iteration counter. | Prevents false circuit-breaker trips when CI infrastructure is unreliable but code is correct. Three consecutive ghost failures on AC-5.4 triggered a false alarm despite zero code defects. |
 | PI-14 | When zero-log ghost failures recur 3+ times on a single branch, escalate to human for GitHub Actions infrastructure investigation before continuing the Dev-Tester loop. | Per Tester recommendation in AC-5.4 Iteration 3 notes. Addresses the root infrastructure issue rather than repeatedly re-triggering CI. |
+| PI-15 | Enforce planned build order — when a sprint plan specifies Phase N before Phase N+1, the orchestration script must not start Phase N+1 ACs until Phase N is complete. | AC-5.4/5.5/5.6 were built before AC-5.7 (Zustand), negating PI-7/PI-11 and creating a migration tax. |
 
 ---
 
@@ -429,7 +445,7 @@ The 3 iterations were **not** code-defect loops. All three were zero-log infrast
 | Story | Title | Points | Priority | Dependencies | Phase | Status | GitHub |
 |-------|-------|--------|----------|--------------|-------|--------|--------|
 | CF-5/CF-21 | PR Template (preflight) | 0 | P0 (gate) | none | Phase 0 | done | #26 |
-| US-5 (remaining) | Audio Playback — 5 remaining ACs | ~5 | P0 | US-4 (done) | Phases 1-3 | in-progress (AC-5.4 done, AC-5.7 next) | #5 |
+| US-5 (remaining) | Audio Playback — 5 remaining ACs | ~5 | P0 | US-4 (done) | Phases 1-3 | in-progress (AC-5.4/5.5/5.6 done; AC-5.7, AC-5.8 pending) | #5 |
 | US-6 | Background & Lock Screen Audio | 2 | P1 | US-5 (all ACs) | Phase 4 | not-started | #6 |
 | **Total** | | **~7** | | | | | |
 
