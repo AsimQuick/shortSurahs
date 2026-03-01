@@ -174,30 +174,34 @@ US-5 remaining ACs can start immediately -- all dependencies (US-1, US-2, US-4) 
 
 **Dev Team Status:** resolved
 **Dev Team Notes:**
-AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call sequence: `TrackPlayer.skip(index)` → `setRepeatMode(RepeatMode.Track)` → `play()`. Wired `handleNext()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex + 1)` with `!isNextDisabled` guard (audio-layer no-op on last track). Visual disabled state unchanged from AC-4.2. Added `__tests__/trackplayer-next.test.ts` with 23 tests (source-level + behavioral). All 425 tests pass. CI failure on first push was a zero-log infrastructure ghost failure (per Tester diagnosis, PI-6 — does not count as a loop iteration). No code defects found. Re-triggering CI via no-op commit per Tester recommended action.
+AC-5.4 complete. Added `skipToTrack(index)` to `services/trackQueue.ts` — call sequence: `TrackPlayer.skip(index)` → `setRepeatMode(RepeatMode.Track)` → `play()`. Wired `handleNext()` in `app/player/[surahId].tsx` to `await skipToTrack(currentTrackIndex + 1)` with `!isNextDisabled` guard (audio-layer no-op on last track). Visual disabled state unchanged from AC-4.2. Added `__tests__/trackplayer-next.test.ts` with 23 tests (source-level + behavioral). All 425 tests pass. Iteration 1 CI failure: zero-log infrastructure ghost (PI-6, not counted). Iteration 2: Tester verified both runs pass, quality gate PASS. Iteration 3: Third "CI FAILED" with no failure logs — same zero-log ghost pattern diagnosed by Tester (PI-6). No code defects exist. AC-5.4 confirmed done by Tester across all three iterations. No code changes made in response to any ghost failure.
 
 **Tester Status:** done
 **Tester Notes:**
-- Dev-Tester Loop: Iteration 2 of 3 (closing)
+- Dev-Tester Loop: Iteration 3 of 3 (closing — circuit breaker not triggered, all failures are zero-log infrastructure ghosts per PI-6)
 - Date: 2026-03-01
-- DIAGNOSIS: Confirmed CI infrastructure ghost failure. The reported failure had no associated logs ("No failure logs available") — consistent with a transient GitHub Actions runner issue. Per DoD PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations. Neither Iteration 1 nor Iteration 2 counted against the circuit breaker.
-- ITERATION 1 OUTCOME: Tester diagnosed zero-log ghost failure; recommended Dev Team re-trigger CI via no-op commit. Dev Team complied (commit e9fa4d7).
-- ITERATION 2 CI VERIFICATION (2026-03-01):
+- ITERATION 3 DIAGNOSIS: Third reported "CI has FAILED" with "No failure logs available." This is the same zero-log infrastructure ghost pattern observed in Iterations 1 and 2. Per DoD PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations. The circuit breaker (3-iteration hard stop) applies only to genuine code-defect loops. Zero-log ghost failures have consumed zero loop iterations across all three invocations.
+- CLASSIFICATION: Infrastructure ghost failure (zero-log). No code change required. No circuit breaker triggered.
+- SEVERITY: None — no code defect exists at any point in AC-5.4 development.
+- FULL CI VERIFICATION — ALL THREE RUNS ON branch `feature/US-5-AC-5.4` PASS:
   - GitHub Actions run 22531659907 (original AC-5.4 commit, bcef5cc) — `completed success` (39s), 425/425 tests, 100% coverage
   - GitHub Actions run 22531745026 (re-trigger commit, e9fa4d7) — `completed success` (37s), 425/425 tests, 100% coverage
-  - Both runs on branch `feature/US-5-AC-5.4` confirm: no test failures, no lint errors, no type errors
-  - Coverage: All files 100% statements, branches, functions, lines (exceeds 70% threshold)
-- QUALITY GATE DECISION — AC-5.4 PASSES:
+  - GitHub Actions run 22531809959 (close-note commit, f638d41) — `completed success` (36s), all steps green: lint, type check, tests with coverage
+  - Zero failed runs exist on this branch. Every actual CI execution has passed.
+- ITERATION HISTORY:
+  - Iteration 1: Tester diagnosed zero-log ghost failure; recommended Dev Team re-trigger CI via no-op commit. Not counted per PI-6.
+  - Iteration 2: Tester verified both prior runs pass (425/425); issued quality gate PASS decision. Not counted per PI-6.
+  - Iteration 3 (this invocation): Third zero-log ghost report. Same diagnosis. Same outcome. Not counted per PI-6.
+- QUALITY GATE DECISION — AC-5.4 CONFIRMED DONE (unchanged from Iteration 2):
   - AC-5.4 requirement: Next button stops current loop, loads next track, enables loop, starts playback; disabled on last track
   - Implementation verified: `skipToTrack(index)` call sequence (`TrackPlayer.skip` -> `setRepeatMode(RepeatMode.Track)` -> `play()`) correct
   - `handleNext()` guarded by `!isNextDisabled`; `isNextDisabled` computed as `currentTrackIndex === trackCount - 1` (correct boundary)
   - Next button has `disabled={isNextDisabled}` — visual disabled state per AC-4.2 confirmed
   - 23 AC-5.4 tests in `__tests__/trackplayer-next.test.ts` cover: source-level wiring, behavioral sequence, boundary (last track disabled), audio-layer no-op
-  - All 425 tests passing across 19 suites
+  - All 425 tests passing across 19 suites; coverage 100% (exceeds 70% threshold)
   - Code includes structured metadata header comments (DoD)
   - No hardcoded audio paths (DoD)
-- SEVERITY: None — no code defect exists. Original failure was CI infrastructure only.
-- CLASSIFICATION: Infrastructure ghost failure (zero-log). Closed without code change required.
+- PROCESS NOTE: The recurrence of zero-log ghost failures on this branch (3 occurrences) is a GitHub Actions infrastructure reliability pattern. Recommend adding to retrospective: consider whether PI-6 should include a recommended maximum ghost-failure count before escalating to human for infrastructure investigation.
 - AC-5.4 STATUS: done
 
 ---
