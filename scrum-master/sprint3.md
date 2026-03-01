@@ -271,6 +271,31 @@ Post-merge ghost CI failure Iteration 3 (PI-6, 2026-03-01): Third "CI FAILED for
 - PI-14 ESCALATION NOTE: This is the fifth zero-log ghost occurrence for AC-5.4 (three pre-merge + two post-merge). PI-14 states: "When zero-log ghost failures recur 3+ times on a single branch, escalate to human for GitHub Actions infrastructure investigation." The threshold was exceeded at the fourth occurrence. The Project Lead should surface this to the human owner for infrastructure-level investigation to prevent continued ghost invocations.
 
 ---
+- POST-MERGE GHOST INVOCATION — Date: 2026-03-01
+- Dev-Tester Loop: Iteration 3 of 3 (post-merge series — closing)
+- REPORTED FAILURE: "CI has FAILED" for US-5 AC-5.4 on branch `main`. Failure logs: "No failure logs available."
+- DIAGNOSIS: Code bug vs. requirements issue — NEITHER. This is a zero-log infrastructure ghost (PI-6). This is the sixth zero-log ghost associated with AC-5.4 (three pre-merge + three post-merge). Diagnosis is identical to Iterations 1 and 2 post-merge and all three pre-merge iterations.
+- CLASSIFICATION: Infrastructure ghost failure (zero-log). No code defect. No requirements defect. No action required.
+- SEVERITY: None — the reported failure carries no log data and does not correspond to any actual test failure or CI execution.
+
+- CI EVIDENCE (re-verified, unchanged from Iteration 2):
+  - All `main` branch CI runs: `completed success` — runs 22531607082, 22532076993, 22532187063, 22532339593 and subsequent documentation commits — zero failed runs exist.
+  - PR #28 checks: both `completed success` — unchanged from prior verifications.
+  - Local test suite: 472/472 tests pass across 21 suites — includes all 23 AC-5.4 tests in `__tests__/trackplayer-next.test.ts`.
+  - Zero failed runs exist on `main` or any AC-5.4-related branch at any point in this story's history.
+
+- IMPLEMENTATION INTEGRITY CONFIRMED (no code changes since last verification):
+  - `services/trackQueue.ts`: `skipToTrack(index)` exports correctly; call sequence `TrackPlayer.skip(index)` -> `setRepeatMode(RepeatMode.Track)` -> `play()` intact.
+  - `app/player/[surahId].tsx`: `handleNext()` async, guarded by `if (!isNextDisabled)`; `disabled={isNextDisabled}` on Next Pressable; `isNextDisabled` computed as `currentTrackIndex === trackCount - 1`.
+  - All 23 AC-5.4 tests passing. All 472 total tests passing. No regression from AC-5.5 or AC-5.6 (both merged after AC-5.4; all CI passes).
+
+- RECOMMENDED FIX: None. No code change required. No CI re-trigger needed. AC-5.4 is merged to `main` and verified across all actual CI executions.
+
+- QUALITY GATE DECISION: AC-5.4 status remains `done`. This third post-merge ghost failure does not affect the quality gate. Per PI-6, zero-log infrastructure failures do not consume Dev-Tester loop iterations and do not change story status. The circuit breaker does not apply — zero code-defect iterations have occurred across all six ghost invocations (pre-merge and post-merge combined).
+
+- PI-14 ESCALATION NOTE: This is the sixth zero-log ghost occurrence for AC-5.4 (three pre-merge + three post-merge). The PI-14 escalation threshold (3+ recurrences on a single branch) was exceeded at the fourth occurrence. This pattern has now persisted across two branches (`feature/US-5-AC-5.4` and `main`). The human owner must investigate the GitHub Actions infrastructure root cause. No further Dev-Tester loop iterations should be opened for ghost failures on this story — the escalation path is now the human owner, not the tester.
+
+---
 
 ### US-6: Background & Lock Screen Audio (Carry-Forward)
 

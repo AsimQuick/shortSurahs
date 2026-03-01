@@ -25,7 +25,7 @@
 **Goal:** Complete interactive audio playback (Next/Previous/Play-Pause wired to TrackPlayer via Zustand) and background audio support -- ship the core product.
 
 **Duration:** 2026-03-15 -> 2026-03-29
-**Status:** `planning`
+**Status:** `in-progress`
 **Total Story Points:** ~7 (US-5 remaining ~5 + US-6 2) -- within 8-pt velocity baseline
 **Sprint File:** `/scrum-master/sprint3.md`
 
@@ -33,8 +33,8 @@
 
 | ID | Story | Points | Status | Priority | GitHub |
 |----|-------|--------|--------|----------|--------|
-| CF-5/CF-21 | PR Template (zero-point preflight) | 0 | `planning` | P0 (gate) | #26 |
-| US-5 | Audio Playback — 5 remaining ACs (AC-5.4 through AC-5.8) | ~5 | `planning` | P0 | #5 |
+| CF-5/CF-21 | PR Template (zero-point preflight) | 0 | `done` | P0 (gate) | #26 |
+| US-5 | Audio Playback — 5 remaining ACs (AC-5.4 through AC-5.8) | ~5 | `in-progress` | P0 | #5 |
 | US-6 | Background & Lock Screen Audio | 2 | `planning` | P1 | #6 |
 
 ### Priority Order
