@@ -32,7 +32,7 @@
  *              logs and calls TrackPlayer.pause() when the missing track is last
  *              (no skip target available).
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
@@ -81,7 +81,7 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     validTracks.push({
       id: `${surah.id}-${nn}`,
       url: audioAsset as unknown as string,
-      title: `Aya ${i + 1}`,
+      title: `${surah.nameEnglish} — Aya ${i + 1}`,
       artist: 'shortSurahs',
       artwork: getArtwork(surahId) as unknown as string,
     });

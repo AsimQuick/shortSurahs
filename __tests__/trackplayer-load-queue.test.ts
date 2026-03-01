@@ -175,8 +175,9 @@ describe('AC-5.2 — services/trackQueue.ts queue behaviour', () => {
     expect(resetIdx).toBeLessThan(addIdx);
   });
 
-  test('track title uses "Aya" prefix (aya number)', () => {
-    expect(trackQueueSource).toMatch(/title\s*:\s*`Aya\s+\$\{/);
+  test('track title includes surah nameEnglish and aya number (AC-6.2: lock screen metadata)', () => {
+    // Title format is "${surah.nameEnglish} — Aya ${i + 1}" so lock screen shows surah name.
+    expect(trackQueueSource).toMatch(/title\s*:\s*`\$\{surah\.nameEnglish\}.*Aya.*\$\{i \+ 1\}/);
   });
 
   test('track artist is "shortSurahs"', () => {
@@ -305,13 +306,13 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
     expect(tracks).toHaveLength(5);
   });
 
-  test('track titles are "Aya 1" through "Aya N" (1-based)', async () => {
+  test('track titles are "Al-Ikhlas — Aya 1" through "Al-Ikhlas — Aya N" (AC-6.2: surah name + aya)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Aya 1');
-    expect(tracks[4].title).toBe('Aya 5');
+    expect(tracks[0].title).toBe('Al-Ikhlas — Aya 1');
+    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 5');
   });
 
   test('all tracks have artist "shortSurahs"', async () => {
