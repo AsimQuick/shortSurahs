@@ -187,9 +187,9 @@ Phase 3 is the verification and manual testing phase. It confirms that the confi
 
 **Dependencies:** US-5 (done)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty -- Dev Team fills this in_
+AC-6.1 implemented (2026-03-01). Added `UIBackgroundModes: ["audio"]` to `expo.ios.infoPlist` in `app.json` — this is the critical iOS Info.plist key that permits background audio when the app is minimized or the screen is locked. TrackPlayer manages the audio session category internally; no explicit override was needed. Created `__tests__/background-audio-config.test.ts` with 33 static-assertion tests covering: (1) UIBackgroundModes present and contains "audio", (2) PlaybackService exports all 4 remote event handlers (RemotePlay/Pause/Next/Previous) and is registered at module level in _layout.tsx, (3) no ambient session override disabling background playback, (4) TrackPlayer capabilities (Play/Pause/SkipToNext/SkipToPrevious) configured. Total test count: 578 (24 suites), all green. Behavioral verification (audio persists when minimized, screen locked, phone idle) requires manual device testing — blocked on REQ-5 (EAS Build + physical devices). Files changed: `app.json`, `__tests__/background-audio-config.test.ts`. Branch: feature/US-6-AC-6.1.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
