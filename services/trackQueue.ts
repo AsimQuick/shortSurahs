@@ -19,8 +19,12 @@
  *              index, re-enables RepeatMode.Track, and starts playback.
  *              Used for both Next (index + 1) and Previous (index - 1) navigation.
  *              Call sequence: skip -> setRepeatMode(Track) -> play.
+ *              Implements AC-5.6: Play/Pause.
+ *              togglePlayPause(isPlaying) pauses when playing (retains position)
+ *              or resumes when paused. Uses TrackPlayer.pause() to preserve
+ *              track position — not stop() or reset() which would lose position.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
@@ -72,4 +76,20 @@ export async function skipToTrack(index: number): Promise<void> {
   await TrackPlayer.skip(index);
   await TrackPlayer.setRepeatMode(RepeatMode.Track);
   await TrackPlayer.play();
+}
+
+/**
+ * Toggles playback between playing and paused.
+ * Implements AC-5.6: Play/Pause.
+ * When playing: calls TrackPlayer.pause() — retains track position (not stop/reset).
+ * When paused: calls TrackPlayer.play() — resumes from the retained position.
+ *
+ * @param isPlaying - Current playing state (true = currently playing, will pause)
+ */
+export async function togglePlayPause(isPlaying: boolean): Promise<void> {
+  if (isPlaying) {
+    await TrackPlayer.pause();
+  } else {
+    await TrackPlayer.play();
+  }
 }
