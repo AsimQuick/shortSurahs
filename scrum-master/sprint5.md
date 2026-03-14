@@ -153,7 +153,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - If the user presses Previous on ayah 1, it goes back to the intro (which plays once again, no loop)
   - The intro track is visually distinguishable on the Now Playing screen (title shows "Intro" instead of "Aya N")
 
-- - [x] **AC-7.5: Per-ayah artwork on Now Playing screen**
+- - [x] - [x] **AC-7.5: Per-ayah artwork on Now Playing screen**
   - The Now Playing screen displays the artwork for the currently playing ayah (not the surah-level artwork)
   - When the track changes (next/previous/auto-advance), the artwork updates to match the new track
   - Intro tracks display the intro artwork (`{number}-{name}-intro.jpg`)
