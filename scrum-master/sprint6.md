@@ -7,7 +7,7 @@
 **Planned Story Points:** 11 (US-9: 3, US-10: 3, US-11: 5)
 **Phase:** planning
 **Last Updated:** 2026-03-14
-**Last Updated By:** product-owner
+**Last Updated By:** dev-team
 **Stories Done:** (none yet)
 **Open Blockers:** None
 
@@ -82,7 +82,7 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 
 - [x] - [x] **AC-9.3: Auth guard routing** — When the user is not logged in, the app shows the welcome/login screen (no tab bar visible). When the user is logged in, the app shows the tab layout. Logging out returns the user to the welcome screen. This replaces the current auth guard behavior to work with the tab navigator instead of a plain stack.
 
-- [ ] **AC-9.4: Prayers and Account tabs render placeholder screens** — The Prayers tab renders a screen with the title "Prayer Times" and a placeholder message (to be replaced in US-11). The Account tab renders a screen with the title "Account" and a placeholder message (to be replaced in US-10). Both screens are scrollable and respect system theming.
+- [x] **AC-9.4: Prayers and Account tabs render placeholder screens** — The Prayers tab renders a screen with the title "Prayer Times" and a placeholder message (to be replaced in US-11). The Account tab renders a screen with the title "Account" and a placeholder message (to be replaced in US-10). Both screens are scrollable and respect system theming.
 
 **Dependencies:** US-8 (Auth) — done
 **Build Phase:** Phase 1 (must complete before US-10 and US-11)
@@ -96,6 +96,8 @@ Fix (2026-03-14): Added `@expo/vector-icons@^14.0.0` to package.json dependencie
 AC-9.2 implemented 2026-03-14. The infrastructure was already in place from AC-9.1: app/(tabs)/index.tsx renders the surah list (getSurahs, FlatList, artwork, nameEnglish, nameArabic, Pressable rows) and calls router.push({ pathname: '/player/[surahId]', params: { surahId: item.id } }) on tap. The player screen at app/player/[surahId].tsx lives in the root Stack (app/_layout.tsx), which renders over the full screen — automatically hiding the tab bar when the player is shown. router.back() returns to the surah list with the tab bar restored. Updated app/(tabs)/index.tsx header to reference AC-9.2. Created __tests__/home-tab-player-nav.test.ts (32 source-level assertions covering: file existence, surah list rendering, push navigation, back navigation, tab bar hiding via root Stack, metadata headers). All 40 test suites pass (1476 tests), coverage 96.77% statements / 94.44% branches / 100% functions.
 
 AC-9.3 implemented 2026-03-14. Updated app/_layout.tsx: added AC-9.3 to header, updated AuthGuard to explicitly redirect authenticated users to /(tabs) (tab layout entry point) instead of /. Logic: !user && !isPublicRoute → replace('/welcome') (covers logout from any tab screen); user && isPublicRoute → replace('/(tabs)'). Welcome and auth routes are the public zone (outside tabs, no tab bar). The (tabs) route group is the authenticated zone (tab bar always visible). Updated __tests__/auth-guard.test.ts to expect /(tabs) redirect. Created __tests__/auth-guard-tabs.test.ts (22 source-level assertions covering: metadata header, unauthenticated routing, authenticated routing to tabs, logout path, public route set, tab bar visibility control, and router.replace vs push). All 41 test suites pass (1498 tests), coverage 96.77% statements / 94.44% branches / 100% functions. ESLint and tsc pass (PI-15 compliant).
+
+AC-9.4 implemented 2026-03-14. Placeholder screens app/(tabs)/prayers.tsx and app/(tabs)/account.tsx verified complete: ScrollView, useColorScheme theming (isDark branching), title "Prayer Times" / "Account", placeholder messages. Created __tests__/placeholder-screens.test.ts (24 source-level assertions covering file existence, default export, title text, placeholder message, ScrollView, useColorScheme, metadata header @file/@ac/@story, react-native import, StyleSheet, isDark theming — for both screens). All 42 test suites pass (1522 tests), coverage 96.77% statements / 94.44% branches / 100% functions — well above 70% threshold. ESLint and tsc pass (PI-15 compliant).
 
 **Tester Status:** defect-found
 **Tester Notes:**
@@ -189,6 +191,9 @@ Reviewed 2026-03-14. All five ACs are unambiguous and testable: Aladhan API call
 ### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
 AC-9.1 complete (2026-03-14). Tab navigator with Home/Prayers/Account tabs, Ionicons, light/dark theming, active tab distinction. All 1444 tests pass, 96.77% coverage.
+AC-9.2 complete (2026-03-14). Home tab surah list navigates to Now Playing screen; tab bar hidden on player screen via root Stack. All 1476 tests pass, 96.77% coverage.
+AC-9.3 complete (2026-03-14). Auth guard routing: unauthenticated → /welcome, authenticated → /(tabs). All 1498 tests pass, 96.77% coverage.
+AC-9.4 complete (2026-03-14). Prayers and Account placeholder screens verified; __tests__/placeholder-screens.test.ts created (24 assertions). All 42 test suites pass (1522 tests), 96.77% coverage. US-9 fully complete.
 
 ### Tester Sprint Status: requirements-approved
 ### Tester Sprint Notes:
