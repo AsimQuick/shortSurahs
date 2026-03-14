@@ -262,7 +262,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 
 #### Acceptance Criteria
 
-- [ ] **AC-8.1.1:** Install Firebase & auth-related packages and register Expo plugins
+- [x] **AC-8.1.1:** Install Firebase & auth-related packages and register Expo plugins
   - `firebase`, `@react-native-async-storage/async-storage`, `expo-apple-authentication`, `expo-auth-session`, `expo-web-browser`, `expo-video` installed in `package.json`
   - Relevant Expo plugins added to `app.json` (`expo-apple-authentication`, `expo-web-browser`, `expo-video`)
   - `usesAppleSignIn: true` set in `app.json` iOS config
