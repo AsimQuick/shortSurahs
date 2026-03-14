@@ -138,7 +138,7 @@ Original requirements-approved note: All four ACs remain unambiguous and testabl
 
 - [x] - [x] **AC-10.3: Terms of Service and Privacy Policy links** — The Account screen displays "Terms of Service" and "Privacy Policy" as tappable links. Tapping either opens the respective URL in the device's default browser (using `Linking.openURL`). URLs are placeholder values (e.g., `https://example.com/terms`, `https://example.com/privacy`) that the human owner will replace with real URLs later.
 
-- [x] **AC-10.4: Account screen layout and user info** — The Account screen displays the logged-in user's email address (from `AuthContext`). The screen has a clean, minimal layout: user info at top, action buttons in the middle, legal links at the bottom. The screen respects system light/dark mode theming.
+- [x] - [x] **AC-10.4: Account screen layout and user info** — The Account screen displays the logged-in user's email address (from `AuthContext`). The screen has a clean, minimal layout: user info at top, action buttons in the middle, legal links at the bottom. The screen respects system light/dark mode theming.
 
 **Dependencies:** US-8 (Auth) — done; US-9 (Tab Nav) — must be done first (Account tab must exist)
 **Build Phase:** Phase 2 (after US-9)
