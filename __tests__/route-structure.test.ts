@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
-const INDEX_PATH = path.join(ROOT, 'app', 'index.tsx');
+const INDEX_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 const PLAYER_ROUTE_PATH = path.join(ROOT, 'app', 'player', '[surahId].tsx');
 
 let playerSource: string;

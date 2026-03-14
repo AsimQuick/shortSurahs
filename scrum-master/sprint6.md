@@ -87,9 +87,9 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 **Dependencies:** US-8 (Auth) — done
 **Build Phase:** Phase 1 (must complete before US-10 and US-11)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty — Dev Team fills this in_
+AC-9.1 implemented 2026-03-14. Created app/(tabs)/_layout.tsx (Tabs navigator, Ionicons, useColorScheme light/dark theming, tabBarActiveTintColor/tabBarInactiveTintColor for active distinction). Created app/(tabs)/index.tsx (Home tab, surah list moved from app/index.tsx), app/(tabs)/prayers.tsx (Prayer Times placeholder, ScrollView, themed), app/(tabs)/account.tsx (Account placeholder, ScrollView, themed). Removed conflicting app/index.tsx. Updated 7 existing test files to reference app/(tabs)/index.tsx. Created __tests__/tab-layout.test.ts (24 source-level assertions). All 39 test suites pass (1444 tests), coverage 96.77% statements / 94.44% branches / 100% functions — well above 70% threshold.
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
@@ -162,9 +162,9 @@ Reviewed 2026-03-14. All five ACs are unambiguous and testable: Aladhan API call
 
 ## Sprint Review
 
-### Dev Team Sprint Status: not-started
+### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
-_empty — Dev Team fills this in_
+AC-9.1 complete (2026-03-14). Tab navigator with Home/Prayers/Account tabs, Ionicons, light/dark theming, active tab distinction. All 1444 tests pass, 96.77% coverage.
 
 ### Tester Sprint Status: requirements-approved
 ### Tester Sprint Notes:

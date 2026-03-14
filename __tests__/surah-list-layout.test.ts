@@ -1,20 +1,23 @@
 /**
  * @file __tests__/surah-list-layout.test.ts
  * @description Unit tests for AC-3.1: List layout matches PRD design.
- *              Verifies that app/index.tsx uses a vertical scrollable FlatList,
- *              each row contains artwork thumbnail + English name + Arabic name,
- *              the row uses flexDirection 'row', and paddingVertical >= 12.
+ *              Verifies that app/(tabs)/index.tsx uses a vertical scrollable
+ *              FlatList, each row contains artwork thumbnail + English name +
+ *              Arabic name, the row uses flexDirection 'row', and
+ *              paddingVertical >= 12.
  *              Tests are source-level assertions (consistent with project test
  *              environment: testEnvironment: "node").
+ *              Updated for AC-9.1: index.tsx moved to app/(tabs)/index.tsx
+ *              as part of bottom tab navigation implementation.
  * @project shortSurahs
- * @sprint Sprint 1 — US-3 AC-3.1
+ * @sprint Sprint 1 — US-3 AC-3.1 | Sprint 6 — US-9 AC-9.1 (tabs refactor)
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
-const INDEX_PATH = path.join(ROOT, 'app', 'index.tsx');
+const INDEX_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 
 let source: string;
 
@@ -26,8 +29,8 @@ beforeAll(() => {
 // File existence and default export
 // ---------------------------------------------------------------------------
 
-describe('app/index.tsx — file structure', () => {
-  test('file exists at app/index.tsx', () => {
+describe('app/(tabs)/index.tsx — file structure', () => {
+  test('file exists at app/(tabs)/index.tsx', () => {
     expect(fs.existsSync(INDEX_PATH)).toBe(true);
   });
 

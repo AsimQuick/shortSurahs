@@ -15,7 +15,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
-const INDEX_PATH = path.join(ROOT, 'app', 'index.tsx');
+const INDEX_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 const ARTWORK_MAP_PATH = path.join(ROOT, 'data', 'artworkMap.ts');
 
 let indexSource: string;

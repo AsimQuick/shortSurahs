@@ -1,23 +1,32 @@
 /**
- * @file app/index.tsx
- * @description Surah List screen — vertical scrollable list of surahs displaying
- *              artwork thumbnail, English name, and Arabic name per row.
- *              Tapping a row navigates to the player screen for that surah.
+ * @file app/(tabs)/index.tsx
+ * @description Home tab — Surah List screen. Vertical scrollable list of
+ *              surahs displaying artwork thumbnail, English name, and Arabic
+ *              name per row. Tapping a row navigates to the player screen.
  *              Implements AC-3.1: List layout matches PRD design.
  *              Implements AC-2.3: Tap navigates to player screen.
- *              Implements AC-3.2: Artwork rendering — bundled require(), rounded corners, cover.
- *              Implements AC-3.4: Visual polish — system light/dark theme via useColorScheme
- *              applied to background and text colors; exactly 3 UI elements per row
- *              (artwork, English name, Arabic name); no badge, count, or metadata labels.
+ *              Implements AC-3.2: Artwork rendering — bundled require(),
+ *              rounded corners, cover.
+ *              Implements AC-3.4: Visual polish — system light/dark theme via
+ *              useColorScheme applied to background and text colors; exactly
+ *              3 UI elements per row (artwork, English name, Arabic name); no
+ *              badge, count, or metadata labels.
+ *              Moved from app/index.tsx to app/(tabs)/index.tsx as part of
+ *              AC-9.1 bottom tab navigation implementation.
  * @project shortSurahs
- * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2, AC-3.4
+ * @story US-9: Bottom Tab Navigation
+ * @ac    AC-9.1: Tab layout with three tabs
+ * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2,
+ *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs)
+ * @author Dev Team
+ * @created 2026-03-14
  */
 
 import { FlatList, Image, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { getSurahs } from '../data/dataUtils';
-import { getArtwork } from '../data/artworkMap';
-import type { Surah } from '../types';
+import { getSurahs } from '../../data/dataUtils';
+import { getArtwork } from '../../data/artworkMap';
+import type { Surah } from '../../types';
 
 function SurahRow({
   item,
