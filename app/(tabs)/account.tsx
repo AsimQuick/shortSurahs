@@ -10,8 +10,9 @@
  *                deleteAccount() which re-authenticates and deletes the user
  *                via Firebase Auth. On error (e.g. requires-recent-login),
  *                displays an Alert with the error message.
- *              Full account management UI (AC-10.3–10.4) will be added in
- *              subsequent acceptance criteria.
+ *              - Terms of Service and Privacy Policy links (AC-10.3): Tappable
+ *                links that open placeholder URLs in the device's default browser
+ *                via Linking.openURL. URLs to be replaced by the app owner.
  *              Respects system light/dark mode via useColorScheme.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
@@ -19,13 +20,14 @@
  * @story US-10: Account Screen
  * @ac    AC-10.1: Log Out button
  * @ac    AC-10.2: Delete Account with confirmation and re-authentication
+ * @ac    AC-10.3: Terms of Service and Privacy Policy links
  * @sprint Sprint 6
  * @author Dev Team
  * @created 2026-03-14
  * @updated 2026-03-14
  */
 
-import { Alert, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function AccountScreen() {
@@ -39,6 +41,10 @@ export default function AccountScreen() {
   const buttonBgColor = isDark ? '#1c1c1e' : '#f2f2f7';
   const logoutColor = '#ff3b30';
   const deleteColor = '#ff3b30';
+  const linkColor = isDark ? '#0a84ff' : '#007aff';
+
+  const TOS_URL = 'https://example.com/terms';
+  const PRIVACY_URL = 'https://example.com/privacy';
 
   const handleLogout = async () => {
     await logout();
@@ -99,6 +105,22 @@ export default function AccountScreen() {
         >
           <Text style={[styles.deleteText, { color: deleteColor }]}>Delete Account</Text>
         </Pressable>
+        <View style={styles.legalContainer}>
+          <Pressable
+            onPress={() => Linking.openURL(TOS_URL)}
+            accessibilityRole="link"
+            accessibilityLabel="Terms of Service"
+          >
+            <Text style={[styles.legalLink, { color: linkColor }]}>Terms of Service</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => Linking.openURL(PRIVACY_URL)}
+            accessibilityRole="link"
+            accessibilityLabel="Privacy Policy"
+          >
+            <Text style={[styles.legalLink, { color: linkColor }]}>Privacy Policy</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -140,5 +162,14 @@ const styles = StyleSheet.create({
   deleteText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  legalContainer: {
+    marginTop: 32,
+    gap: 12,
+    alignItems: 'center',
+  },
+  legalLink: {
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });
