@@ -87,13 +87,33 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 **Dependencies:** US-8 (Auth) — done
 **Build Phase:** Phase 1 (must complete before US-10 and US-11)
 
-**Dev Team Status:** in-progress
+**Dev Team Status:** resolved
 **Dev Team Notes:**
 AC-9.1 implemented 2026-03-14. Created app/(tabs)/_layout.tsx (Tabs navigator, Ionicons, useColorScheme light/dark theming, tabBarActiveTintColor/tabBarInactiveTintColor for active distinction). Created app/(tabs)/index.tsx (Home tab, surah list moved from app/index.tsx), app/(tabs)/prayers.tsx (Prayer Times placeholder, ScrollView, themed), app/(tabs)/account.tsx (Account placeholder, ScrollView, themed). Removed conflicting app/index.tsx. Updated 7 existing test files to reference app/(tabs)/index.tsx. Created __tests__/tab-layout.test.ts (24 source-level assertions). All 39 test suites pass (1444 tests), coverage 96.77% statements / 94.44% branches / 100% functions — well above 70% threshold.
 
-**Tester Status:** requirements-approved
+Fix (2026-03-14): Added `@expo/vector-icons@^14.0.0` to package.json dependencies and ran `npm install` (installed 14.1.0). The `import/no-unresolved` ESLint error on app/(tabs)/_layout.tsx:20 is resolved. `npx eslint . --max-warnings 0` passes locally (PI-15/CF-7 preflight).
+
+**Tester Status:** defect-found
 **Tester Notes:**
-Reviewed 2026-03-14. All four ACs are unambiguous and testable: tab bar visibility, icon/label/active-state rendering, and light/dark theming are verifiable via component snapshot and integration tests; auth guard routing (logged-in vs logged-out) is verifiable via unit tests mocking AuthContext; Now Playing tab-bar hide/show is verifiable via navigation state; placeholder screen titles and scrollability are verifiable via render tests. No scope issues. Dependency on US-8 (done) satisfied.
+**Dev-Tester Loop — Iteration 1 of 3**
+
+CI FAILED on 2026-03-14 (run #23091453613). Lint step exits code 1 before tests even run.
+
+**Root Cause: Code bug — undeclared dependency.**
+`app/(tabs)/_layout.tsx:20` imports `Ionicons` from `@expo/vector-icons`, but this package is not listed in `package.json` and is not present in `node_modules`. The ESLint `import/no-unresolved` rule (enforced via `eslint-config-expo/flat`) flags the import as unresolvable:
+```
+app/(tabs)/_layout.tsx  20:26  error  Unable to resolve path to module '@expo/vector-icons'  import/no-unresolved
+✖ 1 problem (1 error, 0 warnings)
+```
+
+**This is NOT a requirements issue.** AC-9.1 requires icons and the dev team's choice of `Ionicons` from `@expo/vector-icons` is a valid approach. The failure is purely an undeclared dependency.
+
+**Severity: Major** — CI is fully blocked; no test results available. However, scope is narrow: one missing package declaration, one file affected.
+
+**Recommended Fix (Dev Team):**
+Add `@expo/vector-icons` to `package.json` dependencies with the version compatible with Expo SDK 53 (e.g., `@expo/vector-icons@^14.0.0`), run `npm install`, and verify `npx eslint . --max-warnings 0` passes locally before re-push (PI-15 / CF-7 preflight compliance).
+
+Original requirements-approved note: All four ACs remain unambiguous and testable. Dependency on US-8 (done) satisfied. No scope changes required.
 
 ---
 
