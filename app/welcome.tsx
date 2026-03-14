@@ -16,7 +16,7 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -43,10 +43,10 @@ export default function WelcomeScreen() {
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Animated values for fade-in entrance
-  const titleOpacity = useState(new Animated.Value(0))[0];
-  const taglineOpacity = useState(new Animated.Value(0))[0];
-  const buttonsOpacity = useState(new Animated.Value(0))[0];
+  // Animated values for fade-in entrance (refs — stable, never reassigned)
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const buttonsOpacity = useRef(new Animated.Value(0)).current;
 
   // Video player: looped, muted background
   const player = useVideoPlayer(

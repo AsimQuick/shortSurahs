@@ -348,8 +348,10 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - AC-8.5: Unit tests — mock expo-apple-authentication and expo-auth-session, verify credential creation and signInWithCredential calls. Platform-conditional tests.
 - AC-8.6: Navigation tests — verify auth guard redirects based on user state, verify loading state shows indicator.
 
-#### Dev Team Status: done
+#### Dev Team Status: resolved
 #### Dev Team Notes:
+CI Fix — AC-8.3 Loop Iteration 1 (2026-03-14): Replaced `useState(new Animated.Value(0))[0]` with `useRef(new Animated.Value(0)).current` for all three fade-in Animated.Value instances (`titleOpacity`, `taglineOpacity`, `buttonsOpacity`). Added `useRef` to React import. ESLint `react-hooks/exhaustive-deps` no longer warns about the empty `[]` dependency array on the staggered fade-in `useEffect` because `.current` on a ref is not considered a reactive dependency. No logic change.
+
 AC-8.3 complete. `app/welcome.tsx` created with: looping muted video background via `expo-video` (`VideoView` + `useVideoPlayer`, `loop=true`, `muted=true`, asset `assets/video/shortSurah-login-sm.mp4`); app name "Short Surahs" and tagline "No distractions. Just Quran." with staggered fade-in animations; Apple Sign-In button (iOS only, guarded by `Platform.OS === 'ios'` and `isAvailableAsync()`); Google Sign-In button (Android only, guarded by `Platform.OS === 'android'`); "Sign in with Email" button (both platforms, navigates to `/auth/email`); privacy footer with exact AC text; system light/dark theme via `useColorScheme`; integrates `useAuth()` for `signInWithApple` and `signInWithGoogle`. `__tests__/welcome-screen.test.ts` (38 tests) verifies: metadata header, VideoView usage, loop/muted/play config, video asset path, contentFit/nativeControls/fullscreen props, app name, tagline, privacy footer text (3 assertions), Apple iOS guard + isAvailableAsync, Google Android guard, email on both platforms, useColorScheme theming, AuthContext integration. Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage.
 
 AC-8.2 complete. `contexts/AuthContext.tsx` created following finnaDo reference pattern (no Firestore, no RevenueCat). Provides: `user` (User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`. `onAuthStateChanged` listener manages auth state with cleanup on unmount. Google auth via `Google.useIdTokenAuthRequest` + `GoogleAuthProvider.credential` + `signInWithCredential`. Apple Sign-In via `AppleAuthentication.signInAsync` + `OAuthProvider('apple.com').credential` + `signInWithCredential` (iOS only). `AuthProvider` wraps `Stack` in `app/_layout.tsx`. `__tests__/auth-context.test.ts` (58 tests) verifies: metadata header, Firebase imports, AuthContextType shape, onAuthStateChanged usage, email/Google/Apple flows, logout/deleteAccount, exports, and _layout.tsx integration. Full suite: 1264 tests pass across 34 suites, 96.77% statement coverage, 94.44% branch coverage.
@@ -361,6 +363,30 @@ AC-8.1.2 complete. `config/firebaseConfig.ts` created with all required exports 
 #### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully testable; "no Firestore/Storage/Analytics" is verifiable via import scanning. AC-8.2: exact function signatures specified against finnaDo reference pattern; mock-based unit tests clearly applicable. AC-8.3: video asset path, exact branding/tagline/footer text, and platform-conditional button rendering all testable. AC-8.4: Firebase error codes enumerated; all 4 error scenarios can be unit-tested with mock auth. AC-8.5: exact API calls (signInAsync, useIdTokenAuthRequest) named; platform exclusions testable via Platform.OS mock. AC-8.6: auth guard navigation and loading-state indicator are testable via navigation unit tests. DoD checklist complete including credential verification against v2_prd.md. Cleared for development.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect or runtime impact)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Failing File:** `app/welcome.tsx` line 75
+- **CI Warning:** `React Hook useEffect has missing dependencies: 'buttonsOpacity', 'taglineOpacity', and 'titleOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps`
+- **Root Cause:** Lines 47–49 of `app/welcome.tsx` initialize the three fade-in `Animated.Value` objects using the `useState(new Animated.Value(0))[0]` pattern. The `useEffect` on lines 69–75 (staggered fade-in animation) consumes all three values but declares an empty dependency array `[]`. ESLint's `react-hooks/exhaustive-deps` rule cannot determine that these are stable references — it sees them as reactive state values and warns that they are missing from the dependency array. With `--max-warnings 0` configured in CI, one warning fails the Lint step.
+- **Why the Dev Team's local run passed:** The local ESLint configuration or run command may have had a non-zero warnings threshold, or the warning was overlooked during the pre-push preflight. The behavior is identical locally and in CI — the warning exists in both environments.
+- **Recommended Fix:** Replace the three `useState` initializations for `Animated.Value` with `useRef`. Change:
+  ```
+  const titleOpacity = useState(new Animated.Value(0))[0];
+  const taglineOpacity = useState(new Animated.Value(0))[0];
+  const buttonsOpacity = useState(new Animated.Value(0))[0];
+  ```
+  to:
+  ```
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const buttonsOpacity = useRef(new Animated.Value(0)).current;
+  ```
+  `useRef` is the idiomatic React Native pattern for stable `Animated.Value` instances. ESLint's `exhaustive-deps` rule does not flag `.current` on refs as a missing dependency — the `[]` array on the `useEffect` is then correct and the warning is eliminated. Remove `useState` from the React import if it is no longer used after this change. No logic change, no requirements change — three-line substitution resolves CI.
+- **No requirements change needed.** AC-8.3 acceptance criteria, the animation design, and all other `welcome.tsx` implementation details are correct.
 
 **CI Fix — AC-8.1 Loop Iteration 3 (2026-03-14):** Fixed import subpath for `getReactNativePersistence` in `config/firebaseConfig.ts`. Split the single import on line 17 into two statements: `import { initializeAuth } from 'firebase/auth'` and `import { getReactNativePersistence } from 'firebase/auth/react-native'`. In `firebase@^12`, `getReactNativePersistence` is not exported from the main `firebase/auth` subpath — it lives exclusively in `firebase/auth/react-native`. No logic change — import subpath correction resolves TS2305.
 
