@@ -177,9 +177,18 @@ Phase 3 can run in parallel with Phases 1-2.
 - AC-7.4: Behavioral tests — mock TrackPlayer to verify repeat mode is NOT set for intro tracks; verify auto-advance fires after intro completes; verify skip-next from intro lands on ayah 1; verify skip-prev from ayah 1 returns to intro.
 - AC-7.5: Component tests — verify Now Playing artwork source changes when `currentTrackIndex` changes; verify intro artwork uses intro image key.
 
-#### Tester Status: requirements-approved
+#### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) and no-orphan/no-missing assertions are fully testable. AC-7.4: removed ambiguous "e.g." from intro label requirement — "Intro" is now the specified display value; all 5 behavioral scenarios are testable via TrackPlayer mocks. AC-7.5: component tests cover artwork key changes on track advance. DoD checklist complete. Cleared for development.
+
+**CI FAILURE — Dev-Tester Loop Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect)
+- **Classification:** Code bug — not a requirements issue
+- **Root Cause:** `__tests__/data-layer-v2.test.ts` line 19 imports `Track` from `../types` but never uses it. ESLint rule `@typescript-eslint/no-unused-vars` emits a warning; CI is configured with `--max-warnings 0`, so even one warning fails the Lint step.
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Recommended Fix:** Remove `Track` from the import on line 19. Change `import type { Surah, Track } from '../types';` → `import type { Surah } from '../types';`
+- **No requirements change needed.** AC-7.1 criteria, test logic, and coverage are all correct. Single-line fix in the test file resolves CI.
 
 ---
 
@@ -301,8 +310,10 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: in-progress
+### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
+**CI Fix — Loop Iteration 1 (2026-03-14):** Removed unused `Track` import from `__tests__/data-layer-v2.test.ts` line 19. Changed `import type { Surah, Track } from '../types'` → `import type { Surah } from '../types'`. Single-line fix resolves ESLint `no-unused-vars` warning that failed CI with `--max-warnings 0`.
+
 **AC-7.1 — Data layer rewrite (17 surahs): DONE** (2026-03-14)
 - `data/surahs.json`: Rewritten with 17 surahs in Quran order (1, 99–114). V2 schema: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks`. 105 ayahs + 17 intros = 122 total tracks.
 - `types/index.ts`: `Surah` interface updated to V2 fields. `Track` interface includes `isIntro: boolean`.

@@ -16,7 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { getSurahs, getTracksForSurah } from '../data/dataUtils';
-import type { Surah, Track } from '../types';
+import type { Surah } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 const DATA_UTILS_PATH = path.join(ROOT, 'data', 'dataUtils.ts');
