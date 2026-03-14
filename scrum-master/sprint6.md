@@ -177,7 +177,7 @@ Reviewed 2026-03-14. All four ACs are unambiguous and testable: logout wiring to
 
 - [x] **AC-11.4: Prayers tab full schedule** — The Prayers tab (replacing the placeholder from US-9) displays the full daily prayer schedule: Fajr, Dhuhr, Asr, Maghrib, and Isha with their times. The current or next prayer is visually highlighted (bold, accent color, or similar). The current date is displayed on the screen. The screen respects system light/dark mode theming. If prayer times are loading, a loading indicator is shown. If the API call failed, an error state with a retry button is displayed.
 
-- [x] **AC-11.5: Offline graceful degradation** — If the device has no network connectivity, the prayer times feature degrades gracefully: the Home screen banner is hidden or shows "Prayer times unavailable," the Prayers tab shows a clear offline message with a retry button, and the rest of the app (surah list, playback) remains fully functional. No crashes or unhandled errors occur from network unavailability.
+- [x] - [x] **AC-11.5: Offline graceful degradation** — If the device has no network connectivity, the prayer times feature degrades gracefully: the Home screen banner is hidden or shows "Prayer times unavailable," the Prayers tab shows a clear offline message with a retry button, and the rest of the app (surah list, playback) remains fully functional. No crashes or unhandled errors occur from network unavailability.
 
 **Dependencies:** US-9 (Tab Nav) — must be done first (Prayers tab and Home screen banner location must exist)
 **Build Phase:** Phase 2 (after US-9)
