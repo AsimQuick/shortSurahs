@@ -1,3 +1,5 @@
+> **NOTE: This is the V1/MVP PRD. It has been superseded by `/scrum-master/v2_prd.md` for all work from Sprint 5 onward.**
+
 # PRD — shortSurahs (AI-Agent Edition)
 
 ## 1. Product Definition

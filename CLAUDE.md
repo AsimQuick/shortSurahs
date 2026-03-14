@@ -1,20 +1,24 @@
 # shortSurahs
 
 ## Product Vision
-A distraction-free Quran memorization app that plays looping ayah tracks offline — on phone and in the car.
+A distraction-free Quran memorization app that plays looping ayah tracks offline — on phone and in the car. V2 adds user accounts, prayer awareness, and an expanded 17-surah library.
 
 ## Product Pillars
-- **Offline-first** — All audio bundled locally, zero network dependency
-- **Simplicity** — Minimal Apple Music-style UI, no clutter
-- **Memorization-focused** — Loop-until-ready playback model
+- **Offline-first** — All audio bundled locally, zero network dependency. Network used only for auth and prayer times
+- **Simplicity** — Minimal Apple Music-style UI, bottom tab navigation (Home, Prayers, Account)
+- **Memorization-focused** — Loop-until-ready playback model. Intros play once, ayahs loop. Per-ayah artwork
+- **Privacy-respecting** — No geolocation. Prayer times from timezone only. No ads, no tracking
 
 ## Technology Stack
 - **Framework:** React Native Expo (SDK 53+)
 - **Architecture:** Continuous Native Generation (CNG)
 - **Audio Engine:** react-native-track-player (lock screen, CarPlay, Android Auto, background audio)
 - **State Management:** Zustand
-- **Platforms:** iOS, Android, Apple CarPlay, Android Auto
-- **Backend:** None — offline-first, no login, no streaming
+- **Authentication:** Firebase Auth (Email, Apple Sign-In, Google Sign-In)
+- **Prayer Times:** Aladhan API (timezone-based, no geolocation)
+- **Video:** expo-video (login screen background)
+- **Platforms:** iOS, Android
+- **Backend:** Firebase Auth only — no Firestore, no data sync
 
 ## Docker Rules
 - Docker is **not applicable** for this project (pure mobile app, no backend services)
@@ -37,4 +41,11 @@ A distraction-free Quran memorization app that plays looping ayah tracks offline
 
 ## Current Sprint
 See `/scrum-master/scrum-master.md` for current sprint status and controlled vocabulary.
-See `/scrum-master/prd.md` for the full Product Requirements Document (if provided).
+See `/scrum-master/v2_prd.md` for the active V2 Product Requirements Document.
+See `/scrum-master/prd.md` for the original V1/MVP PRD (historical reference only).
+
+## Reference Implementation
+The finnaDo project at `/Users/asim/NoIcloud/finnaDo/finnaDo` contains proven patterns for:
+- Firebase Auth (Email, Apple, Google Sign-In) — see `contexts/AuthContext.tsx`
+- Background video on login screen — see `components/WelcomeScreen.tsx`
+- Account management (logout, delete account, ToS/Privacy links) — see `app/(tabs)/settings.tsx`

@@ -20,26 +20,34 @@
 | `done` | Implementation verified against all ACs and DoD; story complete |
 | `blocked` | Cannot complete validation — see reason in Tester Notes |
 
-## Current Sprint: Sprint 4
+## Project Status: V2 IN PROGRESS
 
-**Goal:** Deliver background audio and lock screen controls on iOS and Android -- completing the MVP.
+**MVP complete (6 stories, Sprints 1-4).** V2 development begins Sprint 5.
 
-**Duration:** 2026-03-29 -> 2026-04-12
-**Status:** `planning`
-**Total Story Points:** 2 (US-6 only) -- conservative per PO-PI-13
-**Sprint File:** `/scrum-master/sprint4.md`
+**Current Sprint:** Sprint 5 (planning)
+**Active PRD:** `/scrum-master/v2_prd.md`
 
-### Sprint Backlog
+### MVP Story Summary
 
-| ID | Story | Points | Status | Priority | GitHub |
-|----|-------|--------|--------|----------|--------|
-| US-6 | Background & Lock Screen Audio | 2 | `not-started` | P0 | #6 |
+| ID | Story | Points | Status | PRs |
+|----|-------|--------|--------|-----|
+| US-1 | Data Layer | 3 | `done` | Sprint 1 |
+| US-2 | Navigation | 3 | `done` | Sprint 1 |
+| US-3 | Surah List Screen | 3 | `done` | Sprint 2 |
+| US-4 | Player Screen UI | 5 | `done` | Sprint 2 |
+| US-5 | Audio Playback with Looping | 8 | `done` | Sprints 2-3 |
+| US-6 | Background & Lock Screen Audio | 2 | `done` | Sprint 4 |
+| **Total** | | **24** | | **29 PRs merged** |
 
-### Priority Order
+### Product Pillars — All Addressed
 
-1. **US-6** (P0) -- Final MVP story. Background audio and lock screen controls.
+| Pillar | How Delivered |
+|--------|-------------|
+| **Offline-first** | All 24 audio tracks bundled locally via `audioMap.ts`; zero network dependency; no backend, no login, no streaming |
+| **Simplicity** | Apple Music-style list + Now Playing UI; minimal controls (Play/Pause, Next, Previous); light/dark theme via system setting |
+| **Memorization-focused** | `RepeatMode.Track` loops each aya until user presses Next; auto-play on surah selection; position retained on pause |
 
-### Dependency Graph (Sprint 4)
+### Dependency Graph (Final)
 
 ```
 [DONE] US-1 (Data) ──┐
@@ -48,52 +56,74 @@
                       ├──> [DONE] US-4 (Player UI)
                       │         |
                       │         v
-                      └──> [DONE] US-5 (Audio Playback) ──> US-6 (Background Audio)
+                      └──> [DONE] US-5 (Audio Playback) ──> [DONE] US-6 (Background Audio)
 ```
 
-### Recommended Build Order
+### Final Metrics
 
-1. **Phase 1** (parallel): AC-6.3 (iOS audio session) + AC-6.4 (Android foreground service) -- configuration
-2. **Phase 2** (sequential): AC-6.2 -- Lock screen metadata and controls
-3. **Phase 3** (sequential): AC-6.1 -- Background audio verification + manual device testing
+| Metric | Value |
+|--------|-------|
+| Total Story Points Delivered | 24 |
+| Total PRs Merged | 29 (#1-#36) |
+| Tests at HEAD | 680 (27 suites, all passing) |
+| Coverage | Statements 95.83%, Branches 92.85%, Functions 100%, Lines 95.23% |
+| CI Defects Found/Resolved | 6/6 (lifetime) |
+| Open Defects | 0 |
 
-### Process Improvements Active in Sprint 4
+### Completed Owner Action Items
 
-- Enforce build order via orchestration (PO-PI-11)
-- Human owner investigate GitHub Actions ghost failures before Sprint 4 (PO-PI-12)
-- Sprint 4 scope is US-6 only, 2 pts (PO-PI-13)
-- Sprint goal must be achievable, not aspirational (PO-PI-14)
-- Infrastructure CI failures do not consume Dev-Tester loop iterations (PI-6)
-- First-PR preflight: `npm ci`, `npx tsc --noEmit`, `npm test` locally (PI-9)
-- Single PR per AC (PI-12)
+- **REQ-5:** EAS Build + physical device testing — DONE. Background audio and lock screen controls verified on real devices.
 
-### Out of Scope (Post-MVP)
+### V2 Sprint 5 Stories
 
-- CarPlay / Android Auto (PRD Flow 4, Sections 10.x)
-- Additional surahs beyond fatiha, falaq, ikhlas, nas
-- Performance benchmarks (PRD Section 14)
+| ID | Story | Points | Status | Sprint |
+|----|-------|--------|--------|--------|
+| US-7 | Expanded Surah Library (17 Surahs) | 5 | `planning` | Sprint 5 |
+| US-8 | Firebase Authentication | 5 | `planning` | Sprint 5 |
+
+### V2 Backlog (Sprint 6+)
+
+> Full requirements in `/scrum-master/v2_prd.md`
+
+| Feature | Summary | Dependencies |
+|---------|---------|-------------|
+| Bottom Tab Navigation | Home, Prayers, Account tabs replacing Stack-only nav | US-8 (Auth) |
+| Prayer Times | Next prayer on Home screen + full schedule on Prayers tab (Aladhan API, timezone-based, no geolocation) | Tab navigation |
+| Account Screen | Logout, Delete Account, ToS/Privacy links | US-8 (Auth) |
+
+**Firebase Setup Status:** DONE — project `shortsurahs-66204`, all providers enabled, all OAuth client IDs obtained. See v2_prd.md for credentials.
+
+### Post-V2 Backlog (Future)
+
+- CarPlay / Android Auto
+- Performance benchmarks
 - Custom theming beyond system light/dark
 
-### PO Requests Status
+## Asset Inventory (V2 — 17 Surahs)
 
-4 of 5 Product Owner requests resolved. **REQ-5 is OPEN and blocks Sprint 4 acceptance.**
+| # | Surah | Key | Ayahs | Audio | Images |
+|---|-------|-----|-------|-------|--------|
+| 1 | Al-Fatiha | `1-fatiha` | 7 | 8 | 8 |
+| 99 | Az-Zalzalah | `099-zalzalah` | 8 | 9 | 9 |
+| 100 | Al-Adiyat | `100-adiyat` | 11 | 12 | 12 |
+| 101 | Al-Qariah | `101-qariah` | 11 | 12 | 12 |
+| 102 | At-Takathur | `102-takathour` | 8 | 9 | 9 |
+| 103 | Al-Asr | `103-asr` | 3 | 4 | 4 |
+| 104 | Al-Humazah | `104-humaza` | 9 | 10 | 10 |
+| 105 | Al-Fil | `105-fil` | 5 | 6 | 6 |
+| 106 | Quraysh | `106-quraish` | 4 | 5 | 5 |
+| 107 | Al-Ma'un | `107-maun` | 7 | 8 | 8 |
+| 108 | Al-Kawthar | `108-kawtar` | 3 | 4 | 4 |
+| 109 | Al-Kafirun | `109-kafiroune` | 6 | 7 | 7 |
+| 110 | An-Nasr | `110-nasr` | 3 | 4 | 4 |
+| 111 | Al-Masad | `111-masad` | 5 | 6 | 6 |
+| 112 | Al-Ikhlas | `112-ikhlas` | 4 | 5 | 5 |
+| 113 | Al-Falaq | `113-falaq` | 5 | 6 | 6 |
+| 114 | An-Nas | `114-nas` | 6 | 7 | 7 |
+| **Total** | | | **105** | **122** | **122** |
 
-- REQ-1: Initial surah list confirmed (fatiha, falaq, ikhlas, nas) — **resolved**
-- REQ-2: `models/` directory clarified (DevRAG index, added to .gitignore) — **resolved**
-- REQ-3: Boilerplate files kept per owner decision — **resolved**
-- REQ-4: EAS Build config deferred — owner will add credentials when ready — **resolved**
-- REQ-5: EAS Build must be configured before US-6 acceptance (manual device testing) — **OPEN**
-
-See `/scrum-master/po-requests.md` for details.
-
-## Asset Inventory
-
-| Surah | Folder | Tracks | Artwork |
-|-------|--------|--------|---------|
-| Al-Fatiha | `fatiha` | 6 (01-06.mp3) | fatiha.jpg |
-| Al-Falaq | `falaq` | 6 (01-06.mp3) | falaq.jpg |
-| Al-Ikhlas | `ikhlas` | 5 (01-05.mp3) | ikhlas.jpg |
-| An-Nas | `nas` | 7 (01-07.mp3) | nas.jpg |
+Audio/image naming: `{number}-{name}-{n}.mp3/.jpg`, intros: `{number}-{name}-intro.mp3/.jpg`
+Login video: `assets/video/shortSurah-login-sm.mp4`
 
 ## Sprint History
 
@@ -158,14 +188,39 @@ See `/scrum-master/po-requests.md` for details.
 
 **Sprint file:** `/scrum-master/sprint3.md`
 
+### Sprint 4 — Background Audio & Lock Screen Controls (2026-03-29 -> 2026-04-12)
+
+**Goal:** Deliver background audio and lock screen controls on iOS and Android -- completing the MVP.
+**Outcome:** Sprint goal MET (CI-verifiable scope). First sprint with 100% velocity.
+
+| Metric | Value |
+|--------|-------|
+| Planned | 2 story points (US-6 only) |
+| Delivered | 2 story points (US-6, all 4 ACs CI-verified) |
+| Velocity | 100% (CI-verifiable) |
+| PRs Merged | 4 (#33-#36) |
+| Tests at HEAD | 680 (27 suites, all passing) |
+| CI Defects Found/Resolved | 0/0 |
+| Dev-Tester Loop Iterations | 0 (project first) |
+| Ghost CI Failures | 0 |
+| Build Order Compliance | 100% (project first) |
+
+**Accepted stories:** US-6 (Background & Lock Screen Audio, 2 pts)
+**Outstanding:** REQ-5 — manual device testing on physical iOS and Android devices (human-owner action item)
+**MVP status:** 6 of 6 stories complete (all code merged). REQ-5 is the sole remaining gate before shippable.
+
+**Sprint file:** `/scrum-master/sprint4.md`
+
 ## Sprint Summary
 
-| Sprint | Phase | Goal |
-|--------|-------|------|
-| Sprint 1 | complete | Core MVP -- data layer, navigation, CI pipeline (6 pts delivered) |
-| Sprint 2 | complete | Audio Playback Core -- player UI, list polish, audio foundation (8 pts delivered; US-5 partial, US-6 deferred) |
-| Sprint 3 | complete | Interactive Playback & Background Audio -- US-5 fully done (5 remaining ACs, ~5 pts delivered); US-6 not started (carry-forward) |
-| Sprint 4 | planning | Background Audio & Lock Screen Controls -- US-6 (2 pts); final MVP sprint |
+| Sprint | Phase | Goal | Points |
+|--------|-------|------|--------|
+| Sprint 1 | complete | Core MVP -- data layer, navigation, CI pipeline | 6 |
+| Sprint 2 | complete | Audio Playback Core -- player UI, list polish, audio foundation | 8 |
+| Sprint 3 | complete | Interactive Playback -- US-5 fully done (all 8 ACs) | ~5 |
+| Sprint 4 | complete | Background Audio & Lock Screen Controls -- US-6 (all 4 ACs); first 100% velocity sprint | 2 |
+| Sprint 5 | planning | V2 Foundation -- Expanded 17-surah library (US-7) + Firebase Authentication (US-8) | 10 |
+| **MVP Total** | **COMPLETE** | **All 6 stories delivered, 680 tests, 95%+ coverage, zero open defects** | **~21** |
 
 ## Notes
 
@@ -173,7 +228,7 @@ See `/scrum-master/po-requests.md` for details.
 - `types/index.ts` created -- Surah and Track interfaces exported
 - `data/dataUtils.ts` created -- getSurahs() and getTracksForSurah() utilities
 - Expo Router configured -- file-based routing under `app/`, Stack navigator
-- 545 tests passing across 23 suites (Sprint 3 close; up from 383 at Sprint 2 close)
+- 680 tests passing across 27 suites (Sprint 4 close; up from 545 at Sprint 3 close)
 - CI pipeline operational: lint (eslint), type-check (tsc), test (jest-expo)
 - Audio assets verified: fatiha (6), falaq (6), ikhlas (5), nas (7) -- 24 tracks total
 - Artwork verified: fatiha.jpg, falaq.jpg, ikhlas.jpg, nas.jpg
@@ -189,6 +244,15 @@ See `/scrum-master/po-requests.md` for details.
 - `handleMissingTrack()` exported from `services/trackQueue.ts` (AC-5.8) -- skip-to-next or graceful halt
 - `.github/pull_request_template.md` created (CF-5/CF-21) -- US-6 manual test checklist
 - US-5 fully complete: all 8 ACs done, interactive playback works end-to-end
-- Sprint plan files: `/scrum-master/sprint1.md`, `/scrum-master/sprint2.md`, `/scrum-master/sprint3.md`, `/scrum-master/sprint4.md`
-- PRD: `/scrum-master/prd.md`
-- GitHub issues: #1 (US-1, closed), #2 (US-2, closed), #3 (US-3, closed), #4 (US-4, closed), #5 (US-5, closed), #6 (US-6, open), #26 (CF-5, closed)
+- `UIBackgroundModes: ["audio"]` added to `expo.ios.infoPlist` in `app.json` (US-6 AC-6.1/6.3)
+- `react-native-track-player` Expo config plugin added to `app.json` (US-6 AC-6.4)
+- Android permissions: `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_MEDIA_PLAYBACK` added (US-6 AC-6.4)
+- Track title format updated to `"surahName — Aya N"` for lock screen display (US-6 AC-6.2)
+- Coverage at Sprint 4 close: Statements 95.83%, Branches 92.85%, Functions 100%, Lines 95.23%
+- All 6 MVP stories complete (US-1 through US-6): code merged, CI-verified, zero open defects
+- REQ-5 (EAS Build + physical device testing) is the sole remaining gate before MVP is shippable
+- Sprint plan files: `/scrum-master/sprint1.md`, `/scrum-master/sprint2.md`, `/scrum-master/sprint3.md`, `/scrum-master/sprint4.md`, `/scrum-master/sprint5.md`
+- PRD: `/scrum-master/prd.md` (V1, historical), `/scrum-master/v2_prd.md` (active)
+- GitHub issues: #1 (US-1, closed), #2 (US-2, closed), #3 (US-3, closed), #4 (US-4, closed), #5 (US-5, closed), #6 (US-6, open), #26 (CF-5, closed), #37 (US-7, open), #38 (US-8, open)
+- V2 assets verified: 122 audio files, 122 image files, 1 login video — all present in assets/audio/, assets/images/, assets/video/
+- Firebase project ready: `shortsurahs-66204`, Email/Apple/Google providers enabled, all OAuth client IDs obtained

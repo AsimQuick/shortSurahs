@@ -523,3 +523,190 @@ All 6 Sprint 3 PRs: CI green. Zero force-merges. Zero skipped checks. Single PR 
 Cumulative: 19 story points delivered across 3 sprints. Average ~6.3 pts/sprint.
 
 ---
+
+---
+
+## Sprint 4 — Background Audio & Lock Screen Controls (Final MVP)
+
+**Sprint Duration:** 2026-03-29 -> 2026-04-12
+**Retrospective Date:** 2026-03-01
+**Retrospective Author:** tester
+
+---
+
+### Sprint Outcome
+
+Sprint 4 delivered all CI-verifiable work for US-6 — the final MVP story. All 4 acceptance criteria have code implementations merged to main, verified by CI, with zero defects and zero Dev-Tester loop iterations consumed. This is the cleanest sprint in the project's history by every measurable CI metric.
+
+**Stories fully done (CI-verifiable):** US-6 — all 4 ACs implemented, tested, and merged (2 pts)
+**Stories blocked (manual device testing):** US-6 story DoD has 5 items pending REQ-5 resolution
+
+**PRs merged (Sprint 4):** 4 (PRs #33, #34, #35, #36)
+**CI result:** All 4 PRs passed CI on first attempt — zero defects, zero loop iterations consumed
+**Tests at sprint close:** 680 tests across 27 suites, all passing (up from 545 at Sprint 3 close)
+**Tests added this sprint:** 135 (+24.8%)
+**Dev-Tester loop iterations consumed:** 0 (first time in project history)
+**Ghost CI failures:** 0 (PO-PI-12 human investigation appears to have resolved the Sprint 3 ghost failure pattern)
+**Build order compliance:** 100% — Phase 1 (AC-6.3 + AC-6.4) before Phase 2 (AC-6.2) before Phase 3 (AC-6.1) — first sprint where prescribed build order was followed exactly
+
+The Tester Sprint Status is `PASS (CI-verifiable work complete; manual device testing blocked on REQ-5)`.
+
+---
+
+### Missed Checks
+
+**MC-13: Branch naming for AC-6.3 does not follow the `feature/US-X-AC-Y` convention.**
+PR #35 (AC-6.3) was opened from branch `feature/US-6-AC-3` instead of the correct `feature/US-6-AC-6.3`. This is the same branch naming drift seen in Sprint 1 (MC-7) and is a minor audit trail inconsistency. The PR was merged and CI passed; no quality defect resulted. However, the branch name creates ambiguity (AC-3 vs AC-6.3) in the merge history.
+
+Future process addition: The orchestration script should validate that the branch name matches the expected `feature/US-X-AC-Y` format before allowing a PR to be opened. A naming mismatch should be flagged (not blocked) so the Dev Team can correct it before merge.
+
+**MC-14: Manual device testing (REQ-5) was not resolved before sprint close — for the fourth consecutive sprint.**
+The story-level DoD for US-6 includes 5 items that require physical iOS and Android devices and EAS Build configuration. REQ-5 was identified as a pre-sprint blocker at Sprint 4 kickoff. At sprint close, it remains open. This is not a code quality defect — all CI-verifiable work is exemplary. However, the behavioral confirmation that audio actually continues in the background on a real device has not been performed. The app cannot be called "shippable" until this is done.
+
+Future process addition: REQ-5 (EAS Build config, physical devices) must be resolved by the human owner before the next sprint can declare the MVP "done." The Tester cannot unblock this. It requires: (1) an Expo account, (2) an Apple Developer account with a provisioned device, (3) a Google Play account or sideloading setup, and (4) eas.json configuration. This is a human-owner action item with no automated workaround.
+
+**MC-15: The story DoD checkbox format in the AC-6.4 section has a formatting inconsistency.**
+The AC-6.4 header in sprint4.md contains `- [x] - [x] **AC-6.4: Android foreground service**` — a doubled checkbox pattern that was present from the original sprint file and was not corrected before or during development. This is a cosmetic issue in the sprint file; no functional or CI impact.
+
+Future process addition: Sprint file formatting should be validated before the sprint begins. A simple lint check on markdown checkbox syntax would catch this class of error at planning time.
+
+---
+
+### Process Improvements
+
+**PI-16: Zero Dev-Tester loop iterations consumed is the new baseline target.**
+Sprint 4 is the first sprint with zero CI defects across all PRs. This was achieved by: (1) conservative scope (2 pts), (2) prior work (AC-5.1/5.2 already implemented the underlying capabilities), (3) static-assertion test strategy (testing configuration rather than runtime behavior). Future sprints should aim for zero loop iterations as the default expectation, not a stretch goal.
+
+**PI-17: Static-assertion test strategy for configuration-heavy ACs is highly effective.**
+US-6 ACs 6.3 and 6.4 are primarily configuration changes in `app.json`. The test strategy used static file-reading assertions (load JSON, assert key presence) rather than runtime mocks. This approach is deterministic, fast, and CI-verifiable for configuration that cannot be tested on a simulator. For future configuration-heavy stories (e.g., EAS build config, app.json changes), static assertions should be the primary test mechanism, with behavioral tests reserved for manual device verification.
+
+**PI-18: Build order compliance requires orchestration enforcement, not documentation alone.**
+Sprint 4 is the first sprint where the prescribed build order (Phase 1 → Phase 2 → Phase 3) was followed correctly. Sprint 3 violated the same prescribed order despite documentation specifying it. The difference in Sprint 4 was likely the conservative scope (only 4 ACs, clear sequential dependency) making the ordering natural. For future sprints with parallel phases, the orchestration script must enforce phase gating — do not rely on the Dev Team to read and self-enforce phase sequencing documentation.
+
+**PI-19: REQ-5 (EAS Build + physical device testing) is the sole remaining MVP blocker.**
+All code is written. All CI-verifiable work is done. All 6 user stories (US-1 through US-6) have their code merged to main with 680 passing tests at 95%+ coverage. The only thing standing between the current state and a shippable MVP is REQ-5. The human owner should treat this as a P0 action item for the next available work session.
+
+---
+
+### Carry-Forward Backlog (Post-MVP)
+
+| Priority | Item | Remaining Work | Owner |
+|----------|------|----------------|-------|
+| P0 | REQ-5 | EAS Build config (eas.json, Expo account, Apple Dev account, Android provisioning) + physical device testing for US-6 behavioral DoD | Human owner |
+| Post-MVP | CarPlay / Android Auto | PRD Flow 4, Sections 10.x | Future sprint |
+| Post-MVP | Additional surahs | Beyond fatiha, falaq, ikhlas, nas | Future sprint |
+| Post-MVP | Performance benchmarks | PRD Section 14 | Future sprint |
+
+**MVP Status at Sprint 4 close:** All code complete. 6/6 stories implemented. 680 tests passing. REQ-5 is the only remaining gate before "shippable."
+
+---
+
+### Sprint 4 CI Summary
+
+| PR | AC | Branch CI | PR CI | Merge-to-main CI | Tests Added | Cumulative Tests |
+|----|-----|-----------|-------|-----------------|-------------|-----------------|
+| #33 | AC-6.1 (Background audio config) | PASS (22533769611) | PASS (22533773502) | PASS (22533787829) | +33 | 578 |
+| #34 | AC-6.2 (Lock screen controls) | PASS (22533906548) | PASS (22533911079) | PASS (22533920080) | +32 | 610 |
+| #35 | AC-6.3 (iOS audio session) | PASS (22534003668) | PASS (22534007851) | PASS (22534022686) | +26 | 636 |
+| #36 | AC-6.4 (Android foreground service) | PASS (22534109760) | PASS (22534114536) | PASS (22534127896) | +44 | 680 |
+
+All 4 Sprint 4 PRs: CI green on every run (branch push, PR check, merge-to-main). Zero force-merges. Zero skipped checks. Zero defects. Single PR per AC enforced. Build order followed.
+
+**Final HEAD coverage (run 22534127896):**
+- Statements: 95.83%
+- Branches: 92.85%
+- Functions: 100%
+- Lines: 95.23%
+- Threshold (70% all metrics): EXCEEDED by wide margin
+
+---
+
+### Velocity Trend (4 Sprints)
+
+| Sprint | Planned | Delivered (CI) | Velocity % | Tests at Close | Defect Iterations |
+|--------|---------|----------------|------------|----------------|-------------------|
+| Sprint 1 | 26 pts | 6 pts | 23% | 140 | 3 |
+| Sprint 2 | ~18 pts | 8 pts | 44% | 383 | 2 |
+| Sprint 3 | ~7 pts | ~5 pts | 71% | 545 | 1 + 6 ghost |
+| Sprint 4 | 2 pts | 2 pts (CI) | 100% (CI) | 680 | 0 |
+
+Cumulative: 21 story points delivered across 4 sprints. Sprint 4 is the first sprint to deliver 100% of planned CI-verifiable work with zero defect iterations. The velocity trend (23% → 44% → 71% → 100%) demonstrates consistent process improvement across the project.
+
+---
+
+---
+
+## Sprint 4 — Product Owner Retrospective
+
+**Review Date:** 2026-03-01
+**Review Author:** product-owner
+
+---
+
+### Sprint Outcome (PO Perspective)
+
+Sprint 4 is the project's best sprint by every measurable dimension. The final MVP story (US-6, Background Audio & Lock Screen Controls) was implemented across 4 acceptance criteria, merged via 4 PRs, verified by 135 new tests, and passed CI with zero defects and zero Dev-Tester loop iterations. For the first time, the team delivered 100% of planned CI-verifiable work.
+
+The codebase is now feature-complete for the defined MVP scope. All 6 user stories (US-1 through US-6) are merged to main with 680 passing tests at 95%+ coverage. The product that was envisioned — a distraction-free Quran memorization app with offline looping audio, lock screen controls, and background playback — exists in code.
+
+The sole remaining gap is REQ-5: EAS Build configuration and physical device testing. This is a human-owner action item, not a code quality gap.
+
+**Accepted:** US-6 (2 pts) — all 4 ACs CI-verified
+**Velocity:** 2 / 2 = 100% (CI-verifiable scope)
+
+---
+
+### What Went Well
+
+**WW-16: First sprint with 100% velocity and zero defects.** The velocity trend across 4 sprints (23% → 44% → 71% → 100%) is a textbook demonstration of iterative process improvement. Conservative scoping (PO-PI-13) and an achievable goal (PO-PI-14) were the key enablers. The lesson is clear: scope to capacity, not aspiration.
+
+**WW-17: Zero Dev-Tester loop iterations — a project first.** All 4 PRs passed CI on first attempt. No defects found by the Tester. No rework required. This validates the maturity of the Dev Team's preflight discipline (PI-9) and the Tester's requirements clarity (no ambiguous ACs to misinterpret).
+
+**WW-18: Build order compliance — first time in project history.** Sprint 3 violated the prescribed Phase 1 → Phase 2 → Phase 3 sequencing despite explicit documentation. Sprint 4 followed it exactly. PO-PI-11 (orchestration enforcement) worked. The difference: clear dependency between phases (configuration before metadata before verification) made the ordering natural and enforceable.
+
+**WW-19: Zero ghost CI failures.** Sprint 3 had 6 zero-log ghost failures that consumed significant Tester capacity. Sprint 4 had none. PO-PI-12 (human investigation) appears to have resolved the infrastructure noise. The CI pipeline is now a reliable signal, not a noisy channel.
+
+**WW-20: The Tester's quality gate is thorough and precise.** The Sprint 4 Tester Notes distinguish clearly between CI-verifiable items (all confirmed) and behavioral items (all blocked on REQ-5). The PASS-with-caveat decision is the right call — it credits the work done without prematurely declaring the app shippable.
+
+**WW-21: 680 tests with 95%+ coverage is an exceptional test suite.** From 0 tests at project start to 680 tests across 27 suites in 4 sprints. Coverage exceeds the 70% threshold by 25+ percentage points on every metric. Functions coverage is 100%. The codebase is thoroughly tested for an MVP.
+
+---
+
+### What Didn't Go Well
+
+**WDW-13: REQ-5 remains open after four sprints.** EAS Build configuration and physical device testing have been flagged as blockers since Sprint 1. Four sprints later, it remains unresolved. All CI-verifiable code is done, but the app has never been run on a physical device. Background audio and lock screen controls — the entire Sprint 4 scope — cannot be behaviorally confirmed without real hardware. This is the project's most persistent open item and the only thing preventing "MVP done."
+
+**WDW-14: Branch naming drift persists (MC-13).** The `feature/US-6-AC-3` branch name for AC-6.3 is the same naming inconsistency flagged in Sprint 1 (MC-7). Three sprints of retrospective documentation have not resolved it. This is a minor issue with no quality impact, but it demonstrates that documentation-only process improvements have limited enforcement power without tooling.
+
+**WDW-15: The sprint was so conservative (2 pts) that it's hard to generalize its lessons.** 100% velocity on 2 points in a sprint with 4 configuration-heavy ACs is a clean win, but the conditions were ideal: small scope, prior infrastructure work (US-5), static-assertion test strategy, zero runtime complexity. Future sprints with larger scope, new architecture, or behavioral complexity may not replicate these results. The velocity trend is real, but the Sprint 4 data point should be weighted accordingly.
+
+---
+
+### Process Improvements (PO Recommendations — Post-MVP)
+
+**PO-PI-15: REQ-5 must be resolved before any post-MVP planning begins.** The human owner should treat EAS Build configuration as a P0 action item for the next available work session. Steps: (1) Create or link an Expo account, (2) configure `eas.json`, (3) provision an Apple Developer device profile, (4) run `eas build` for iOS and Android, (5) install on physical devices, (6) manually verify background audio continues when minimized/screen locked, lock screen controls work, notification shows correct metadata. Only after this is confirmed should post-MVP work be considered.
+
+**PO-PI-16: Post-MVP prioritization should focus on CarPlay/Android Auto (PRD Flow 4).** With the core memorization loop complete (select surah → hear looping audio → advance tracks → background playback), the highest-value next feature is in-car playback. This extends the "memorize hands-free" use case to the most common hands-free context: driving.
+
+**PO-PI-17: Carry forward the process improvements that proved effective.** The following process improvements demonstrated measurable impact and should be permanent conventions:
+- PI-9: First-PR preflight (`npm ci`, `npx tsc --noEmit`, `npm test`)
+- PI-12: Single PR per AC
+- PO-PI-13: Conservative sprint scoping (plan to capacity, not aspiration)
+- PO-PI-14: Achievable sprint goals (singular and concrete)
+- PI-17: Static-assertion test strategy for configuration-heavy ACs
+
+---
+
+### MVP Delivery Summary
+
+| Sprint | Stories Delivered | Points | Tests | Key Milestone |
+|--------|-----------------|--------|-------|---------------|
+| Sprint 1 | US-1, US-2 | 6 | 140 | Data layer + navigation foundation |
+| Sprint 2 | US-3, US-4 | 8 | 383 | Polished UI + audio infrastructure |
+| Sprint 3 | US-5 (complete) | ~5 | 545 | Interactive playback works end-to-end |
+| Sprint 4 | US-6 | 2 | 680 | Background audio + lock screen controls |
+| **Total** | **6/6 stories** | **21 pts** | **680** | **MVP code-complete** |
+
+The project is code-complete. All 6 user stories are implemented, tested, and merged. REQ-5 (EAS Build + physical device testing) is the sole remaining gate before the MVP is shippable.
+
+---
