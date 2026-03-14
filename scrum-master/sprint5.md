@@ -350,6 +350,8 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 
 #### Dev Team Status: resolved
 #### Dev Team Notes:
+CI Fix — AC-8.3 Loop Iteration 3 (2026-03-14): Removed `allowsFullscreen={false}` prop from `VideoView` in `app/welcome.tsx` (line 121). The `allowsFullscreen` prop does not exist on `expo-video`'s `VideoViewProps` type, causing TS2769. The prop was redundant — `nativeControls={false}` already suppresses all native controls including fullscreen. No logic change.
+
 CI Fix — AC-8.3 Loop Iteration 2 (2026-03-14): Added `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` to the dependency array of the staggered fade-in `useEffect` (line 75 in `app/welcome.tsx`). ESLint `react-hooks/exhaustive-deps` requires all referenced values inside a `useEffect` to appear in the dep array, even stable `useRef` `.current` values. Since all three are `useRef(new Animated.Value(0)).current` they are stable references — adding them to the array is safe and causes no re-runs. No logic change.
 
 CI Fix — AC-8.3 Loop Iteration 1 (2026-03-14): Replaced `useState(new Animated.Value(0))[0]` with `useRef(new Animated.Value(0)).current` for all three fade-in Animated.Value instances (`titleOpacity`, `taglineOpacity`, `buttonsOpacity`). Added `useRef` to React import. ESLint `react-hooks/exhaustive-deps` no longer warns about the empty `[]` dependency array on the staggered fade-in `useEffect` because `.current` on a ref is not considered a reactive dependency. No logic change.
@@ -365,6 +367,18 @@ AC-8.1.2 complete. `config/firebaseConfig.ts` created with all required exports 
 #### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully testable; "no Firestore/Storage/Analytics" is verifiable via import scanning. AC-8.2: exact function signatures specified against finnaDo reference pattern; mock-based unit tests clearly applicable. AC-8.3: video asset path, exact branding/tagline/footer text, and platform-conditional button rendering all testable. AC-8.4: Firebase error codes enumerated; all 4 error scenarios can be unit-tested with mock auth. AC-8.5: exact API calls (signInAsync, useIdTokenAuthRequest) named; platform exclusions testable via Platform.OS mock. AC-8.6: auth guard navigation and loading-state indicator are testable via navigation unit tests. DoD checklist complete including credential verification against v2_prd.md. Cleared for development.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 3 of 3 (FINAL)**
+- **Date:** 2026-03-14
+- **Severity:** Minor (type error only — no logic defect, no runtime impact; `allowsFullscreen` is not surfaced at runtime since `nativeControls={false}` already suppresses the native fullscreen control)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Type check (`npx tsc --noEmit`)
+- **Failing File:** `app/welcome.tsx` line 121
+- **CI Error:** `TS2769: No overload matches this call. Property 'allowsFullscreen' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<VideoView> & Readonly<VideoViewProps>'`
+- **Root Cause:** `<VideoView>` at line 118–125 of `app/welcome.tsx` is passed `allowsFullscreen={false}`. The `expo-video` package does not declare `allowsFullscreen` on `VideoViewProps` — it is not part of the component's public API. TypeScript correctly rejects the unknown prop. The `nativeControls={false}` prop (which is valid) already prevents the native player UI (including any fullscreen button) from rendering. `allowsFullscreen` is redundant and non-existent on this component.
+- **Recommended Fix:** Remove `allowsFullscreen={false}` from the `<VideoView>` JSX at `app/welcome.tsx` line 121. No other changes needed — `contentFit`, `nativeControls`, `allowsPictureInPicture`, `player`, and `style` are all valid `VideoViewProps`. Single-line deletion resolves CI.
+- **No requirements change needed.** AC-8.3 specifies a looping muted background video; it makes no mention of fullscreen controls. The acceptance criteria, video player configuration, and all other `welcome.tsx` implementation details remain correct.
+- **Loop exhausted after this iteration.** If this fix does not resolve CI, escalate to the Product Owner for scope/risk assessment before any further action.
 
 **CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 2 of 3**
 - **Date:** 2026-03-14

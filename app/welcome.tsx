@@ -118,7 +118,6 @@ export default function WelcomeScreen() {
       <VideoView
         style={styles.video}
         player={player}
-        allowsFullscreen={false}
         allowsPictureInPicture={false}
         contentFit="cover"
         nativeControls={false}
