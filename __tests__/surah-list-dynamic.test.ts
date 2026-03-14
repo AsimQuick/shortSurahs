@@ -1,13 +1,10 @@
 /**
  * @file __tests__/surah-list-dynamic.test.ts
  * @description Unit tests for AC-3.3: Surah data loaded dynamically.
- *              Verifies that app/index.tsx loads surah data via getSurahs()
- *              from data/dataUtils (not hardcoded in the component), and that
- *              all 4 surahs (Al-Fatiha, Al-Falaq, Al-Ikhlas, An-Nas) are
- *              present in the data source.
- *              Tests are source-level assertions (testEnvironment: "node").
+ *              Updated for V2 17-surah data layer (AC-7.1): verifies the surah
+ *              list screen loads all 17 surahs dynamically from getSurahs().
  * @project shortSurahs
- * @sprint Sprint 2 — US-3 AC-3.3
+ * @sprint Sprint 2 — US-3 AC-3.3; Sprint 5 — US-7 AC-7.1
  */
 
 import * as fs from 'fs';
@@ -59,7 +56,6 @@ describe('AC-3.3 — index.tsx uses getSurahs (dynamic loading)', () => {
   });
 
   test('app/index.tsx passes getSurahs result as FlatList data prop', () => {
-    // The component stores getSurahs() in a variable and passes it as data
     expect(indexSource).toMatch(/getSurahs\(\)/);
     expect(indexSource).toContain('FlatList');
   });
@@ -89,48 +85,48 @@ describe('AC-3.3 — index.tsx has no hardcoded surah data', () => {
     expect(indexSource).not.toContain('"An-Nas"');
     expect(indexSource).not.toContain("'An-Nas'");
   });
-
-  test('surah id "fatiha" is not hardcoded directly in JSX data', () => {
-    // The id should come from data, not JSX literals like id="fatiha"
-    expect(indexSource).not.toMatch(/"fatiha"\s*,\s*"falaq"/);
-  });
 });
 
 // ---------------------------------------------------------------------------
-// AC-3.3: surahs.json contains all 4 required surahs
+// AC-7.1: surahs.json contains all 17 required surahs
 // ---------------------------------------------------------------------------
 
-describe('AC-3.3 — surahs.json contains all 4 required surahs', () => {
+describe('AC-7.1 — surahs.json contains all 17 required surahs', () => {
   test('data/surahs.json exists', () => {
     expect(fs.existsSync(SURAHS_JSON_PATH)).toBe(true);
   });
 
-  test('getSurahs() returns exactly 4 surahs', () => {
+  test('getSurahs() returns exactly 17 surahs', () => {
     const surahs = getSurahs();
-    expect(surahs).toHaveLength(4);
+    expect(surahs).toHaveLength(17);
   });
 
-  test('Al-Fatiha is present in getSurahs() result', () => {
+  test('Al-Fatiha (1-fatiha) is present', () => {
     const surahs = getSurahs();
-    expect(surahs.some((s) => s.nameEnglish === 'Al-Fatiha')).toBe(true);
+    expect(surahs.some((s) => s.id === '1-fatiha')).toBe(true);
   });
 
-  test('Al-Falaq is present in getSurahs() result', () => {
+  test('Az-Zalzalah (099-zalzalah) is present', () => {
     const surahs = getSurahs();
-    expect(surahs.some((s) => s.nameEnglish === 'Al-Falaq')).toBe(true);
+    expect(surahs.some((s) => s.id === '099-zalzalah')).toBe(true);
   });
 
-  test('Al-Ikhlas is present in getSurahs() result', () => {
+  test('Al-Ikhlas (112-ikhlas) is present', () => {
     const surahs = getSurahs();
-    expect(surahs.some((s) => s.nameEnglish === 'Al-Ikhlas')).toBe(true);
+    expect(surahs.some((s) => s.id === '112-ikhlas')).toBe(true);
   });
 
-  test('An-Nas is present in getSurahs() result', () => {
+  test('Al-Falaq (113-falaq) is present', () => {
     const surahs = getSurahs();
-    expect(surahs.some((s) => s.nameEnglish === 'An-Nas')).toBe(true);
+    expect(surahs.some((s) => s.id === '113-falaq')).toBe(true);
   });
 
-  test('all 4 surahs have Arabic names present', () => {
+  test('An-Nas (114-nas) is present', () => {
+    const surahs = getSurahs();
+    expect(surahs.some((s) => s.id === '114-nas')).toBe(true);
+  });
+
+  test('all 17 surahs have Arabic names present', () => {
     const surahs = getSurahs();
     surahs.forEach((s) => {
       expect(typeof s.nameArabic).toBe('string');
@@ -138,9 +134,14 @@ describe('AC-3.3 — surahs.json contains all 4 required surahs', () => {
     });
   });
 
-  test('surahs are in canonical order: fatiha, falaq, ikhlas, nas', () => {
+  test('surahs are in Quran order: 1, 99, 100, 101, ..., 114', () => {
     const surahs = getSurahs();
     const ids = surahs.map((s) => s.id);
-    expect(ids).toEqual(['fatiha', 'falaq', 'ikhlas', 'nas']);
+    expect(ids).toEqual([
+      '1-fatiha', '099-zalzalah', '100-adiyat', '101-qariah', '102-takathour',
+      '103-asr', '104-humaza', '105-fil', '106-quraish', '107-maun',
+      '108-kawtar', '109-kafiroune', '110-nasr', '111-masad', '112-ikhlas',
+      '113-falaq', '114-nas',
+    ]);
   });
 });

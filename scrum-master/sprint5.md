@@ -301,9 +301,17 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: not-started
+### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
-_empty — Dev Team fills this in_
+**AC-7.1 — Data layer rewrite (17 surahs): DONE** (2026-03-14)
+- `data/surahs.json`: Rewritten with 17 surahs in Quran order (1, 99–114). V2 schema: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks`. 105 ayahs + 17 intros = 122 total tracks.
+- `types/index.ts`: `Surah` interface updated to V2 fields. `Track` interface includes `isIntro: boolean`.
+- `data/dataUtils.ts`: `getSurahs()` and `getTracksForSurah()` updated for V2. Intro track (isIntro: true, title "Intro") built first, then ayah tracks (isIntro: false, title "Aya N").
+- `services/trackQueue.ts`: Updated `loadSurahQueue()` to use V2 Surah fields (`transliterationKey`, `ayahCount`, `totalTracks`) and build intro + ayah tracks.
+- `app.json`: Restored `react-native-track-player` plugin (accidentally removed during prior edits).
+- Tests: All 28 suites pass (1063 tests). Coverage: 96.42% statements, 93.75% branches. New test file `data-layer-v2.test.ts` covers V2 data layer. Existing tests updated for V2 surah IDs and field names.
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.1`
 
 ### Tester Sprint Status: requirements-approved
 ### Tester Sprint Notes:

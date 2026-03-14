@@ -250,7 +250,8 @@ describe('AC-6.4 — Track metadata for Android notification current track info'
   });
 
   test('track id is set (required for TrackPlayer queue management)', () => {
-    expect(trackQueueSource).toMatch(/id:\s*`\$\{surah\.id\}/);
+    // V2: track ids use transliterationKey-based keys (introKey, trackKey)
+    expect(trackQueueSource).toMatch(/id:\s*(introKey|trackKey)/);
   });
 
   test('track url is set from bundled audio asset (offline — no streaming)', () => {

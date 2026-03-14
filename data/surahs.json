@@ -1,34 +1,155 @@
 [
   {
-    "id": "fatiha",
-    "nameEnglish": "Al-Fatiha",
+    "id": "1-fatiha",
+    "number": 1,
     "nameArabic": "الفاتحة",
-    "trackCount": 6,
-    "artwork": "assets/images/fatiha.jpg",
-    "folder": "fatiha"
+    "nameEnglish": "Al-Fatiha",
+    "transliterationKey": "1-fatiha",
+    "ayahCount": 7,
+    "totalTracks": 8
   },
   {
-    "id": "falaq",
-    "nameEnglish": "Al-Falaq",
-    "nameArabic": "الفلق",
-    "trackCount": 6,
-    "artwork": "assets/images/falaq.jpg",
-    "folder": "falaq"
+    "id": "099-zalzalah",
+    "number": 99,
+    "nameArabic": "الزلزلة",
+    "nameEnglish": "Az-Zalzalah",
+    "transliterationKey": "099-zalzalah",
+    "ayahCount": 8,
+    "totalTracks": 9
   },
   {
-    "id": "ikhlas",
-    "nameEnglish": "Al-Ikhlas",
+    "id": "100-adiyat",
+    "number": 100,
+    "nameArabic": "العاديات",
+    "nameEnglish": "Al-Adiyat",
+    "transliterationKey": "100-adiyat",
+    "ayahCount": 11,
+    "totalTracks": 12
+  },
+  {
+    "id": "101-qariah",
+    "number": 101,
+    "nameArabic": "القارعة",
+    "nameEnglish": "Al-Qariah",
+    "transliterationKey": "101-qariah",
+    "ayahCount": 11,
+    "totalTracks": 12
+  },
+  {
+    "id": "102-takathour",
+    "number": 102,
+    "nameArabic": "التكاثر",
+    "nameEnglish": "At-Takathur",
+    "transliterationKey": "102-takathour",
+    "ayahCount": 8,
+    "totalTracks": 9
+  },
+  {
+    "id": "103-asr",
+    "number": 103,
+    "nameArabic": "العصر",
+    "nameEnglish": "Al-Asr",
+    "transliterationKey": "103-asr",
+    "ayahCount": 3,
+    "totalTracks": 4
+  },
+  {
+    "id": "104-humaza",
+    "number": 104,
+    "nameArabic": "الهمزة",
+    "nameEnglish": "Al-Humazah",
+    "transliterationKey": "104-humaza",
+    "ayahCount": 9,
+    "totalTracks": 10
+  },
+  {
+    "id": "105-fil",
+    "number": 105,
+    "nameArabic": "الفيل",
+    "nameEnglish": "Al-Fil",
+    "transliterationKey": "105-fil",
+    "ayahCount": 5,
+    "totalTracks": 6
+  },
+  {
+    "id": "106-quraish",
+    "number": 106,
+    "nameArabic": "قريش",
+    "nameEnglish": "Quraysh",
+    "transliterationKey": "106-quraish",
+    "ayahCount": 4,
+    "totalTracks": 5
+  },
+  {
+    "id": "107-maun",
+    "number": 107,
+    "nameArabic": "الماعون",
+    "nameEnglish": "Al-Ma'un",
+    "transliterationKey": "107-maun",
+    "ayahCount": 7,
+    "totalTracks": 8
+  },
+  {
+    "id": "108-kawtar",
+    "number": 108,
+    "nameArabic": "الكوثر",
+    "nameEnglish": "Al-Kawthar",
+    "transliterationKey": "108-kawtar",
+    "ayahCount": 3,
+    "totalTracks": 4
+  },
+  {
+    "id": "109-kafiroune",
+    "number": 109,
+    "nameArabic": "الكافرون",
+    "nameEnglish": "Al-Kafirun",
+    "transliterationKey": "109-kafiroune",
+    "ayahCount": 6,
+    "totalTracks": 7
+  },
+  {
+    "id": "110-nasr",
+    "number": 110,
+    "nameArabic": "النصر",
+    "nameEnglish": "An-Nasr",
+    "transliterationKey": "110-nasr",
+    "ayahCount": 3,
+    "totalTracks": 4
+  },
+  {
+    "id": "111-masad",
+    "number": 111,
+    "nameArabic": "المسد",
+    "nameEnglish": "Al-Masad",
+    "transliterationKey": "111-masad",
+    "ayahCount": 5,
+    "totalTracks": 6
+  },
+  {
+    "id": "112-ikhlas",
+    "number": 112,
     "nameArabic": "الإخلاص",
-    "trackCount": 5,
-    "artwork": "assets/images/ikhlas.jpg",
-    "folder": "ikhlas"
+    "nameEnglish": "Al-Ikhlas",
+    "transliterationKey": "112-ikhlas",
+    "ayahCount": 4,
+    "totalTracks": 5
   },
   {
-    "id": "nas",
-    "nameEnglish": "An-Nas",
+    "id": "113-falaq",
+    "number": 113,
+    "nameArabic": "الفلق",
+    "nameEnglish": "Al-Falaq",
+    "transliterationKey": "113-falaq",
+    "ayahCount": 5,
+    "totalTracks": 6
+  },
+  {
+    "id": "114-nas",
+    "number": 114,
     "nameArabic": "الناس",
-    "trackCount": 7,
-    "artwork": "assets/images/nas.jpg",
-    "folder": "nas"
+    "nameEnglish": "An-Nas",
+    "transliterationKey": "114-nas",
+    "ayahCount": 6,
+    "totalTracks": 7
   }
 ]

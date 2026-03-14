@@ -154,21 +154,21 @@ describe('AC-5.3 — Behavioral: loadSurahQueue enables loop and auto-starts pla
   test('setRepeatMode is called after loading tracks', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockSetRepeatMode).toHaveBeenCalledTimes(1);
   });
 
   test('setRepeatMode is called with RepeatMode.Track (value 2)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockSetRepeatMode).toHaveBeenCalledWith(2); // RepeatMode.Track = 2
   });
 
   test('play() is called after loading tracks', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockPlay).toHaveBeenCalledTimes(1);
   });
 
@@ -181,7 +181,7 @@ describe('AC-5.3 — Behavioral: loadSurahQueue enables loop and auto-starts pla
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('112-ikhlas');
 
     expect(callOrder).toEqual(['reset', 'add', 'setRepeatMode', 'play']);
   });
@@ -197,7 +197,7 @@ describe('AC-5.3 — Behavioral: loadSurahQueue enables loop and auto-starts pla
   test('setRepeatMode called once per loadSurahQueue invocation', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('nas');
+    await loadSurahQueue('114-nas');
     expect(mockSetRepeatMode).toHaveBeenCalledTimes(1);
     expect(mockPlay).toHaveBeenCalledTimes(1);
   });

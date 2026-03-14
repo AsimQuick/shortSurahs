@@ -14,9 +14,15 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.asim.shortsurahs",
+      "usesAppleSignIn": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
-      }
+        "UIBackgroundModes": [
+          "audio"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +31,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "package": "com.asim.shortsurahs",
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
@@ -37,6 +44,12 @@
     "plugins": [
       "expo-router",
       "react-native-track-player"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bf339e0f-10c2-408d-9493-9c89f5b8c75a"
+      }
+    }
   }
 }
