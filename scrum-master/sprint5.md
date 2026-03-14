@@ -181,6 +181,17 @@ Phase 3 can run in parallel with Phases 1-2.
 #### Tester Notes:
 Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) and no-orphan/no-missing assertions are fully testable. AC-7.4: removed ambiguous "e.g." from intro label requirement — "Intro" is now the specified display value; all 5 behavioral scenarios are testable via TrackPlayer mocks. AC-7.5: component tests cover artwork key changes on track advance. DoD checklist complete. Cleared for development.
 
+**CI FAILURE — AC-7.3 — Dev-Tester Loop: Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Major (runtime describe block in `artwork-map-v2.test.ts` fails to load — 0 of 8 runtime tests execute)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Run tests with coverage (`npm test -- --coverage`)
+- **Failing Test Suite:** `__tests__/artwork-map-v2.test.ts` — describe block 5 ("AC-7.3 — getArtwork() runtime behaviour")
+- **Root Cause:** The `moduleNameMapper` fix applied in AC-7.2 (Loop Iteration 1) covers only audio extensions: `"\\.(mp3|wav|m4a)$"`. It does NOT cover image extensions. The fifth describe block in `artwork-map-v2.test.ts` (line 262) calls `require('../data/artworkMap')` at the describe scope, causing Jest to evaluate all 122 `require('../assets/images/*.jpg')` calls inside `artworkMap.ts`. In CI (`ubuntu-latest`), `assets/images/` is absent and no `.jpg` moduleNameMapper exists — Jest throws `Cannot find module '../assets/images/1-fatiha-intro.jpg'`, aborting the runtime describe block. Static describe blocks 1–2 (which use `fs.readFileSync` on the source file) and the filesystem-guarded describe blocks 3–4 (which use `IMAGES_DIR_PRESENT`) are unaffected and pass. Only the runtime block is broken.
+- **Why the Dev Team's local run passed:** `assets/images/` exists on disk locally with all 122 `.jpg` files. Metro's asset resolver stubs binary assets to numeric references when files are present. In CI, neither the files nor a `.jpg` moduleNameMapper is configured.
+- **Recommended Fix:** Extend the existing `moduleNameMapper` entry in `package.json` to include image extensions. Change `"\\.(mp3|wav|m4a)$"` → `"\\.(mp3|wav|m4a|jpg|jpeg|png|gif)$"`. The existing `__mocks__/fileMock.js` (which returns `module.exports = 1`) is already the correct stub for image assets — no new mock file needed. This is the standard React Native/Expo pattern for binary asset mocking and future-proofs all image asset tests project-wide.
+- **No requirements change needed.** AC-7.3 acceptance criteria, artworkMap.ts implementation, and the static test assertions are all correct. The failure is a Jest environment configuration gap — the same root category as the AC-7.2 Iteration 1 failure, now surfacing for `.jpg` assets.
+
 **CI FAILURE — Dev-Tester Loop Iteration 1 of 3**
 - **Date:** 2026-03-14
 - **Severity:** Minor (lint-only, no logic defect)
@@ -356,6 +367,8 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
+**CI Fix — AC-7.3 Loop Iteration 1 (2026-03-14):** Extended `moduleNameMapper` in `package.json` to cover image extensions. Changed `"\\.(mp3|wav|m4a)$"` → `"\\.(mp3|wav|m4a|jpg|jpeg|png|gif)$"`. The existing `__mocks__/fileMock.js` (returning `module.exports = 1`) is already the correct stub. This allows the fifth describe block in `artwork-map-v2.test.ts` (runtime `require('../data/artworkMap')`) to execute in CI where image files are absent. Future-proofs all image asset tests project-wide.
+
 **CI Fix — AC-7.2 Loop Iteration 2 (2026-03-14):** Guarded filesystem-dependent describe blocks 3 and 4 in `__tests__/audio-map-v2.test.ts` with a runtime directory-existence check. Added `const AUDIO_DIR_PRESENT = fs.existsSync(AUDIO_DIR);` after the `AUDIO_DIR` constant. Changed both "No orphaned entries" and "No missing entries" describe declarations to `(AUDIO_DIR_PRESENT ? describe : describe.skip)(...)`. When `assets/audio/` is absent (CI), these blocks are skipped; when present (local), they run as before. Blocks 1, 2, and 5 are unaffected.
 
 
@@ -372,6 +385,18 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 - Tests: All 28 suites pass (1063 tests). Coverage: 96.42% statements, 93.75% branches. New test file `data-layer-v2.test.ts` covers V2 data layer. Existing tests updated for V2 surah IDs and field names.
 - All code files include structured metadata headers.
 - Branch: `feature/US-7-AC-7.1`
+
+**AC-7.3 — Artwork map rewrite (122 per-ayah images): DONE** (2026-03-14)
+- `data/artworkMap.ts`: Rewritten with 122 `require()` entries in V2 flat-file format. Keys mirror `audioMap.ts` exactly: `{transliterationKey}-intro` and `{transliterationKey}-{n}`. Covers all 17 surahs (105 ayah images + 17 intro images = 122 total). `getArtwork(transliterationKey, trackPart)` signature now matches `getAudioAsset()`.
+- `services/trackQueue.ts`: Updated `getArtwork()` calls to two-argument V2 signature — `getArtwork(surah.transliterationKey, 'intro')` and `getArtwork(surah.transliterationKey, String(i + 1))`.
+- `app/index.tsx`: Updated surah list thumbnail to use intro artwork: `getArtwork(item.id, 'intro')`.
+- `app/player/[surahId].tsx`: Now Playing screen updated to per-ayah artwork. `trackPart` computed from `currentTrackIndex` (0 → `'intro'`, N → `String(N)`). Artwork updates as track changes.
+- `__tests__/artwork-map-v2.test.ts`: New test file covering AC-7.3 — 122 entry count, V2 key naming, audioMap key parity, no-orphan/no-missing (skipped in CI), and `getArtwork()` runtime assertions.
+- `__tests__/surah-list-artwork.test.ts`: Updated assertion for new two-argument `getArtwork(item.id, 'intro')` call.
+- `__tests__/player-dynamic-content.test.ts`: Updated assertion for new V2 `getArtwork(surah.transliterationKey, trackPart)` call.
+- Tests: All 30 suites pass (1119 tests). Coverage: 98.9% statements, 93.75% branches, 100% functions. ESLint clean. TypeScript clean.
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.3`
 
 **AC-7.2 — Audio map rewrite (122 tracks): DONE** (2026-03-14)
 - `data/audioMap.ts`: Rewritten as a flat `Record<string, number>` with exactly 122 `require()` entries. Keys follow V2 convention: `{transliterationKey}-intro` and `{transliterationKey}-{n}`. Covers all 17 surahs (105 ayahs + 17 intros). `getAudioAsset(transliterationKey, trackPart)` builds the lookup key as `${transliterationKey}-${trackPart}` — backward-compatible with all existing mock usages in the test suite.

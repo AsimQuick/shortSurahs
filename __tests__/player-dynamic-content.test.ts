@@ -33,8 +33,10 @@ describe('AC-4.3 — artwork loaded from bundled assets', () => {
     expect(source).toMatch(/import.*getArtwork.*from.*artworkMap/);
   });
 
-  test('getArtwork is called with surahId parameter', () => {
-    expect(source).toMatch(/getArtwork\(surahId/);
+  test('getArtwork is called with transliterationKey and trackPart (V2 per-ayah)', () => {
+    // V2: artworkMap uses two-argument signature getArtwork(transliterationKey, trackPart).
+    // The player screen looks up artwork using surah.transliterationKey and a computed trackPart.
+    expect(source).toMatch(/getArtwork\(surah\.transliterationKey,\s*trackPart\)/);
   });
 
   test('artwork source is not a hardcoded string URI (no uri: pattern)', () => {
