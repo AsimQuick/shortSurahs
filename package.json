@@ -13,7 +13,7 @@
     "preset": "jest-expo",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "\\.(mp3|wav|m4a)$": "<rootDir>/__mocks__/fileMock.js"
+      "\\.(mp3|wav|m4a|jpg|jpeg|png|gif)$": "<rootDir>/__mocks__/fileMock.js"
     }
   },
   "dependencies": {
