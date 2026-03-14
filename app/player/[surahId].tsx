@@ -78,7 +78,7 @@ export default function PlayerScreen() {
 
   const surah = getSurahs().find((s) => s.id === surahId);
   const artwork = getArtwork(surahId as string);
-  const trackCount = surah?.trackCount ?? 0;
+  const trackCount = surah?.totalTracks ?? 0;
 
   // AC-5.7: Zustand store — read playback state from global store.
   const currentTrackIndex = usePlayerStore((s) => s.currentTrackIndex);

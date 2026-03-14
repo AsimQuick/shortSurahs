@@ -282,43 +282,47 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
 
     expect(callOrder[0]).toBe('reset');
     expect(callOrder[1]).toBe('add');
   });
 
-  test('add() is called with 6 tracks for fatiha (trackCount = 6)', async () => {
+  // AC-7.1: 1-fatiha has 7 ayahs + 1 intro = 8 totalTracks
+  test('add() is called with 8 tracks for 1-fatiha (totalTracks = 8: 7 ayahs + intro)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockAdd).toHaveBeenCalledTimes(1);
     const tracks = mockAdd.mock.calls[0][0] as { title: string; artist: string }[];
-    expect(tracks).toHaveLength(6);
+    expect(tracks).toHaveLength(8);
   });
 
-  test('add() is called with 5 tracks for ikhlas (trackCount = 5)', async () => {
+  // AC-7.1: 112-ikhlas has 4 ayahs + 1 intro = 5 totalTracks
+  test('add() is called with 5 tracks for 112-ikhlas (totalTracks = 5: 4 ayahs + intro)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('112-ikhlas');
     expect(mockAdd).toHaveBeenCalledTimes(1);
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
     expect(tracks).toHaveLength(5);
   });
 
-  test('track titles are "Al-Ikhlas — Aya 1" through "Al-Ikhlas — Aya N" (AC-6.2: surah name + aya)', async () => {
+  // AC-7.1: first track is Intro, then Aya 1..N
+  test('track titles for 112-ikhlas: first is Intro, then Aya 1 through Aya 4 (AC-6.2: surah name + aya)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Ikhlas — Aya 1');
-    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 5');
+    expect(tracks[0].title).toBe('Al-Ikhlas — Intro');
+    expect(tracks[1].title).toBe('Al-Ikhlas — Aya 1');
+    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 4');
   });
 
   test('all tracks have artist "shortSurahs"', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { artist: string }[];
     tracks.forEach((t) => expect(t.artist).toBe('shortSurahs'));
   });
@@ -326,24 +330,24 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
   test('queue-clearing: second open with different surah resets queue (reset called twice)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('1-fatiha');
+    await loadSurahQueue('112-ikhlas');
     expect(mockReset).toHaveBeenCalledTimes(2);
   });
 
   test('queue-clearing: second open adds only new surah tracks (add called twice)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
-    await loadSurahQueue('ikhlas');
-    // First add call: 6 fatiha tracks. Second add call: 5 ikhlas tracks.
+    await loadSurahQueue('1-fatiha');
+    await loadSurahQueue('112-ikhlas');
+    // First add call: 8 fatiha tracks (7 ayahs + intro). Second add call: 5 ikhlas tracks (4 ayahs + intro).
     expect(mockAdd).toHaveBeenCalledTimes(2);
     const firstCallTracks = mockAdd.mock.calls[0][0] as { id: string }[];
     const secondCallTracks = mockAdd.mock.calls[1][0] as { id: string }[];
-    expect(firstCallTracks).toHaveLength(6);
+    expect(firstCallTracks).toHaveLength(8);
     expect(secondCallTracks).toHaveLength(5);
-    firstCallTracks.forEach((t) => expect(t.id).toMatch(/^fatiha-/));
-    secondCallTracks.forEach((t) => expect(t.id).toMatch(/^ikhlas-/));
+    firstCallTracks.forEach((t) => expect(t.id).toMatch(/^1-fatiha-/));
+    secondCallTracks.forEach((t) => expect(t.id).toMatch(/^112-ikhlas-/));
   });
 
   test('loadSurahQueue returns early (no add) for unknown surahId', async () => {

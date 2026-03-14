@@ -70,8 +70,8 @@ describe('AC-5.8 — services/trackQueue.ts: handleMissingTrack export', () => {
 });
 
 describe('AC-5.8 — services/trackQueue.ts: loadSurahQueue empty-surah guard', () => {
-  test('loadSurahQueue checks trackCount === 0', () => {
-    expect(trackQueueSource).toMatch(/trackCount\s*===\s*0/);
+  test('loadSurahQueue checks totalTracks === 0', () => {
+    expect(trackQueueSource).toMatch(/totalTracks\s*===\s*0/);
   });
 
   test('loadSurahQueue calls console.error for empty surah', () => {
@@ -299,11 +299,11 @@ describe('AC-5.8 — Behavioral: loadSurahQueue with missing audio assets', () =
       RepeatMode: { Track: 2 },
     }));
 
-    // Mock audioMap: fatiha track "02" is missing (returns undefined).
+    // Mock audioMap: fatiha ayah 2 is missing (returns undefined).
     jest.mock('../data/audioMap', () => ({
-      getAudioAsset: (_folder: string, nn: string) => {
-        if (_folder === 'fatiha' && nn === '02') return undefined;
-        return `mock-audio-${_folder}-${nn}`;
+      getAudioAsset: (_key: string, nn: string) => {
+        if (_key === '1-fatiha' && nn === '2') return undefined;
+        return `mock-audio-${_key}-${nn}`;
       },
     }));
 
@@ -326,28 +326,29 @@ describe('AC-5.8 — Behavioral: loadSurahQueue with missing audio assets', () =
     mockPlay.mockClear();
   });
 
-  test('loadSurahQueue skips the missing track and adds only 5 tracks for fatiha (6 - 1 missing)', async () => {
+  test('loadSurahQueue skips the missing track and adds only 7 tracks for fatiha (8 - 1 missing)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockAdd).toHaveBeenCalledTimes(1);
     const tracks = mockAdd.mock.calls[0][0] as { id: string }[];
-    expect(tracks).toHaveLength(5);
+    // V2: 1 intro + 7 ayahs = 8 total, minus 1 missing ayah 2 = 7
+    expect(tracks).toHaveLength(7);
   });
 
-  test('loadSurahQueue skips track with missing audio: fatiha-02 not in added tracks', async () => {
+  test('loadSurahQueue skips track with missing audio: 1-fatiha-2 not in added tracks', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { id: string }[];
     const ids = tracks.map((t) => t.id);
-    expect(ids).not.toContain('fatiha-02');
+    expect(ids).not.toContain('1-fatiha-2');
   });
 
   test('loadSurahQueue still calls play() when some tracks are valid', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockPlay).toHaveBeenCalledTimes(1);
   });
 
@@ -355,7 +356,7 @@ describe('AC-5.8 — Behavioral: loadSurahQueue with missing audio assets', () =
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(errorSpy).toHaveBeenCalled();
     errorSpy.mockRestore();
   });
@@ -408,14 +409,14 @@ describe('AC-5.8 — Behavioral: loadSurahQueue all tracks missing — halt', ()
   test('loadSurahQueue does NOT call add() when all tracks are missing', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockAdd).not.toHaveBeenCalled();
   });
 
   test('loadSurahQueue does NOT call play() when all tracks are missing', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(mockPlay).not.toHaveBeenCalled();
   });
 
@@ -423,7 +424,7 @@ describe('AC-5.8 — Behavioral: loadSurahQueue all tracks missing — halt', ()
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     expect(errorSpy).toHaveBeenCalled();
     errorSpy.mockRestore();
   });

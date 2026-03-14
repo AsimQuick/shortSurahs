@@ -173,6 +173,8 @@ describe('AC-6.2 — Lock screen events trigger same actions as in-app controls'
 // AC-6.2: Behavioural — title format at runtime (mocked TrackPlayer)
 // ---------------------------------------------------------------------------
 
+// AC-7.1: Behavioural tests updated to use V2 surah IDs (1-fatiha, 112-ikhlas, 113-falaq, 114-nas).
+// V2 track order: index 0 = Intro, index 1..N = Aya 1..N.
 describe('AC-6.2 — Behavioural: lock screen title format at runtime', () => {
   const mockReset = jest.fn().mockResolvedValue(undefined);
   const mockAdd = jest.fn().mockResolvedValue(undefined);
@@ -216,74 +218,86 @@ describe('AC-6.2 — Behavioural: lock screen title format at runtime', () => {
     mockSetRepeatMode.mockClear();
   });
 
-  test('fatiha first track title is "Al-Fatiha — Aya 1"', async () => {
+  // V2: index 0 = Intro, index 1 = Aya 1 (Al-Fatiha has 7 ayahs + intro = 8 tracks)
+  test('1-fatiha intro track title is "Al-Fatiha — Intro"', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Fatiha — Aya 1');
+    expect(tracks[0].title).toBe('Al-Fatiha — Intro');
   });
 
-  test('fatiha last track title is "Al-Fatiha — Aya 6"', async () => {
+  test('1-fatiha first ayah track title is "Al-Fatiha — Aya 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[5].title).toBe('Al-Fatiha — Aya 6');
+    expect(tracks[1].title).toBe('Al-Fatiha — Aya 1');
   });
 
-  test('ikhlas first track title is "Al-Ikhlas — Aya 1"', async () => {
+  test('1-fatiha last track title is "Al-Fatiha — Aya 7" (index 7)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Ikhlas — Aya 1');
+    expect(tracks[7].title).toBe('Al-Fatiha — Aya 7');
   });
 
-  test('ikhlas last track title is "Al-Ikhlas — Aya 5"', async () => {
+  // 112-ikhlas: 4 ayahs + intro = 5 tracks; index 0=Intro, 1=Aya1, ..., 4=Aya4
+  test('112-ikhlas first ayah track title is "Al-Ikhlas — Aya 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 5');
+    expect(tracks[1].title).toBe('Al-Ikhlas — Aya 1');
   });
 
-  test('falaq first track title is "Al-Falaq — Aya 1"', async () => {
+  test('112-ikhlas last track title is "Al-Ikhlas — Aya 4" (index 4)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('falaq');
+    await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Falaq — Aya 1');
+    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 4');
   });
 
-  test('nas first track title is "An-Nas — Aya 1"', async () => {
+  // 113-falaq: 5 ayahs + intro = 6 tracks; index 1 = Aya 1
+  test('113-falaq first ayah track title is "Al-Falaq — Aya 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('nas');
+    await loadSurahQueue('113-falaq');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('An-Nas — Aya 1');
+    expect(tracks[1].title).toBe('Al-Falaq — Aya 1');
   });
 
-  test('nas last track title is "An-Nas — Aya 7"', async () => {
+  // 114-nas: 6 ayahs + intro = 7 tracks; index 1 = Aya 1, index 6 = Aya 6
+  test('114-nas first ayah track title is "An-Nas — Aya 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('nas');
+    await loadSurahQueue('114-nas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[6].title).toBe('An-Nas — Aya 7');
+    expect(tracks[1].title).toBe('An-Nas — Aya 1');
   });
 
-  test('all fatiha tracks have artwork set (cover art appears on lock screen)', async () => {
+  test('114-nas last track title is "An-Nas — Aya 6" (index 6)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('fatiha');
+    await loadSurahQueue('114-nas');
+    const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
+    expect(tracks[6].title).toBe('An-Nas — Aya 6');
+  });
+
+  test('all 1-fatiha tracks have artwork set (cover art appears on lock screen)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
+    await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { artwork: string }[];
     tracks.forEach((t) => expect(t.artwork).toBeTruthy());
   });
 
-  test('all ikhlas tracks have artwork set (cover art appears on lock screen)', async () => {
+  test('all 112-ikhlas tracks have artwork set (cover art appears on lock screen)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
-    await loadSurahQueue('ikhlas');
+    await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { artwork: string }[];
     tracks.forEach((t) => expect(t.artwork).toBeTruthy());
   });

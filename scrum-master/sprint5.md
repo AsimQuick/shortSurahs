@@ -177,9 +177,27 @@ Phase 3 can run in parallel with Phases 1-2.
 - AC-7.4: Behavioral tests — mock TrackPlayer to verify repeat mode is NOT set for intro tracks; verify auto-advance fires after intro completes; verify skip-next from intro lands on ayah 1; verify skip-prev from ayah 1 returns to intro.
 - AC-7.5: Component tests — verify Now Playing artwork source changes when `currentTrackIndex` changes; verify intro artwork uses intro image key.
 
-#### Tester Status: requirements-approved
+#### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) and no-orphan/no-missing assertions are fully testable. AC-7.4: removed ambiguous "e.g." from intro label requirement — "Intro" is now the specified display value; all 5 behavioral scenarios are testable via TrackPlayer mocks. AC-7.5: component tests cover artwork key changes on track advance. DoD checklist complete. Cleared for development.
+
+**CI FAILURE — Dev-Tester Loop Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect)
+- **Classification:** Code bug — not a requirements issue
+- **Root Cause:** `__tests__/data-layer-v2.test.ts` line 19 imports `Track` from `../types` but never uses it. ESLint rule `@typescript-eslint/no-unused-vars` emits a warning; CI is configured with `--max-warnings 0`, so even one warning fails the Lint step.
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Recommended Fix:** Remove `Track` from the import on line 19. Change `import type { Surah, Track } from '../types';` → `import type { Surah } from '../types';`
+- **No requirements change needed.** AC-7.1 criteria, test logic, and coverage are all correct. Single-line fix in the test file resolves CI.
+
+**CI FAILURE — Dev-Tester Loop Iteration 2 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (stale field reference, no logic defect)
+- **Classification:** Code bug — not a requirements issue
+- **Root Cause:** `app/player/[surahId].tsx` line 81 reads `surah?.trackCount` — a V1 field name that no longer exists on the `Surah` interface. AC-7.1 renamed this field to `totalTracks` in `types/index.ts`. TypeScript correctly rejects the stale reference with `TS2339: Property 'trackCount' does not exist on type 'Surah'`.
+- **CI Step Failed:** Type check (`npx tsc --noEmit`)
+- **Recommended Fix:** Update line 81 of `app/player/[surahId].tsx`. Change `surah?.trackCount` → `surah?.totalTracks`.
+- **No requirements change needed.** The V2 schema field `totalTracks` is correctly defined in `types/index.ts` and populated in `data/surahs.json`. The player screen simply was not updated to use the new field name. Single-line fix resolves CI.
 
 ---
 
@@ -301,9 +319,21 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: not-started
+### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
-_empty — Dev Team fills this in_
+**CI Fix — Loop Iteration 1 (2026-03-14):** Removed unused `Track` import from `__tests__/data-layer-v2.test.ts` line 19. Changed `import type { Surah, Track } from '../types'` → `import type { Surah } from '../types'`. Single-line fix resolves ESLint `no-unused-vars` warning that failed CI with `--max-warnings 0`.
+
+**CI Fix — Loop Iteration 2 (2026-03-14):** Updated `app/player/[surahId].tsx` line 81: `surah?.trackCount` → `surah?.totalTracks`. V2 schema renamed the field; the player screen was not updated. Also updated `__tests__/player-controls.test.ts` test assertion to match the new field name. Single-line source fix + one test description update resolve TS2339 type error.
+
+**AC-7.1 — Data layer rewrite (17 surahs): DONE** (2026-03-14)
+- `data/surahs.json`: Rewritten with 17 surahs in Quran order (1, 99–114). V2 schema: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks`. 105 ayahs + 17 intros = 122 total tracks.
+- `types/index.ts`: `Surah` interface updated to V2 fields. `Track` interface includes `isIntro: boolean`.
+- `data/dataUtils.ts`: `getSurahs()` and `getTracksForSurah()` updated for V2. Intro track (isIntro: true, title "Intro") built first, then ayah tracks (isIntro: false, title "Aya N").
+- `services/trackQueue.ts`: Updated `loadSurahQueue()` to use V2 Surah fields (`transliterationKey`, `ayahCount`, `totalTracks`) and build intro + ayah tracks.
+- `app.json`: Restored `react-native-track-player` plugin (accidentally removed during prior edits).
+- Tests: All 28 suites pass (1063 tests). Coverage: 96.42% statements, 93.75% branches. New test file `data-layer-v2.test.ts` covers V2 data layer. Existing tests updated for V2 surah IDs and field names.
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.1`
 
 ### Tester Sprint Status: requirements-approved
 ### Tester Sprint Notes:

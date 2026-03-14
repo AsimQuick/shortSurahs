@@ -5,7 +5,7 @@
  *              loadSurahQueue() clears any existing queue with TrackPlayer.reset(),
  *              then builds and adds all tracks for the selected surah from
  *              bundled assets (no streaming). Track metadata includes:
- *                - title: "Aya N" (1-based aya number)
+ *                - title: surah name + "Intro" or "Aya N"
  *                - artist: "shortSurahs"
  *                - artwork: bundled require() asset from artworkMap
  *                - url: bundled require() asset from audioMap
@@ -31,8 +31,11 @@
  *              missing-track errors: skips to next when not the last track;
  *              logs and calls TrackPlayer.pause() when the missing track is last
  *              (no skip target available).
+ *              V2 (AC-7.1): Uses transliterationKey and totalTracks/ayahCount
+ *              from the new Surah schema. Intro track built first, then ayah tracks.
+ *              Track keys follow {transliterationKey}-intro and {transliterationKey}-{n}.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2; Sprint 5 — US-7 AC-7.1
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
@@ -44,15 +47,16 @@ import { getAudioAsset } from '../data/audioMap';
  * Loads all tracks for the given surah into the TrackPlayer queue.
  * Clears any existing queue first (supports re-opening with a different surah).
  * Tracks are sourced from bundled assets via require() — no streaming.
+ * Track order: intro track first, then ayah tracks 1..ayahCount.
  *
- * @param surahId - The surah id (e.g. "fatiha")
+ * @param surahId - The surah id (e.g. "1-fatiha", "112-ikhlas")
  */
 export async function loadSurahQueue(surahId: string): Promise<void> {
   const surah = getSurahs().find((s) => s.id === surahId);
   if (!surah) return;
 
   // AC-5.8: Empty surah guard — no tracks to load.
-  if (surah.trackCount === 0) {
+  if (surah.totalTracks === 0) {
     console.error(`[shortSurahs] loadSurahQueue: surah "${surahId}" has no tracks — skipping load.`);
     return;
   }
@@ -69,21 +73,39 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     artwork: string;
   }[] = [];
 
-  for (let i = 0; i < surah.trackCount; i++) {
-    const nn = String(i + 1).padStart(2, '0');
-    const audioAsset = getAudioAsset(surah.folder, nn);
+  // Intro track (AC-7.1: first track, plays once without looping per AC-7.4).
+  const introKey = `${surah.transliterationKey}-intro`;
+  const introAudioAsset = getAudioAsset(surah.transliterationKey, 'intro');
+  if (introAudioAsset === undefined) {
+    console.error(
+      `[shortSurahs] loadSurahQueue: missing intro track "${introKey}.mp3" — skipping.`
+    );
+  } else {
+    validTracks.push({
+      id: introKey,
+      url: introAudioAsset as unknown as string,
+      title: `${surah.nameEnglish} — Intro`,
+      artist: 'shortSurahs',
+      artwork: getArtwork(introKey) as unknown as string,
+    });
+  }
+
+  // Ayah tracks (AC-7.1: ayahCount tracks with per-ayah keys).
+  for (let i = 0; i < surah.ayahCount; i++) {
+    const trackKey = `${surah.transliterationKey}-${i + 1}`;
+    const audioAsset = getAudioAsset(surah.transliterationKey, String(i + 1));
     if (audioAsset === undefined) {
       console.error(
-        `[shortSurahs] loadSurahQueue: missing track "${surah.folder}/${nn}.mp3" — skipping.`
+        `[shortSurahs] loadSurahQueue: missing track "${trackKey}.mp3" — skipping.`
       );
       continue;
     }
     validTracks.push({
-      id: `${surah.id}-${nn}`,
+      id: trackKey,
       url: audioAsset as unknown as string,
       title: `${surah.nameEnglish} — Aya ${i + 1}`,
       artist: 'shortSurahs',
-      artwork: getArtwork(surahId) as unknown as string,
+      artwork: getArtwork(trackKey) as unknown as string,
     });
   }
 
