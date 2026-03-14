@@ -126,7 +126,7 @@ Phase 3 can run in parallel with Phases 1-2.
 
 #### Acceptance Criteria
 
-- - [x] - [x] **AC-7.1: Data layer rewrite — 17 surahs** ✓
+- - [x] - [x] - [x] **AC-7.1: Data layer rewrite — 17 surahs** ✓
   - `data/surahs.json` contains exactly 17 surahs matching the V2 PRD inventory (Al-Fatiha, Az-Zalzalah through An-Nas)
   - Each surah entry includes: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks` (ayahs + intro)
   - Surah ordering matches the Quran order (1, 99, 100, 101, ..., 114)
