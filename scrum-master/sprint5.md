@@ -199,6 +199,27 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - **Recommended Fix:** Update line 81 of `app/player/[surahId].tsx`. Change `surah?.trackCount` → `surah?.totalTracks`.
 - **No requirements change needed.** The V2 schema field `totalTracks` is correctly defined in `types/index.ts` and populated in `data/surahs.json`. The player screen simply was not updated to use the new field name. Single-line fix resolves CI.
 
+**CI FAILURE — AC-7.2 — Dev-Tester Loop: Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **PR:** #40 (`feature/US-7-AC-7.2`)
+- **Severity:** Major (test suite fails to run — 0 of 29 AC-7.2 tests execute)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Run tests with coverage (`npm test -- --coverage`)
+- **Failing Test Suite:** `__tests__/audio-map-v2.test.ts`
+- **CI Error:** `Cannot find module '../assets/audio/1-fatiha-intro.mp3' from 'data/audioMap.ts'`
+- **Root Cause:** The fourth `describe` block in `audio-map-v2.test.ts` (lines 248–293, "AC-7.2 — getAudioAsset() runtime behaviour") calls `require('../data/audioMap')` at module evaluation time (line 252). This causes Jest to actually execute all 122 `require('../assets/audio/*.mp3')` calls inside `audioMap.ts`. The CI environment (`ubuntu-latest`) does not have the audio files present — `assets/audio/` is local-only and not committed to the repository. Jest's module resolver cannot find the `.mp3` files and throws a hard module-not-found error, aborting the entire test suite before any test runs.
+- **Why the Dev Team's local run passed:** Audio files exist on disk locally. The `jest-expo` preset transforms binary assets to numeric stubs via Metro's asset resolver, which works when files are present. In CI, neither the files nor a Jest `moduleNameMapper` for `.mp3` assets is configured, so the resolver fails.
+- **Evidence from CI log (run 23087786793):**
+  - `FAIL __tests__/audio-map-v2.test.ts — Test suite failed to run`
+  - Error at `data/audioMap.ts:21` (first `require()` call in the map literal)
+  - Triggered by `__tests__/audio-map-v2.test.ts:252` (the `require('../data/audioMap')` import in the runtime describe block)
+  - All other 28 suites passed; 1060 tests pass; coverage 96.42%
+- **Systems Thinking — Cascading Risk:** The three static `describe` blocks (blocks 1–3) in `audio-map-v2.test.ts` use `fs.readFileSync(AUDIO_MAP_PATH, 'utf8')` to read the source file as a plain string. They do NOT import `audioMap.ts` as a module, so they will not trigger the require() calls. They are safe once the runtime block is resolved. No other currently-passing test suites import `audioMap.ts` directly, so there is no immediate regression risk to the 28 passing suites.
+- **Recommended Fix — Option A (preferred):** Add a `moduleNameMapper` for audio file extensions to the Jest config in `package.json`. Add `"\\.(mp3|wav|m4a)$": "<rootDir>/__mocks__/fileMock.js"` under the `jest` key. Create `__mocks__/fileMock.js` containing `module.exports = 1;`. This is the standard Expo/React Native pattern for binary asset mocking in Jest (images are already handled this way by `jest-expo`). Extending it to audio resolves the CI failure and future-proofs all audio asset tests.
+- **Recommended Fix — Option B (alternative):** Remove or mock the runtime `require('../data/audioMap')` in the fourth describe block of `audio-map-v2.test.ts`. Replace it with `jest.mock('../data/audioMap', () => ({ getAudioAsset: jest.fn((key, part) => audioMap[key + '-' + part]) }))` and a local stub. This avoids the infrastructure change but requires restructuring the test.
+- **Option A is preferred** because it fixes the root infrastructure gap once, applies project-wide to all current and future audio asset tests, and requires only two small files to change (`package.json` jest config and a new 1-line mock file).
+- **No requirements change needed.** AC-7.2 acceptance criteria are correct and the `audioMap.ts` implementation is correct. The failure is purely a Jest environment configuration gap.
+
 ---
 
 ### US-8: Firebase Authentication
@@ -319,7 +340,7 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: in-progress
+### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
 **CI Fix — Loop Iteration 1 (2026-03-14):** Removed unused `Track` import from `__tests__/data-layer-v2.test.ts` line 19. Changed `import type { Surah, Track } from '../types'` → `import type { Surah } from '../types'`. Single-line fix resolves ESLint `no-unused-vars` warning that failed CI with `--max-warnings 0`.
 
@@ -343,7 +364,9 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 - All code files include structured metadata headers.
 - Branch: `feature/US-7-AC-7.2`
 
-### Tester Sprint Status: requirements-approved
+**CI Fix — AC-7.2 Loop Iteration 1 (2026-03-14):** Applied Option A fix for audio asset resolution in CI. Added `moduleNameMapper` for `.(mp3|wav|m4a)$` → `<rootDir>/__mocks__/fileMock.js` to Jest config in `package.json`. Created `__mocks__/fileMock.js` returning `module.exports = 1` — the standard React Native/Expo pattern for binary asset mocking. This allows the fourth describe block in `audio-map-v2.test.ts` (runtime `require('../data/audioMap')`) to execute in CI where audio files are not present. Resolves `Cannot find module '../assets/audio/1-fatiha-intro.mp3'` error. Future-proofs all audio asset tests project-wide.
+
+### Tester Sprint Status: defect-found
 ### Tester Sprint Notes:
 Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testable and verifiable. One minor fix applied: AC-7.4 intro label changed from "e.g., title shows 'Intro'" to "title shows 'Intro'" to make the display value deterministic for test assertions. No scope defects found. Both stories cleared for development.
 
