@@ -153,7 +153,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - If the user presses Previous on ayah 1, it goes back to the intro (which plays once again, no loop)
   - The intro track is visually distinguishable on the Now Playing screen (title shows "Intro" instead of "Aya N")
 
-- **AC-7.5: Per-ayah artwork on Now Playing screen**
+- - [x] **AC-7.5: Per-ayah artwork on Now Playing screen**
   - The Now Playing screen displays the artwork for the currently playing ayah (not the surah-level artwork)
   - When the track changes (next/previous/auto-advance), the artwork updates to match the new track
   - Intro tracks display the intro artwork (`{number}-{name}-intro.jpg`)
@@ -367,6 +367,14 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
+**AC-7.5 — Per-ayah artwork on Now Playing screen: DONE** (2026-03-14)
+- `app/player/[surahId].tsx`: Per-ayah artwork was implemented as part of AC-7.3 data layer work. `trackPart` is computed from `currentTrackIndex` (0 → `'intro'`, N → `String(N)`). `artwork` is resolved via `getArtwork(surah.transliterationKey, trackPart)`. The `artwork` variable recomputes on every render as `currentTrackIndex` changes from the Zustand store, so artwork updates automatically on next/previous/auto-advance without any extra effect. File header updated to document AC-7.5.
+- `__tests__/per-ayah-artwork.test.ts`: New test file with 22 tests covering: file header (AC-7.5 documented), `trackPart` computation (intro key for index 0, ayah key for index N), `artwork` variable derivation (getArtwork + trackPart), Image component rendering (ARTWORK_SIZE layout, no hardcoded asset), artwork reactivity (Zustand store, handleNext, handlePrev, auto-advance event handler), and intro track key ('intro' not '0').
+- Tests: All 32 suites pass (1167 tests). Coverage: ≥70% threshold met. ESLint clean. TypeScript clean.
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.5`
+
+
 **CI Fix — AC-7.3 Loop Iteration 1 (2026-03-14):** Extended `moduleNameMapper` in `package.json` to cover image extensions. Changed `"\\.(mp3|wav|m4a)$"` → `"\\.(mp3|wav|m4a|jpg|jpeg|png|gif)$"`. The existing `__mocks__/fileMock.js` (returning `module.exports = 1`) is already the correct stub. This allows the fifth describe block in `artwork-map-v2.test.ts` (runtime `require('../data/artworkMap')`) to execute in CI where image files are absent. Future-proofs all image asset tests project-wide.
 
 **CI Fix — AC-7.2 Loop Iteration 2 (2026-03-14):** Guarded filesystem-dependent describe blocks 3 and 4 in `__tests__/audio-map-v2.test.ts` with a runtime directory-existence check. Added `const AUDIO_DIR_PRESENT = fs.existsSync(AUDIO_DIR);` after the `AUDIO_DIR` constant. Changed both "No orphaned entries" and "No missing entries" describe declarations to `(AUDIO_DIR_PRESENT ? describe : describe.skip)(...)`. When `assets/audio/` is absent (CI), these blocks are skipped; when present (local), they run as before. Blocks 1, 2, and 5 are unaffected.
