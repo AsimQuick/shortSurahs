@@ -204,6 +204,32 @@ describe('AC-8.1 — app.json — Expo plugins registered', () => {
 });
 
 // ---------------------------------------------------------------------------
+// AC-8.1 — Type declaration for React Native persistence
+// ---------------------------------------------------------------------------
+describe('AC-8.1 — firebase-auth-rn.d.ts — type augmentation', () => {
+  const TYPE_DECL_PATH = path.join(ROOT, 'types', 'firebase-auth-rn.d.ts');
+  const typeDeclExists = fs.existsSync(TYPE_DECL_PATH);
+  const typeDeclSource = typeDeclExists ? fs.readFileSync(TYPE_DECL_PATH, 'utf8') : '';
+
+  it('types/firebase-auth-rn.d.ts exists', () => {
+    expect(typeDeclExists).toBe(true);
+  });
+
+  it('augments firebase/auth module', () => {
+    expect(typeDeclSource).toContain("declare module 'firebase/auth'");
+  });
+
+  it('declares getReactNativePersistence function', () => {
+    expect(typeDeclSource).toContain('getReactNativePersistence');
+  });
+
+  it('includes structured metadata header', () => {
+    expect(typeDeclSource).toContain('@file');
+    expect(typeDeclSource).toContain('AC-8.1');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // AC-8.1 — Structured metadata header in firebaseConfig.ts
 // ---------------------------------------------------------------------------
 describe('AC-8.1 — firebaseConfig.ts — structured metadata header', () => {

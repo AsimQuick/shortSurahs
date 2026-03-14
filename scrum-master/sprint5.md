@@ -61,7 +61,9 @@ These are data-only changes. They can be implemented in sequence (AC-7.1 first, 
 Phase 2 depends on Phase 1 because the new track types (with `isIntro` flag) and per-ayah artwork keys must exist in the data layer first.
 
 **Phase 3 (auth foundation — independent of Phases 1-2):**
-- AC-8.1: Firebase SDK setup + config
+- AC-8.1.1: Install packages + register Expo plugins
+- AC-8.1.2: Firebase config with Auth-only initialization
+- AC-8.1.3: Static assertion tests for Firebase SDK setup
 - AC-8.2: AuthContext provider
 
 Phase 3 can run in parallel with Phases 1-2.
@@ -88,6 +90,7 @@ Phase 3 can run in parallel with Phases 1-2.
 | PI-6 | Infrastructure CI failures excluded from loop count | Carried forward |
 | PI-9 | First-PR preflight | Carried forward |
 | PI-12 | Single PR per AC | Carried forward; each AC gets exactly one PR |
+| PI-15 | Mandatory local CI preflight before every push | New — Dev Team must run lint + typecheck + test locally before pushing. Prevents import-path class of bugs from consuming loop iterations |
 
 ---
 
@@ -259,14 +262,20 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 
 #### Acceptance Criteria
 
-- **AC-8.1: Firebase SDK setup**
-  - `firebase` package installed and initialized with the project config from v2_prd.md
+- [ ] **AC-8.1.1:** Install Firebase & auth-related packages and register Expo plugins
+  - `firebase`, `@react-native-async-storage/async-storage`, `expo-apple-authentication`, `expo-auth-session`, `expo-web-browser`, `expo-video` installed in `package.json`
+  - Relevant Expo plugins added to `app.json` (`expo-apple-authentication`, `expo-web-browser`, `expo-video`)
+  - `usesAppleSignIn: true` set in `app.json` iOS config
+- [ ] **AC-8.1.2:** Create Firebase config with Auth-only initialization
+  - `config/firebaseConfig.ts` created with project config values from v2_prd.md (projectId: `shortsurahs-66204`)
   - Auth initialized with `getReactNativePersistence(AsyncStorage)` for session persistence
-  - `@react-native-async-storage/async-storage` installed
-  - Firebase config file created (`config/firebaseConfig.ts` or similar)
-  - Only Firebase Auth is initialized — no Firestore, Storage, Functions, or Analytics
-  - `expo-apple-authentication`, `expo-auth-session`, `expo-web-browser`, `expo-video` installed
-  - Relevant Expo plugins added to `app.json`
+  - Only Firebase Auth is initialized — no Firestore, Storage, Functions, or Analytics imports
+  - Exports `app`, `auth`, `firebaseConfig`
+  - Type declaration (`types/firebase-auth-rn.d.ts`) added if needed for `getReactNativePersistence`
+  - ESLint and TypeScript checks pass (`npx eslint . --max-warnings 0 && npx tsc --noEmit`)
+- [ ] **AC-8.1.3:** Static assertion tests for Firebase SDK setup
+  - `__tests__/firebase-sdk-setup.test.ts` created with tests covering: required packages in `package.json`, correct config values, Auth-with-AsyncStorage persistence pattern, Auth-only initialization (no Firestore/Storage/Functions/Analytics), Expo plugins in `app.json`, and structured metadata headers
+  - All tests pass (`npm test`)
 
 - **AC-8.2: AuthContext provider**
   - `contexts/AuthContext.tsx` created following the finnaDo reference pattern
@@ -330,7 +339,9 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 
 #### Tester Quality Strategy Notes
 
-- AC-8.1: Static assertion tests — verify packages in package.json, verify firebaseConfig exports correct projectId, verify no Firestore/Storage imports.
+- AC-8.1.1: Verify packages in package.json dependencies and Expo plugins in app.json.
+- AC-8.1.2: Verify firebaseConfig exports correct projectId, Auth initialized with AsyncStorage persistence, no Firestore/Storage imports. ESLint + TypeScript clean.
+- AC-8.1.3: Static assertion tests — verify all AC-8.1.1 and AC-8.1.2 requirements via test suite. All tests pass.
 - AC-8.2: Unit tests — mock Firebase Auth, verify onAuthStateChanged is called, verify signIn/signUp/logout/deleteAccount call correct Firebase methods, verify AuthProvider renders children.
 - AC-8.3: Component/snapshot tests — verify video component rendered, verify text content, verify platform-conditional rendering of Apple vs Google buttons (mock Platform.OS).
 - AC-8.4: Unit tests — mock signInWithEmailAndPassword/createUserWithEmailAndPassword, verify error handling for each Firebase error code.
@@ -403,14 +414,17 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
+**CI Fix — AC-8.1.1 Loop Iteration 4 (Extension) (2026-03-14):** Fixed ESLint `import/no-unresolved` on `firebase/auth/react-native` (Iteration 3 root cause). Approach: reverted import back to `firebase/auth` (single import), added `types/firebase-auth-rn.d.ts` as a TypeScript module augmentation that declares `getReactNativePersistence` on the `firebase/auth` module. Metro resolves `getReactNativePersistence` at runtime via the `react-native` condition in `@firebase/auth`'s package exports — the augmentation makes TypeScript's static analysis agree. Added 4 new tests to `__tests__/firebase-sdk-setup.test.ts` to verify the type declaration file exists and contains required content. Tests: 39 pass (up from 35). ESLint clean. TypeScript clean. All 33 suites pass (1206 tests). Coverage 96.77% statements.
+
 **AC-8.1 — Firebase SDK setup: DONE** (2026-03-14)
 - `config/firebaseConfig.ts`: Firebase app initialized with v2_prd.md credentials (projectId: shortsurahs-66204). Auth initialized with `getReactNativePersistence(AsyncStorage)` for session persistence. Auth-only — no Firestore, Storage, Functions, or Analytics imports. Exports `app`, `auth`, `firebaseConfig`.
 - `package.json`: Added `firebase@^12.10.0`, `@react-native-async-storage/async-storage@2.2.0`, `expo-apple-authentication@~55.0.8`, `expo-auth-session@~55.0.8`, `expo-web-browser@~55.0.9`, `expo-video@~55.0.10`.
 - `app.json`: Added `expo-apple-authentication`, `expo-web-browser`, `expo-video` plugins. Added `usesAppleSignIn: true` for iOS.
-- `__tests__/firebase-sdk-setup.test.ts`: 35 tests covering: required packages installed (6), correct config values from v2_prd.md (7), Auth with AsyncStorage persistence (6), Auth-only initialization — no other Firebase services (10), Expo plugins registered in app.json (4), structured metadata header (3).
-- Tests: All 33 suites pass (1202 tests). Coverage: 96.77% statements, 94.44% branches. ESLint clean. TypeScript clean.
+- `types/firebase-auth-rn.d.ts`: TypeScript module augmentation declaring `getReactNativePersistence` on `firebase/auth` — resolves TS2305 without introducing an ESLint-unresolved subpath import.
+- `__tests__/firebase-sdk-setup.test.ts`: 39 tests covering: required packages installed (6), correct config values from v2_prd.md (7), Auth with AsyncStorage persistence (6), Auth-only initialization — no other Firebase services (10), Expo plugins registered in app.json (4), type declaration file (4), structured metadata header (3).
+- Tests: All 33 suites pass (1206 tests). Coverage: 96.77% statements, 94.44% branches. ESLint clean. TypeScript clean.
 - All code files include structured metadata headers.
-- Branch: `feature/US-8-AC-AC-8.1`
+- Branch: `feature/US-8-AC-8.1.1`
 
 **AC-7.5 — Per-ayah artwork on Now Playing screen: DONE** (2026-03-14)
 - `app/player/[surahId].tsx`: Per-ayah artwork was implemented as part of AC-7.3 data layer work. `trackPart` is computed from `currentTrackIndex` (0 → `'intro'`, N → `String(N)`). `artwork` is resolved via `getArtwork(surah.transliterationKey, trackPart)`. The `artwork` variable recomputes on every render as `currentTrackIndex` changes from the Zustand store, so artwork updates automatically on next/previous/auto-advance without any extra effect. File header updated to document AC-7.5.
@@ -477,7 +491,31 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testable and verifiable. One minor fix applied: AC-7.4 intro label changed from "e.g., title shows 'Intro'" to "title shows 'Intro'" to make the display value deterministic for test assertions. No scope defects found. Both stories cleared for development.
 
 ### PO Sprint Review Notes:
-_empty — PO fills this in at sprint close_
+
+**AC-8.1 Loop Exhaustion — Recovery Decision (2026-03-14)**
+
+**What went wrong:** A single import-path bug consumed all 3 Dev-Tester loop iterations. Each iteration fixed the previous TypeScript/ESLint error but introduced a new variant of the same problem:
+
+| Iteration | Import path tried | Failure |
+|-----------|------------------|---------|
+| 1 | `from '@firebase/auth'` | TS2305 — internal monorepo package, not exported |
+| 2 | `from 'firebase/auth'` | TS2305 — firebase@12 moved `getReactNativePersistence` to subpath |
+| 3 | `from 'firebase/auth/react-native'` | ESLint `import/no-unresolved` — resolver can't find subpath export |
+
+**Why it kept happening:** The Dev Team did not run the full CI pipeline (`eslint --max-warnings 0` + `tsc --noEmit`) locally before each push. Local node_modules state and Metro bundler resolved the import at runtime, masking the static analysis failures that CI catches. The finnaDo reference uses `firebase@^11` in a `.js` file (no TS checking), so it was not a reliable guide for firebase@12 + TypeScript.
+
+**Assessment:** The AC-8.1 requirements are correct. The implementation logic is correct. Only the ESLint import resolver configuration for the `firebase/auth/react-native` subpath is unresolved. This is a tooling fix, not a code logic or scope issue.
+
+**Decision: GRANT 1 EXTENSION ITERATION (Iteration 4 — validation only)**
+
+- The Dev Team must fix the ESLint `import/no-unresolved` error on `firebase/auth/react-native` (e.g., add an eslint-disable for that line, or configure the import resolver settings for Firebase subpath exports)
+- CI must pass (lint + typecheck + tests) on iteration 4
+- If iteration 4 fails, AC-8.1 is deferred to Sprint 6 and US-8 is descoped from Sprint 5
+
+**Process Improvement (PI-15): Mandatory local CI preflight before every push**
+- Dev Team MUST run `npx eslint . --max-warnings 0 && npx tsc --noEmit && npm test` locally and confirm all three pass before pushing to remote
+- This extends PI-9 (first-PR preflight) to every push, not just the first PR of the sprint
+- Rationale: All 3 AC-8.1 loop iterations would have been caught locally; zero iterations should have been consumed
 
 ---
 
@@ -486,3 +524,4 @@ _empty — PO fills this in at sprint close_
 | Date | Sprint | Validator | Outcome | Notes |
 |------|--------|-----------|---------|-------|
 | 2026-03-14 | Sprint 5 planning | tester | requirements-approved | US-7 and US-8 reviewed. Minor fix: AC-7.4 intro label "e.g." removed for deterministic test assertions. Both stories cleared for development. |
+| 2026-03-14 | Sprint 5 AC-8.1 | product-owner | loop-extension-granted | 3 iterations exhausted on same import-path bug category. 1 extension iteration granted. Fix is ESLint config only — no scope/requirements change. PI-15 added. |
