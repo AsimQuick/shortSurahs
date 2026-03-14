@@ -284,7 +284,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - `AuthProvider` wraps the app in `_layout.tsx`
   - Auth state persists across app restarts (via AsyncStorage)
 
-- **AC-8.3: Welcome screen with video background**
+- - [x] **AC-8.3: Welcome screen with video background**
   - Welcome screen displayed when user is not authenticated
   - Background video: `assets/video/shortSurah-login-sm.mp4` (looped, muted, using `expo-video`)
   - App name "Short Surahs" displayed prominently
