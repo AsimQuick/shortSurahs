@@ -144,9 +144,9 @@ Original requirements-approved note: All four ACs remain unambiguous and testabl
 **Build Phase:** Phase 2 (after US-9)
 **Reference:** finnaDo `/app/(tabs)/settings.tsx` for Firebase re-auth and delete account patterns
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty — Dev Team fills this in_
+AC-10.1 implemented 2026-03-14. Updated app/(tabs)/account.tsx: added `useAuth` import from `../../contexts/AuthContext`, destructured `logout`, added `handleLogout` async function (calls `await logout()`; navigation to /welcome handled automatically by AuthGuard in app/_layout.tsx when auth state changes to null), added `Pressable` "Log Out" button with destructive red color (#ff3b30), `accessibilityRole="button"`, `accessibilityLabel="Log Out"`, and buttonBgColor adapting to isDark for light/dark theming. All AC-9.4 structural assertions preserved (ScrollView, useColorScheme, isDark, StyleSheet, export default function AccountScreen, placeholder message). Created __tests__/account-logout.test.ts (21 source-level assertions covering: file existence, metadata header @file/@ac/@story, useAuth import, logout destructuring, handleLogout definition, await logout() call, "Log Out" text, onPress={handleLogout}, accessibilityRole, accessibilityLabel, Pressable usage, #ff3b30 color, buttonBgColor, borderRadius, fontWeight, useColorScheme, isDark). All 43 test suites pass (1543 tests), coverage 96.77% statements / 94.44% branches / 100% functions. ESLint and tsc pass (PI-15 compliant).
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
