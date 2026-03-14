@@ -13,11 +13,17 @@
  *              badge, count, or metadata labels.
  *              Moved from app/index.tsx to app/(tabs)/index.tsx as part of
  *              AC-9.1 bottom tab navigation implementation.
+ *              Implements AC-9.2: Home tab shows surah list — tapping a surah
+ *              calls router.push('/player/[surahId]') which is a stack push
+ *              onto the root Stack (app/_layout.tsx). The root Stack renders
+ *              the player over the full screen, hiding the tab bar. Pressing
+ *              back pops the player and returns here with the tab bar visible.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
  * @ac    AC-9.1: Tab layout with three tabs
+ * @ac    AC-9.2: Home tab shows surah list
  * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2,
- *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs)
+ *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs), AC-9.2
  * @author Dev Team
  * @created 2026-03-14
  */
