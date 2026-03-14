@@ -165,8 +165,9 @@ describe('AC-8.6 — unauthenticated redirect', () => {
 // AC-8.6 — Authenticated redirect away from public routes
 // ---------------------------------------------------------------------------
 describe('AC-8.6 — authenticated redirect', () => {
-  it('redirects to / when user is authenticated and on a public route', () => {
-    expect(source).toContain("router.replace('/')");
+  it('redirects to /(tabs) when user is authenticated and on a public route', () => {
+    // AC-9.3: authenticated users are sent to the tab layout entry point
+    expect(source).toContain("router.replace('/(tabs)')");
   });
 
   it('checks user is truthy before redirecting to home', () => {
