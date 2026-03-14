@@ -145,7 +145,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - No orphaned entries and no missing entries
   - Now Playing screen uses per-ayah artwork (not per-surah artwork as in MVP)
 
-- **AC-7.4: Intro play-once behavior**
+- - [x] **AC-7.4: Intro play-once behavior**
   - When a surah is selected, the intro track plays first and does NOT loop (plays exactly once)
   - After the intro finishes, playback automatically advances to ayah 1
   - Ayah tracks continue to loop as in MVP (`RepeatMode.Track`)
