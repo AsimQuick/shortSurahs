@@ -182,9 +182,9 @@ Reviewed 2026-03-14. All four ACs are unambiguous and testable: logout wiring to
 **Dependencies:** US-9 (Tab Nav) — must be done first (Prayers tab and Home screen banner location must exist)
 **Build Phase:** Phase 2 (after US-9)
 
-**Dev Team Status:** not-started
+**Dev Team Status:** in-progress
 **Dev Team Notes:**
-_empty — Dev Team fills this in_
+AC-11.1 implemented 2026-03-14. Created services/aladhanService.ts: exports `PrayerTimes` interface (Fajr, Dhuhr, Asr, Maghrib, Isha), `getTimezone()` (Intl.DateTimeFormat — no location permissions), `getFormattedDate()` (DD-MM-YYYY for Aladhan API), `cityFromTimezone()` (extracts city from IANA timezone string, replaces underscores with spaces), `buildAladhanUrl()` (constructs timingsByCity URL with encodeURIComponent), `parsePrayerTimes()` (extracts five prayers from API response), `fetchPrayerTimes()` (async, calls fetch, throws on non-OK, returns PrayerTimes). Created __tests__/aladhan-service.test.ts (63 source-level and behavioral assertions covering: file existence, metadata header @file/@ac/@story, PrayerTimes interface fields, all six exported functions, Intl.DateTimeFormat usage, no geolocation, timingsByCity endpoint, encodeURIComponent, DD-MM-YYYY formatting, five-prayer extraction, response.ok check, error handling, mock-fetch success/failure, network error). All 47 test suites pass (1677 tests), coverage 97.46% statements / 84% branches / 100% functions — well above 70% threshold. ESLint and tsc pass (PI-15 compliant).
 
 **Tester Status:** requirements-approved
 **Tester Notes:**
