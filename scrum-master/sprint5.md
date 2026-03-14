@@ -358,7 +358,7 @@ CI Fix — AC-8.3 Loop Iteration 1 (2026-03-14): Replaced `useState(new Animated
 
 AC-8.3 complete. `app/welcome.tsx` created with: looping muted video background via `expo-video` (`VideoView` + `useVideoPlayer`, `loop=true`, `muted=true`, asset `assets/video/shortSurah-login-sm.mp4`); app name "Short Surahs" and tagline "No distractions. Just Quran." with staggered fade-in animations; Apple Sign-In button (iOS only, guarded by `Platform.OS === 'ios'` and `isAvailableAsync()`); Google Sign-In button (Android only, guarded by `Platform.OS === 'android'`); "Sign in with Email" button (both platforms, navigates to `/auth/email`); privacy footer with exact AC text; system light/dark theme via `useColorScheme`; integrates `useAuth()` for `signInWithApple` and `signInWithGoogle`. `__tests__/welcome-screen.test.ts` (38 tests) verifies: metadata header, VideoView usage, loop/muted/play config, video asset path, contentFit/nativeControls/fullscreen props, app name, tagline, privacy footer text (3 assertions), Apple iOS guard + isAvailableAsync, Google Android guard, email on both platforms, useColorScheme theming, AuthContext integration. Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage.
 
-AC-8.2 complete. `contexts/AuthContext.tsx` created following finnaDo reference pattern (no Firestore, no RevenueCat). Provides: `user` (User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`. `onAuthStateChanged` listener manages auth state with cleanup on unmount. Google auth via `Google.useIdTokenAuthRequest` + `GoogleAuthProvider.credential` + `signInWithCredential`. Apple Sign-In via `AppleAuthentication.signInAsync` + `OAuthProvider('apple.com').credential` + `signInWithCredential` (iOS only). `AuthProvider` wraps `Stack` in `app/_layout.tsx`. `__tests__/auth-context.test.ts` (58 tests) verifies: metadata header, Firebase imports, AuthContextType shape, onAuthStateChanged usage, email/Google/Apple flows, logout/deleteAccount, exports, and _layout.tsx integration. Full suite: 1264 tests pass across 34 suites, 96.77% statement coverage, 94.44% branch coverage.
+AC-8.2 complete (2026-03-14). `contexts/AuthContext.tsx` created following finnaDo reference pattern (no Firestore, no RevenueCat). Provides: `user` (User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`. `onAuthStateChanged` listener manages auth state with cleanup on unmount. Google auth via `Google.useIdTokenAuthRequest` + `GoogleAuthProvider.credential` + `signInWithCredential`. Apple Sign-In via `AppleAuthentication.signInAsync` + `OAuthProvider('apple.com').credential` + `signInWithCredential` (iOS only). `AuthProvider` wraps `Stack` in `app/_layout.tsx`. `__tests__/auth-context.test.ts` (58 tests) verifies: metadata header, Firebase imports, AuthContextType shape, onAuthStateChanged usage, email/Google/Apple flows, logout/deleteAccount, exports, and _layout.tsx integration. Stale welcome-screen test fixed (allowsFullscreen → nativeControls assertion). Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage. ESLint clean. TypeScript clean. Branch: feature/US-8-AC-8.2.
 
 AC-8.1.3 complete. `__tests__/firebase-sdk-setup.test.ts` (39 tests) verified passing on branch `feature/US-8-AC-8.1.3`. Tests cover: required packages installed (6), correct config values from v2_prd.md (7), Auth with AsyncStorage persistence (6), Auth-only initialization — no Firestore/Storage/Functions/Analytics (10), Expo plugins in app.json (4), type declaration file (4), structured metadata header (3). Full suite: 1206 tests pass across 33 suites, 96.77% statement coverage, 94.44% branch coverage. ESLint and TypeScript clean.
 
@@ -585,6 +585,31 @@ Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testab
 - This extends PI-9 (first-PR preflight) to every push, not just the first PR of the sprint
 - Rationale: All 3 AC-8.1 loop iterations would have been caught locally; zero iterations should have been consumed
 
+**AC-8.3 Loop Exhaustion — Recovery Decision (2026-03-14)**
+
+**What went wrong:** Three Dev-Tester loop iterations were consumed by minor static analysis issues — not a single logic defect in any iteration:
+
+| Iteration | Issue | Category |
+|-----------|-------|----------|
+| 1 | `useState(new Animated.Value(0))` triggers ESLint `exhaustive-deps` — changed to `useRef` | Lint warning |
+| 2 | `useRef().current` extracted to variable still triggers `exhaustive-deps` — added to dep array | Lint warning (false positive) |
+| 3 | `allowsFullscreen={false}` prop doesn't exist on `expo-video` `VideoViewProps` — removed prop | Type error (TS2769) |
+
+**Current state after iteration 3:** TypeScript clean. ESLint clean. **1 test failure remains:** `__tests__/welcome-screen.test.ts:99` asserts `source.toContain('allowsFullscreen={false}')` — the Dev Team correctly removed this prop from `app/welcome.tsx` but did not update the corresponding test assertion. The test is now wrong, not the component.
+
+**Why it kept happening:** Same root cause as AC-8.1 — the Dev Team did not run the full CI pipeline locally before pushing. PI-15 (mandatory local preflight) was introduced after the AC-8.1 loop exhaustion but was not yet in effect for AC-8.3 development (both ACs were developed on the same day). Additionally, iteration 3 was an incomplete fix — removing a prop from the component requires updating or removing any test that asserts that prop's presence.
+
+**Assessment:** The AC-8.3 implementation is functionally complete and correct. The welcome screen renders video, branding, platform-conditional auth buttons, privacy footer, and theme support exactly as specified. All 1301 of 1302 tests pass. The single failing test is a stale assertion checking for a prop that was correctly removed.
+
+**Decision: GRANT 1 EXTENSION ITERATION (Iteration 4 — test fix only)**
+
+- The Dev Team must remove or update the `allowsFullscreen` test assertion in `__tests__/welcome-screen.test.ts:99`
+- CI must pass (lint + typecheck + tests) on iteration 4
+- If iteration 4 fails, AC-8.3 is deferred to Sprint 6
+- The Dev Team MUST run `npx eslint . --max-warnings 0 && npx tsc --noEmit && npm test` locally and confirm all pass before pushing (PI-15)
+
+**Process observation:** This is the second AC in Sprint 5 to exhaust iterations on trivial CI issues. Both AC-8.1 and AC-8.3 had zero logic defects — all iterations were consumed by lint/type errors that a local preflight would have caught. PI-15 enforcement is critical for the remaining ACs (8.4, 8.5, 8.6).
+
 ---
 
 ## Requirements Validation Record
@@ -593,3 +618,4 @@ Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testab
 |------|--------|-----------|---------|-------|
 | 2026-03-14 | Sprint 5 planning | tester | requirements-approved | US-7 and US-8 reviewed. Minor fix: AC-7.4 intro label "e.g." removed for deterministic test assertions. Both stories cleared for development. |
 | 2026-03-14 | Sprint 5 AC-8.1 | product-owner | loop-extension-granted | 3 iterations exhausted on same import-path bug category. 1 extension iteration granted. Fix is ESLint config only — no scope/requirements change. PI-15 added. |
+| 2026-03-14 | Sprint 5 AC-8.3 | product-owner | loop-extension-granted | 3 iterations exhausted on minor static analysis issues (ESLint exhaustive-deps, TS2769 unknown prop). Zero logic defects. Remaining failure: 1 test asserts removed prop. 1 extension iteration granted. See PO Sprint Review Notes. |
