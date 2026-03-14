@@ -295,7 +295,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - "Sign in with Email" option shown on both platforms
   - Respects system light/dark theme
 
-- **AC-8.4: Email authentication**
+- - [x] **AC-8.4: Email authentication**
   - Email login form with email and password fields
   - Email registration form with email and password fields
   - Toggle between login and register modes
