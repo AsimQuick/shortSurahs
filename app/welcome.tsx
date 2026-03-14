@@ -8,6 +8,7 @@
  *
  * @story US-8: Firebase Authentication
  * @ac    AC-8.3: Welcome screen with video background
+ * @ac    AC-8.5: Social authentication (Apple iOS, Google Android) — navigation
  * @sprint Sprint 5
  * @author Dev Team
  * @created 2026-03-14
@@ -80,7 +81,10 @@ export default function WelcomeScreen() {
   const handleAppleSignIn = async () => {
     try {
       setAuthLoading(true);
-      await signInWithApple();
+      const user = await signInWithApple();
+      if (user) {
+        router.replace('/');
+      }
     } catch {
       // Error surfaced by auth context
     } finally {
@@ -91,7 +95,10 @@ export default function WelcomeScreen() {
   const handleGoogleSignIn = async () => {
     try {
       setAuthLoading(true);
-      await signInWithGoogle();
+      const user = await signInWithGoogle();
+      if (user) {
+        router.replace('/');
+      }
     } catch {
       // Error surfaced by auth context
     } finally {
