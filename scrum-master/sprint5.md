@@ -317,7 +317,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
     - Google Sign-In button does NOT appear on iOS
   - Successful social login navigates to Home screen
 
-- **AC-8.6: Auth guard**
+- - [x] **AC-8.6: Auth guard**
   - App root layout checks auth state via `AuthContext`
   - Unauthenticated users see the Welcome screen (cannot access Home, Prayers, or Account)
   - Authenticated users see the Home screen (surah list)
