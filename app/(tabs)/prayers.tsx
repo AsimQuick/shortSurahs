@@ -6,14 +6,20 @@
  *              with bold text and an accent color. Shows the current date at the top.
  *              Respects system light/dark mode. Shows a loading indicator while
  *              fetching, and an error state with a retry button if the API call fails.
+ *              AC-11.5: Offline graceful degradation — when isOffline is true and
+ *              no cached data is available, displays a clear offline message with
+ *              a retry button. The rest of the app (surah list, playback) is
+ *              unaffected. No crashes occur from network unavailability.
  *              Implements AC-9.4: Prayers tab placeholder screen (superseded by
  *              AC-11.4 full implementation).
  *              Implements AC-11.4: Prayers tab full schedule.
+ *              Implements AC-11.5: Offline graceful degradation.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
  * @story US-11: Prayer Times
  * @ac    AC-9.4: Prayers and Account tabs render placeholder screens
  * @ac    AC-11.4: Prayers tab full schedule
+ * @ac    AC-11.5: Offline graceful degradation
  * @sprint Sprint 6
  * @author Dev Team
  * @created 2026-03-14
@@ -59,6 +65,7 @@ export default function PrayersScreen() {
     nextPrayer,
     isLoading,
     error,
+    isOffline,
     fetchTimes,
     refreshIfStale,
   } = usePrayerStore();
@@ -78,7 +85,33 @@ export default function PrayersScreen() {
     );
   }
 
-  // Error state — fetch failed and no cached data
+  // Offline state — no network connectivity, no cached data
+  if (isOffline && !prayerTimes) {
+    return (
+      <ScrollView style={[styles.scroll, { backgroundColor }]}>
+        <View style={styles.container}>
+          <Text style={[styles.title, { color: textColor }]}>Prayer Times</Text>
+          <Text
+            style={[styles.offlineText, { color: subtitleColor }]}
+            accessibilityLabel="You are offline"
+          >
+            You are offline
+          </Text>
+          <Text style={[styles.errorText, { color: subtitleColor }]}>{error}</Text>
+          <Pressable
+            style={[styles.retryButton, { backgroundColor: accentColor }]}
+            onPress={fetchTimes}
+            accessibilityRole="button"
+            accessibilityLabel="Retry"
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  // Error state — fetch failed (non-offline) and no cached data
   if (error && !prayerTimes) {
     return (
       <ScrollView style={[styles.scroll, { backgroundColor }]}>
@@ -189,6 +222,12 @@ const styles = StyleSheet.create({
   },
   prayerTimeHighlighted: {
     fontWeight: '700',
+  },
+  offlineText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 4,
   },
   errorText: {
     fontSize: 16,
