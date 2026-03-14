@@ -47,8 +47,8 @@ describe('AC-5.2 — data/audioMap.ts structure', () => {
     expect(audioMapSource).toMatch(/export\s+function\s+getAudioAsset/);
   });
 
-  test('getAudioAsset accepts surahFolder and trackNum parameters', () => {
-    expect(audioMapSource).toMatch(/getAudioAsset\s*\(\s*surahFolder\s*[^,)]*,\s*trackNum/);
+  test('getAudioAsset accepts transliterationKey and trackPart parameters', () => {
+    expect(audioMapSource).toMatch(/getAudioAsset\s*\(\s*transliterationKey\s*[^,)]*,\s*trackPart/);
   });
 
   test('file header documents AC-5.2', () => {
@@ -56,63 +56,51 @@ describe('AC-5.2 — data/audioMap.ts structure', () => {
   });
 });
 
-describe('AC-5.2 — data/audioMap.ts fatiha entries (6 tracks)', () => {
-  test('has require() for fatiha/01.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/01.mp3')");
+describe('AC-5.2 / AC-7.2 — data/audioMap.ts fatiha entries (V2: 7 ayahs + intro = 8 tracks)', () => {
+  test('has require() for 1-fatiha-intro.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/1-fatiha-intro.mp3')");
   });
 
-  test('has require() for fatiha/02.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/02.mp3')");
+  test('has require() for 1-fatiha-1.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/1-fatiha-1.mp3')");
   });
 
-  test('has require() for fatiha/03.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/03.mp3')");
-  });
-
-  test('has require() for fatiha/04.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/04.mp3')");
-  });
-
-  test('has require() for fatiha/05.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/05.mp3')");
-  });
-
-  test('has require() for fatiha/06.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/fatiha/06.mp3')");
+  test('has require() for 1-fatiha-7.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/1-fatiha-7.mp3')");
   });
 });
 
-describe('AC-5.2 — data/audioMap.ts falaq entries (6 tracks)', () => {
-  test('has require() for falaq/01.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/falaq/01.mp3')");
+describe('AC-5.2 / AC-7.2 — data/audioMap.ts falaq entries (V2: 5 ayahs + intro = 6 tracks)', () => {
+  test('has require() for 113-falaq-intro.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/113-falaq-intro.mp3')");
   });
 
-  test('has require() for falaq/06.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/falaq/06.mp3')");
-  });
-});
-
-describe('AC-5.2 — data/audioMap.ts ikhlas entries (5 tracks)', () => {
-  test('has require() for ikhlas/01.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/ikhlas/01.mp3')");
-  });
-
-  test('has require() for ikhlas/05.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/ikhlas/05.mp3')");
-  });
-
-  test('does NOT have require() for ikhlas/06.mp3 (ikhlas has 5 tracks)', () => {
-    expect(audioMapSource).not.toContain("require('../assets/audio/ikhlas/06.mp3')");
+  test('has require() for 113-falaq-5.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/113-falaq-5.mp3')");
   });
 });
 
-describe('AC-5.2 — data/audioMap.ts nas entries (7 tracks)', () => {
-  test('has require() for nas/01.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/nas/01.mp3')");
+describe('AC-5.2 / AC-7.2 — data/audioMap.ts ikhlas entries (V2: 4 ayahs + intro = 5 tracks)', () => {
+  test('has require() for 112-ikhlas-intro.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/112-ikhlas-intro.mp3')");
   });
 
-  test('has require() for nas/07.mp3', () => {
-    expect(audioMapSource).toContain("require('../assets/audio/nas/07.mp3')");
+  test('has require() for 112-ikhlas-4.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/112-ikhlas-4.mp3')");
+  });
+
+  test('does NOT have require() for 112-ikhlas-5.mp3 (ikhlas has 4 ayahs)', () => {
+    expect(audioMapSource).not.toContain("require('../assets/audio/112-ikhlas-5.mp3')");
+  });
+});
+
+describe('AC-5.2 / AC-7.2 — data/audioMap.ts nas entries (V2: 6 ayahs + intro = 7 tracks)', () => {
+  test('has require() for 114-nas-intro.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/114-nas-intro.mp3')");
+  });
+
+  test('has require() for 114-nas-6.mp3', () => {
+    expect(audioMapSource).toContain("require('../assets/audio/114-nas-6.mp3')");
   });
 });
 

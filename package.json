@@ -11,7 +11,10 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "\\.(mp3|wav|m4a)$": "<rootDir>/__mocks__/fileMock.js"
+    }
   },
   "dependencies": {
     "expo": "~55.0.4",
