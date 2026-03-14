@@ -266,7 +266,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - `firebase`, `@react-native-async-storage/async-storage`, `expo-apple-authentication`, `expo-auth-session`, `expo-web-browser`, `expo-video` installed in `package.json`
   - Relevant Expo plugins added to `app.json` (`expo-apple-authentication`, `expo-web-browser`, `expo-video`)
   - `usesAppleSignIn: true` set in `app.json` iOS config
-- [ ] **AC-8.1.2:** Create Firebase config with Auth-only initialization
+- [x] **AC-8.1.2:** Create Firebase config with Auth-only initialization
   - `config/firebaseConfig.ts` created with project config values from v2_prd.md (projectId: `shortsurahs-66204`)
   - Auth initialized with `getReactNativePersistence(AsyncStorage)` for session persistence
   - Only Firebase Auth is initialized — no Firestore, Storage, Functions, or Analytics imports
@@ -347,6 +347,10 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - AC-8.4: Unit tests — mock signInWithEmailAndPassword/createUserWithEmailAndPassword, verify error handling for each Firebase error code.
 - AC-8.5: Unit tests — mock expo-apple-authentication and expo-auth-session, verify credential creation and signInWithCredential calls. Platform-conditional tests.
 - AC-8.6: Navigation tests — verify auth guard redirects based on user state, verify loading state shows indicator.
+
+#### Dev Team Status: done
+#### Dev Team Notes:
+AC-8.1.2 complete. `config/firebaseConfig.ts` created with all required exports (`app`, `auth`, `firebaseConfig`). Auth initialized with `initializeAuth` + `getReactNativePersistence(AsyncStorage)` from `firebase/auth` (works via expo tsconfig `customConditions: ["react-native"]` which resolves to `@firebase/auth` RN types that export `getReactNativePersistence`). `types/firebase-auth-rn.d.ts` added as type augmentation for belt-and-suspenders TS safety. No Firestore/Storage/Functions/Analytics imports. `npx tsc --noEmit` clean, `npx eslint . --max-warnings 0` clean. `__tests__/firebase-sdk-setup.test.ts` (39 tests) pass. Full suite: 1206 tests pass, 96.77% coverage.
 
 #### Tester Status: failed
 #### Tester Notes:
