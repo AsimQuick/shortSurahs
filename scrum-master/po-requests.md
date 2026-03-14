@@ -1,7 +1,7 @@
 # Product Owner Requests — Items Requiring Human Action
 
-**Last Updated:** 2026-03-01
-**Open requests:** 2 / 6 (REQ-5, REQ-6 open)
+**Last Updated:** 2026-03-14
+**Open requests:** 4 / 8 (REQ-5, REQ-6, REQ-7, REQ-8 open)
 
 ---
 
@@ -128,5 +128,45 @@ Sprint 3 experienced 6 zero-log ghost CI failures on AC-5.4. These are GitHub Ac
 - Concurrency limits on the free tier
 
 **Question:** Can you investigate and identify the root cause? If it's a GitHub infrastructure issue outside our control, document it and we'll accept the risk. If it's a configuration issue, fix it before Sprint 4 development begins.
+
+**Status:** open
+
+---
+
+## REQ-7: Terms of Service & Privacy Policy URLs
+
+**Sprint:** Sprint 6
+**Priority:** P2 — Non-blocking (placeholders used until real URLs provided)
+**Action needed:** Provide hosted URLs
+
+AC-10.3 (Account Screen) will ship with placeholder URLs:
+- `https://example.com/terms`
+- `https://example.com/privacy`
+
+Before app store submission, real URLs are needed.
+
+**Actions required:**
+1. Host a Terms of Service page (static page, Notion, Google Doc — any public URL works)
+2. Host a Privacy Policy page
+3. Provide both URLs so the dev team can replace the placeholders
+
+**Deadline:** Before App Store / Play Store submission (not blocking Sprint 6 development)
+
+**Status:** open
+
+---
+
+## REQ-8: Close completed GitHub issues (#6, #37, #38)
+
+**Sprint:** Sprint 6
+**Priority:** P3 — Housekeeping
+**Action needed:** Decision
+
+The following GitHub issues are still open but their stories are complete:
+- **#6** — US-6 (Background & Lock Screen Audio) — done Sprint 4
+- **#37** — US-7 (Expanded Surah Library) — done Sprint 5
+- **#38** — US-8 (Firebase Authentication) — done Sprint 5
+
+**Question:** Should these be closed, or kept open for device-testing tracking?
 
 **Status:** open

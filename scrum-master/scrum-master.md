@@ -22,9 +22,9 @@
 
 ## Project Status: V2 IN PROGRESS
 
-**MVP complete (6 stories, Sprints 1-4).** V2 development begins Sprint 5.
+**MVP complete (6 stories, Sprints 1-4).** V2 development began Sprint 5.
 
-**Current Sprint:** Sprint 5 (planning)
+**Current Sprint:** Sprint 6 (planning)
 **Active PRD:** `/scrum-master/v2_prd.md`
 
 ### MVP Story Summary
@@ -43,11 +43,12 @@
 
 | Pillar | How Delivered |
 |--------|-------------|
-| **Offline-first** | All 24 audio tracks bundled locally via `audioMap.ts`; zero network dependency; no backend, no login, no streaming |
-| **Simplicity** | Apple Music-style list + Now Playing UI; minimal controls (Play/Pause, Next, Previous); light/dark theme via system setting |
-| **Memorization-focused** | `RepeatMode.Track` loops each aya until user presses Next; auto-play on surah selection; position retained on pause |
+| **Offline-first** | All 122 audio tracks bundled locally via `audioMap.ts`; zero network dependency for core playback; network used only for auth and prayer times |
+| **Simplicity** | Apple Music-style list + Now Playing UI; minimal controls (Play/Pause, Next, Previous); light/dark theme via system setting; bottom tab navigation (Sprint 6) |
+| **Memorization-focused** | `RepeatMode.Track` loops each aya until user presses Next; auto-play on surah selection; position retained on pause; per-ayah artwork; intro play-once |
+| **Privacy-respecting** | No geolocation; prayer times from timezone only (Sprint 6); no ads, no tracking |
 
-### Dependency Graph (Final)
+### Dependency Graph (V2)
 
 ```
 [DONE] US-1 (Data) ──┐
@@ -57,39 +58,47 @@
                       │         |
                       │         v
                       └──> [DONE] US-5 (Audio Playback) ──> [DONE] US-6 (Background Audio)
+
+[DONE] US-7 (Expanded Library) ──> US-11 (Prayer Times, Home banner)
+[DONE] US-8 (Firebase Auth) ──> US-9 (Bottom Tab Nav) ──> US-11 (Prayer Times, Prayers tab)
+                             └──> US-10 (Account Screen)
 ```
 
-### Final Metrics
+### Cumulative Metrics
 
 | Metric | Value |
 |--------|-------|
-| Total Story Points Delivered | 24 |
-| Total PRs Merged | 29 (#1-#36) |
-| Tests at HEAD | 680 (27 suites, all passing) |
-| Coverage | Statements 95.83%, Branches 92.85%, Functions 100%, Lines 95.23% |
-| CI Defects Found/Resolved | 6/6 (lifetime) |
+| Total Story Points Delivered | 31 (21 MVP + 10 V2) |
+| Total PRs Merged | 45 (#1-#54, excluding closed-without-merge #44, #48, #49) |
+| Tests at HEAD | 1417 (38 suites, 1407 passing, 10 skipped) |
+| Coverage | Statements 96.77%, Branches 94.44%, Functions 100%, Lines 96.36% |
+| CI Defects Found/Resolved | 17/17 (lifetime) |
 | Open Defects | 0 |
 
 ### Completed Owner Action Items
 
 - **REQ-5:** EAS Build + physical device testing — DONE. Background audio and lock screen controls verified on real devices.
 
-### V2 Sprint 5 Stories
+### V2 Story Summary
 
 | ID | Story | Points | Status | Sprint |
 |----|-------|--------|--------|--------|
-| US-7 | Expanded Surah Library (17 Surahs) | 5 | `planning` | Sprint 5 |
-| US-8 | Firebase Authentication | 5 | `planning` | Sprint 5 |
+| US-7 | Expanded Surah Library (17 Surahs) | 5 | `done` | Sprint 5 |
+| US-8 | Firebase Authentication | 5 | `done` | Sprint 5 |
+| US-9 | Bottom Tab Navigation | 3 | `planning` | Sprint 6 |
+| US-10 | Account Screen | 3 | `planning` | Sprint 6 |
+| US-11 | Prayer Times | 5 | `planning` | Sprint 6 |
 
-### V2 Backlog (Sprint 6+)
+### V2 Backlog (Sprint 6 — Current)
 
 > Full requirements in `/scrum-master/v2_prd.md`
+> Sprint plan in `/scrum-master/sprint6.md`
 
-| Feature | Summary | Dependencies |
-|---------|---------|-------------|
-| Bottom Tab Navigation | Home, Prayers, Account tabs replacing Stack-only nav | US-8 (Auth) |
-| Prayer Times | Next prayer on Home screen + full schedule on Prayers tab (Aladhan API, timezone-based, no geolocation) | Tab navigation |
-| Account Screen | Logout, Delete Account, ToS/Privacy links | US-8 (Auth) |
+| ID | Story | Points | Dependencies | Phase |
+|----|-------|--------|-------------|-------|
+| US-9 | Bottom Tab Navigation (Home, Prayers, Account tabs) | 3 | US-8 (done) | Phase 1 |
+| US-10 | Account Screen (Logout, Delete Account, ToS/Privacy) | 3 | US-8 (done), US-9 | Phase 2 |
+| US-11 | Prayer Times (Aladhan API, timezone-based, no geolocation) | 5 | US-9 | Phase 2 |
 
 **Firebase Setup Status:** DONE — project `shortsurahs-66204`, all providers enabled, all OAuth client IDs obtained. See v2_prd.md for credentials.
 
@@ -211,6 +220,28 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 
 **Sprint file:** `/scrum-master/sprint4.md`
 
+### Sprint 5 — V2 Foundation: Expanded Library & Authentication (2026-03-14 -> 2026-03-28)
+
+**Goal:** Expand the surah library from 4 to 17 surahs with per-ayah artwork and intro play-once behavior, and add Firebase Authentication with a welcome screen.
+**Outcome:** Sprint goal MET. Second consecutive 100% velocity sprint. Highest feature volume in any sprint.
+
+| Metric | Value |
+|--------|-------|
+| Planned | 10 story points (US-7: 5, US-8: 5) |
+| Delivered | 10 story points (US-7 + US-8, all 13 ACs) |
+| Velocity | 100% (second consecutive) |
+| PRs Merged | 16 (#39-#43, #45-#47, #50-#54) |
+| Tests at HEAD | 1417 (38 suites, 1407 passing, 10 skipped) |
+| Coverage | Statements 96.77%, Branches 94.44%, Functions 100%, Lines 96.36% |
+| Dev-Tester Loop Iterations | 9 standard + 2 PO-granted extensions |
+| Build Order Compliance | 100% (5 phases executed in order) |
+
+**Accepted stories:** US-7 (Expanded Surah Library, 5 pts), US-8 (Firebase Authentication, 5 pts)
+**Key process improvement:** PI-15 (mandatory local preflight) — 6 ACs under PI-15 compliance had zero loop iterations
+**V2 status:** Foundation complete. All Sprint 6 prerequisites (AuthContext, auth guard, expanded library) satisfied.
+
+**Sprint file:** `/scrum-master/sprint5.md`
+
 ## Sprint Summary
 
 | Sprint | Phase | Goal | Points |
@@ -219,8 +250,10 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 | Sprint 2 | complete | Audio Playback Core -- player UI, list polish, audio foundation | 8 |
 | Sprint 3 | complete | Interactive Playback -- US-5 fully done (all 8 ACs) | ~5 |
 | Sprint 4 | complete | Background Audio & Lock Screen Controls -- US-6 (all 4 ACs); first 100% velocity sprint | 2 |
-| Sprint 5 | planning | V2 Foundation -- Expanded 17-surah library (US-7) + Firebase Authentication (US-8) | 10 |
+| Sprint 5 | complete | V2 Foundation -- Expanded 17-surah library (US-7, 5 pts) + Firebase Authentication (US-8, 5 pts); 100% velocity, 1417 tests, 96%+ coverage | 10 |
+| Sprint 6 | planning | V2 Completion -- Bottom Tab Nav (US-9, 3 pts) + Account Screen (US-10, 3 pts) + Prayer Times (US-11, 5 pts); completes all V2 features | 11 |
 | **MVP Total** | **COMPLETE** | **All 6 stories delivered, 680 tests, 95%+ coverage, zero open defects** | **~21** |
+| **V2 Cumulative** | **IN PROGRESS** | **8 stories delivered (6 MVP + 2 V2), 3 in planning; 1417 tests, 96%+ coverage** | **31 delivered, 11 planned** |
 
 ## Notes
 
@@ -251,8 +284,8 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 - Coverage at Sprint 4 close: Statements 95.83%, Branches 92.85%, Functions 100%, Lines 95.23%
 - All 6 MVP stories complete (US-1 through US-6): code merged, CI-verified, zero open defects
 - REQ-5 (EAS Build + physical device testing) is the sole remaining gate before MVP is shippable
-- Sprint plan files: `/scrum-master/sprint1.md`, `/scrum-master/sprint2.md`, `/scrum-master/sprint3.md`, `/scrum-master/sprint4.md`, `/scrum-master/sprint5.md`
+- Sprint plan files: `/scrum-master/sprint1.md`, `/scrum-master/sprint2.md`, `/scrum-master/sprint3.md`, `/scrum-master/sprint4.md`, `/scrum-master/sprint5.md`, `/scrum-master/sprint6.md`
 - PRD: `/scrum-master/prd.md` (V1, historical), `/scrum-master/v2_prd.md` (active)
-- GitHub issues: #1 (US-1, closed), #2 (US-2, closed), #3 (US-3, closed), #4 (US-4, closed), #5 (US-5, closed), #6 (US-6, open), #26 (CF-5, closed), #37 (US-7, open), #38 (US-8, open)
+- GitHub issues: #1 (US-1, closed), #2 (US-2, closed), #3 (US-3, closed), #4 (US-4, closed), #5 (US-5, closed), #6 (US-6, open), #26 (CF-5, closed), #37 (US-7, open), #38 (US-8, open), #55 (US-9, open), #56 (US-10, open), #57 (US-11, open)
 - V2 assets verified: 122 audio files, 122 image files, 1 login video — all present in assets/audio/, assets/images/, assets/video/
 - Firebase project ready: `shortsurahs-66204`, Email/Apple/Google providers enabled, all OAuth client IDs obtained
