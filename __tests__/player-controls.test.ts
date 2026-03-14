@@ -77,8 +77,8 @@ describe('AC-4.2 — currentTrackIndex state', () => {
     expect(source).toContain('setCurrentTrackIndex');
   });
 
-  test('trackCount is derived from surah.trackCount (not hardcoded)', () => {
-    expect(source).toMatch(/surah\?\.trackCount/);
+  test('trackCount is derived from surah.totalTracks (not hardcoded)', () => {
+    expect(source).toMatch(/surah\?\.totalTracks/);
   });
 });
 

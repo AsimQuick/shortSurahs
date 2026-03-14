@@ -190,6 +190,15 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - **Recommended Fix:** Remove `Track` from the import on line 19. Change `import type { Surah, Track } from '../types';` → `import type { Surah } from '../types';`
 - **No requirements change needed.** AC-7.1 criteria, test logic, and coverage are all correct. Single-line fix in the test file resolves CI.
 
+**CI FAILURE — Dev-Tester Loop Iteration 2 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (stale field reference, no logic defect)
+- **Classification:** Code bug — not a requirements issue
+- **Root Cause:** `app/player/[surahId].tsx` line 81 reads `surah?.trackCount` — a V1 field name that no longer exists on the `Surah` interface. AC-7.1 renamed this field to `totalTracks` in `types/index.ts`. TypeScript correctly rejects the stale reference with `TS2339: Property 'trackCount' does not exist on type 'Surah'`.
+- **CI Step Failed:** Type check (`npx tsc --noEmit`)
+- **Recommended Fix:** Update line 81 of `app/player/[surahId].tsx`. Change `surah?.trackCount` → `surah?.totalTracks`.
+- **No requirements change needed.** The V2 schema field `totalTracks` is correctly defined in `types/index.ts` and populated in `data/surahs.json`. The player screen simply was not updated to use the new field name. Single-line fix resolves CI.
+
 ---
 
 ### US-8: Firebase Authentication
@@ -313,6 +322,8 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 ### Dev Team Sprint Status: resolved
 ### Dev Team Sprint Notes:
 **CI Fix — Loop Iteration 1 (2026-03-14):** Removed unused `Track` import from `__tests__/data-layer-v2.test.ts` line 19. Changed `import type { Surah, Track } from '../types'` → `import type { Surah } from '../types'`. Single-line fix resolves ESLint `no-unused-vars` warning that failed CI with `--max-warnings 0`.
+
+**CI Fix — Loop Iteration 2 (2026-03-14):** Updated `app/player/[surahId].tsx` line 81: `surah?.trackCount` → `surah?.totalTracks`. V2 schema renamed the field; the player screen was not updated. Also updated `__tests__/player-controls.test.ts` test assertion to match the new field name. Single-line source fix + one test description update resolve TS2339 type error.
 
 **AC-7.1 — Data layer rewrite (17 surahs): DONE** (2026-03-14)
 - `data/surahs.json`: Rewritten with 17 surahs in Quran order (1, 99–114). V2 schema: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks`. 105 ayahs + 17 intros = 122 total tracks.
