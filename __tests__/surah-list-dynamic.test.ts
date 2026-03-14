@@ -12,7 +12,7 @@ import * as path from 'path';
 import { getSurahs } from '../data/dataUtils';
 
 const ROOT = path.resolve(__dirname, '..');
-const INDEX_PATH = path.join(ROOT, 'app', 'index.tsx');
+const INDEX_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 const DATA_UTILS_PATH = path.join(ROOT, 'data', 'dataUtils.ts');
 const SURAHS_JSON_PATH = path.join(ROOT, 'data', 'surahs.json');
 

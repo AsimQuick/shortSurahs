@@ -3,8 +3,10 @@
  * @description Unit tests for Expo Router configuration — validates AC-2.1
  *              requirements: expo-router installed, app.json configured with
  *              scheme and plugin, app/ directory structure in place.
+ *              Updated for AC-9.1: index.tsx moved to app/(tabs)/index.tsx
+ *              as part of bottom tab navigation implementation.
  * @project shortSurahs
- * @sprint Sprint 1 — US-2 AC-2.1
+ * @sprint Sprint 1 — US-2 AC-2.1 | Sprint 6 — US-9 AC-9.1 (tabs refactor)
  */
 
 import * as fs from 'fs';
@@ -89,8 +91,8 @@ describe('app/ directory', () => {
     expect(fs.existsSync(path.join(ROOT, 'app', '_layout.tsx'))).toBe(true);
   });
 
-  test('app/index.tsx exists (root "/" route)', () => {
-    expect(fs.existsSync(path.join(ROOT, 'app', 'index.tsx'))).toBe(true);
+  test('app/(tabs)/index.tsx exists (root "/" route via tab group)', () => {
+    expect(fs.existsSync(path.join(ROOT, 'app', '(tabs)', 'index.tsx'))).toBe(true);
   });
 
   test('app/_layout.tsx exports a default function (root layout)', () => {
@@ -110,9 +112,9 @@ describe('app/ directory', () => {
     expect(source).toMatch(/Stack/);
   });
 
-  test('app/index.tsx exports a default function (index screen)', () => {
+  test('app/(tabs)/index.tsx exports a default function (index screen)', () => {
     const source = fs.readFileSync(
-      path.join(ROOT, 'app', 'index.tsx'),
+      path.join(ROOT, 'app', '(tabs)', 'index.tsx'),
       'utf8',
     );
     expect(source).toMatch(/export default function/);
