@@ -95,8 +95,10 @@ describe('AC-8.3 — video background using expo-video', () => {
     expect(source).toContain('nativeControls={false}');
   });
 
-  it('VideoView disables fullscreen', () => {
-    expect(source).toContain('allowsFullscreen={false}');
+  it('VideoView disables native controls (which suppresses fullscreen button)', () => {
+    // allowsFullscreen is not a valid VideoViewProps field in expo-video.
+    // Fullscreen is suppressed by nativeControls={false}, which hides the entire native player UI.
+    expect(source).toContain('nativeControls={false}');
   });
 });
 
