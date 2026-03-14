@@ -80,7 +80,7 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 
 - [x] - [x] **AC-9.2: Home tab shows surah list** — The Home tab renders the existing surah list screen (currently at the root stack). Tapping a surah navigates to the Now Playing screen via a stack push within the Home tab. The Now Playing screen hides the tab bar. Pressing back from Now Playing returns to the surah list with the tab bar visible.
 
-- [x] **AC-9.3: Auth guard routing** — When the user is not logged in, the app shows the welcome/login screen (no tab bar visible). When the user is logged in, the app shows the tab layout. Logging out returns the user to the welcome screen. This replaces the current auth guard behavior to work with the tab navigator instead of a plain stack.
+- [x] - [x] **AC-9.3: Auth guard routing** — When the user is not logged in, the app shows the welcome/login screen (no tab bar visible). When the user is logged in, the app shows the tab layout. Logging out returns the user to the welcome screen. This replaces the current auth guard behavior to work with the tab navigator instead of a plain stack.
 
 - [ ] **AC-9.4: Prayers and Account tabs render placeholder screens** — The Prayers tab renders a screen with the title "Prayer Times" and a placeholder message (to be replaced in US-11). The Account tab renders a screen with the title "Account" and a placeholder message (to be replaced in US-10). Both screens are scrollable and respect system theming.
 
