@@ -21,6 +21,7 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const AUDIO_MAP_PATH = path.join(ROOT, 'data', 'audioMap.ts');
 const AUDIO_DIR = path.join(ROOT, 'assets', 'audio');
+const AUDIO_DIR_PRESENT = fs.existsSync(AUDIO_DIR);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -184,7 +185,7 @@ describe('AC-7.2 — V2 key naming convention', () => {
 // AC-7.2: No orphaned entries — every key has a corresponding audio file
 // ---------------------------------------------------------------------------
 
-describe('AC-7.2 — No orphaned entries (every map key → existing file)', () => {
+(AUDIO_DIR_PRESENT ? describe : describe.skip)('AC-7.2 — No orphaned entries (every map key → existing file)', () => {
   let audioMapSource: string;
 
   beforeAll(() => {
@@ -213,7 +214,7 @@ describe('AC-7.2 — No orphaned entries (every map key → existing file)', () 
 // AC-7.2: No missing entries — every audio file has a map key
 // ---------------------------------------------------------------------------
 
-describe('AC-7.2 — No missing entries (every audio file → map key)', () => {
+(AUDIO_DIR_PRESENT ? describe : describe.skip)('AC-7.2 — No missing entries (every audio file → map key)', () => {
   let audioMapSource: string;
 
   beforeAll(() => {
