@@ -43,7 +43,10 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-track-player"
+      "react-native-track-player",
+      "expo-apple-authentication",
+      "expo-web-browser",
+      "expo-video"
     ],
     "extra": {
       "router": {},
