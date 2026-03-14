@@ -78,7 +78,7 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 
 - [x] **AC-9.1: Tab layout with three tabs** — The app displays a bottom tab bar with three tabs: Home (home icon), Prayers (moon/prayer icon), and Account (person icon). Each tab has a label and an icon. The active tab is visually distinguished from inactive tabs. The tab bar is visible on all tab screens and respects system light/dark mode.
 
-- [ ] **AC-9.2: Home tab shows surah list** — The Home tab renders the existing surah list screen (currently at the root stack). Tapping a surah navigates to the Now Playing screen via a stack push within the Home tab. The Now Playing screen hides the tab bar. Pressing back from Now Playing returns to the surah list with the tab bar visible.
+- [x] **AC-9.2: Home tab shows surah list** — The Home tab renders the existing surah list screen (currently at the root stack). Tapping a surah navigates to the Now Playing screen via a stack push within the Home tab. The Now Playing screen hides the tab bar. Pressing back from Now Playing returns to the surah list with the tab bar visible.
 
 - [ ] **AC-9.3: Auth guard routing** — When the user is not logged in, the app shows the welcome/login screen (no tab bar visible). When the user is logged in, the app shows the tab layout. Logging out returns the user to the welcome screen. This replaces the current auth guard behavior to work with the tab navigator instead of a plain stack.
 
@@ -92,6 +92,8 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 AC-9.1 implemented 2026-03-14. Created app/(tabs)/_layout.tsx (Tabs navigator, Ionicons, useColorScheme light/dark theming, tabBarActiveTintColor/tabBarInactiveTintColor for active distinction). Created app/(tabs)/index.tsx (Home tab, surah list moved from app/index.tsx), app/(tabs)/prayers.tsx (Prayer Times placeholder, ScrollView, themed), app/(tabs)/account.tsx (Account placeholder, ScrollView, themed). Removed conflicting app/index.tsx. Updated 7 existing test files to reference app/(tabs)/index.tsx. Created __tests__/tab-layout.test.ts (24 source-level assertions). All 39 test suites pass (1444 tests), coverage 96.77% statements / 94.44% branches / 100% functions — well above 70% threshold.
 
 Fix (2026-03-14): Added `@expo/vector-icons@^14.0.0` to package.json dependencies and ran `npm install` (installed 14.1.0). The `import/no-unresolved` ESLint error on app/(tabs)/_layout.tsx:20 is resolved. `npx eslint . --max-warnings 0` passes locally (PI-15/CF-7 preflight).
+
+AC-9.2 implemented 2026-03-14. The infrastructure was already in place from AC-9.1: app/(tabs)/index.tsx renders the surah list (getSurahs, FlatList, artwork, nameEnglish, nameArabic, Pressable rows) and calls router.push({ pathname: '/player/[surahId]', params: { surahId: item.id } }) on tap. The player screen at app/player/[surahId].tsx lives in the root Stack (app/_layout.tsx), which renders over the full screen — automatically hiding the tab bar when the player is shown. router.back() returns to the surah list with the tab bar restored. Updated app/(tabs)/index.tsx header to reference AC-9.2. Created __tests__/home-tab-player-nav.test.ts (32 source-level assertions covering: file existence, surah list rendering, push navigation, back navigation, tab bar hiding via root Stack, metadata headers). All 40 test suites pass (1476 tests), coverage 96.77% statements / 94.44% branches / 100% functions.
 
 **Tester Status:** defect-found
 **Tester Notes:**
