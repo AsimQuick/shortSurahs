@@ -341,7 +341,25 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 #### Tester Notes:
 Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully testable; "no Firestore/Storage/Analytics" is verifiable via import scanning. AC-8.2: exact function signatures specified against finnaDo reference pattern; mock-based unit tests clearly applicable. AC-8.3: video asset path, exact branding/tagline/footer text, and platform-conditional button rendering all testable. AC-8.4: Firebase error codes enumerated; all 4 error scenarios can be unit-tested with mock auth. AC-8.5: exact API calls (signInAsync, useIdTokenAuthRequest) named; platform exclusions testable via Platform.OS mock. AC-8.6: auth guard navigation and loading-state indicator are testable via navigation unit tests. DoD checklist complete including credential verification against v2_prd.md. Cleared for development.
 
+**CI Fix — AC-8.1 Loop Iteration 3 (2026-03-14):** Fixed import subpath for `getReactNativePersistence` in `config/firebaseConfig.ts`. Split the single import on line 17 into two statements: `import { initializeAuth } from 'firebase/auth'` and `import { getReactNativePersistence } from 'firebase/auth/react-native'`. In `firebase@^12`, `getReactNativePersistence` is not exported from the main `firebase/auth` subpath — it lives exclusively in `firebase/auth/react-native`. No logic change — import subpath correction resolves TS2305.
+
 **CI Fix — AC-8.1 Loop Iteration 2 (2026-03-14):** Fixed wrong import path in `config/firebaseConfig.ts`. Replaced `import { getReactNativePersistence } from '@firebase/auth'` (internal monorepo package, not exported in firebase@12 TS declarations) with a consolidated `import { initializeAuth, getReactNativePersistence } from 'firebase/auth'` (public API). Also removed the now-redundant separate `import { initializeAuth } from 'firebase/auth'` line. No logic change — single import path correction resolves TS2305.
+
+**CI FAILURE — AC-8.1 — Dev-Tester Loop: Iteration 3 of 3 (FINAL)**
+- **Date:** 2026-03-14
+- **Severity:** Major (TypeScript check fails — AC-8.1 PR is blocked from merging)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Type check (`npx tsc --noEmit`)
+- **Failing File:** `config/firebaseConfig.ts` line 17
+- **CI Error:** `TS2305: Module '"firebase/auth"' has no exported member 'getReactNativePersistence'`
+- **Root Cause:** The Iteration 2 fix correctly changed `@firebase/auth` → `firebase/auth`, eliminating the internal-package error. However, the CI failure persists because in `firebase@^12.10.0`, `getReactNativePersistence` is **not** exported from the main `firebase/auth` subpath. It is a React Native-specific persistence adapter and lives exclusively in the `firebase/auth/react-native` subpath of the Firebase JS SDK modular API (v9+). TypeScript resolves the `firebase/auth` type declarations, finds no `getReactNativePersistence` export there, and correctly raises TS2305. The current `config/firebaseConfig.ts` line 17 — `import { initializeAuth, getReactNativePersistence } from 'firebase/auth'` — is therefore still wrong, just for a different reason than Iteration 2.
+- **Why the Dev Team's local run passed:** The `firebase@12` package ships both a CommonJS and ESM build. At runtime the function resolves regardless of subpath because the bundler (Metro) resolves re-exports transitively. TypeScript's static analysis is stricter — it follows the declared `exports` map in `firebase/auth`'s `package.json` and `getReactNativePersistence` is not listed there.
+- **Recommended Fix:** Split the import on line 17 of `config/firebaseConfig.ts` into two statements:
+  - `import { initializeAuth } from 'firebase/auth';`
+  - `import { getReactNativePersistence } from 'firebase/auth/react-native';`
+  No logic change — only the import subpath for `getReactNativePersistence` changes. This is the documented correct import for React Native persistence in the Firebase JS SDK modular API and matches the pattern used in the finnaDo reference implementation.
+- **No requirements change needed.** AC-8.1 acceptance criteria correctly specify `getReactNativePersistence(AsyncStorage)` for session persistence. The function exists and the pattern is correct — the import subpath alone is wrong.
+- **Loop exhausted after this iteration.** If this fix does not resolve CI, escalate to the Product Owner for scope/risk assessment before any further action.
 
 **CI FAILURE — AC-8.1 — Dev-Tester Loop: Iteration 2 of 3**
 - **Date:** 2026-03-14
