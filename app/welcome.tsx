@@ -72,7 +72,7 @@ export default function WelcomeScreen() {
       Animated.timing(taglineOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
       Animated.timing(buttonsOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [titleOpacity, taglineOpacity, buttonsOpacity]);
 
   // ---------------------------------------------------------------------------
   // Handlers

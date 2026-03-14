@@ -350,6 +350,8 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 
 #### Dev Team Status: resolved
 #### Dev Team Notes:
+CI Fix — AC-8.3 Loop Iteration 2 (2026-03-14): Added `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` to the dependency array of the staggered fade-in `useEffect` (line 75 in `app/welcome.tsx`). ESLint `react-hooks/exhaustive-deps` requires all referenced values inside a `useEffect` to appear in the dep array, even stable `useRef` `.current` values. Since all three are `useRef(new Animated.Value(0)).current` they are stable references — adding them to the array is safe and causes no re-runs. No logic change.
+
 CI Fix — AC-8.3 Loop Iteration 1 (2026-03-14): Replaced `useState(new Animated.Value(0))[0]` with `useRef(new Animated.Value(0)).current` for all three fade-in Animated.Value instances (`titleOpacity`, `taglineOpacity`, `buttonsOpacity`). Added `useRef` to React import. ESLint `react-hooks/exhaustive-deps` no longer warns about the empty `[]` dependency array on the staggered fade-in `useEffect` because `.current` on a ref is not considered a reactive dependency. No logic change.
 
 AC-8.3 complete. `app/welcome.tsx` created with: looping muted video background via `expo-video` (`VideoView` + `useVideoPlayer`, `loop=true`, `muted=true`, asset `assets/video/shortSurah-login-sm.mp4`); app name "Short Surahs" and tagline "No distractions. Just Quran." with staggered fade-in animations; Apple Sign-In button (iOS only, guarded by `Platform.OS === 'ios'` and `isAvailableAsync()`); Google Sign-In button (Android only, guarded by `Platform.OS === 'android'`); "Sign in with Email" button (both platforms, navigates to `/auth/email`); privacy footer with exact AC text; system light/dark theme via `useColorScheme`; integrates `useAuth()` for `signInWithApple` and `signInWithGoogle`. `__tests__/welcome-screen.test.ts` (38 tests) verifies: metadata header, VideoView usage, loop/muted/play config, video asset path, contentFit/nativeControls/fullscreen props, app name, tagline, privacy footer text (3 assertions), Apple iOS guard + isAvailableAsync, Google Android guard, email on both platforms, useColorScheme theming, AuthContext integration. Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage.
@@ -363,6 +365,22 @@ AC-8.1.2 complete. `config/firebaseConfig.ts` created with all required exports 
 #### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully testable; "no Firestore/Storage/Analytics" is verifiable via import scanning. AC-8.2: exact function signatures specified against finnaDo reference pattern; mock-based unit tests clearly applicable. AC-8.3: video asset path, exact branding/tagline/footer text, and platform-conditional button rendering all testable. AC-8.4: Firebase error codes enumerated; all 4 error scenarios can be unit-tested with mock auth. AC-8.5: exact API calls (signInAsync, useIdTokenAuthRequest) named; platform exclusions testable via Platform.OS mock. AC-8.6: auth guard navigation and loading-state indicator are testable via navigation unit tests. DoD checklist complete including credential verification against v2_prd.md. Cleared for development.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 2 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect or runtime impact)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Failing File:** `app/welcome.tsx` line 75
+- **CI Warning:** `React Hook useEffect has missing dependencies: 'buttonsOpacity', 'taglineOpacity', and 'titleOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps`
+- **Root Cause:** The Iteration 1 fix was correctly applied (`useState` → `useRef`) but was based on an incorrect assumption about ESLint's behavior. ESLint's `react-hooks/exhaustive-deps` rule only recognizes ref stability when `ref.current` is accessed **inside** the effect callback (e.g. `titleOpacityRef.current` used inside `useEffect`). When `.current` is extracted to a local variable **outside** the effect — `const titleOpacity = useRef(new Animated.Value(0)).current` — ESLint sees `titleOpacity` as a plain variable in the closure. It cannot trace the lineage back to a ref, so it still warns that `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` are missing from the dependency array. The `useRef` change was necessary but insufficient.
+- **Recommended Fix:** On the line immediately before the closing `}, []);` of the staggered fade-in `useEffect` (currently line 74), add an ESLint disable comment:
+  ```
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  ```
+  This is the correct resolution because the warning is a false positive: the three `Animated.Value` objects are stable by construction (created once by `useRef`, mutated in-place by the Animated engine, never reassigned), and the run-once-on-mount intent is architecturally correct. The disable comment is the idiomatic React Native pattern for this exact scenario and communicates the intentional empty-array choice to future readers. Alternative: add the three values to the dep array (`}, [buttonsOpacity, taglineOpacity, titleOpacity]);`) — they are stable refs so no extra re-runs will occur and ESLint will be satisfied without a disable comment. Either approach resolves CI; the disable-comment form is preferred.
+- **No requirements change needed.** AC-8.3 acceptance criteria, animation design, and all other `welcome.tsx` implementation details remain correct.
 
 **CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 1 of 3**
 - **Date:** 2026-03-14
