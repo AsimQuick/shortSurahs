@@ -43,8 +43,14 @@
  *              Implements AC-5.8: Error handling — isPlayDisabled computed as
  *              trackCount === 0. Play/Pause button is disabled (audio-layer
  *              no-op + visually disabled per AC-4.2) when surah has no tracks.
+ *              Implements AC-7.4: Intro play-once behavior.
+ *              useTrackPlayerEvents listens for PlaybackTrackChanged. When RNTP
+ *              auto-advances from intro (index 0) to ayah 1, the handler updates
+ *              currentTrackIndex in the store and calls skipToTrack's underlying
+ *              RepeatMode.Track via TrackPlayer.setRepeatMode. The track label
+ *              displays "Intro" for index 0 and "Aya N" for index N (1-based).
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8; Sprint 5 — US-7 AC-7.4
  */
 
 import { useEffect } from 'react';
@@ -58,6 +64,7 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import TrackPlayer, { Event, RepeatMode, useTrackPlayerEvents } from 'react-native-track-player';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
 import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
@@ -90,6 +97,9 @@ export default function PlayerScreen() {
   const trackPart = currentTrackIndex === 0 ? 'intro' : String(currentTrackIndex);
   const artwork = surah ? getArtwork(surah.transliterationKey, trackPart) : undefined;
 
+  // AC-7.4: Track label — "Intro" for index 0, "Aya N" for index N (ayah number = track index).
+  const trackLabel = currentTrackIndex === 0 ? 'Intro' : `Aya ${currentTrackIndex}`;
+
   // AC-5.2: Load surah queue on mount; clears any previous surah's queue first.
   // AC-5.7: setCurrentSurahId resets store (index=0, isPlaying=true) to match
   //         loadSurahQueue() auto-start behaviour.
@@ -97,6 +107,19 @@ export default function PlayerScreen() {
     setCurrentSurahId(surahId as string);
     loadSurahQueue(surahId as string).catch(() => {});
   }, [surahId, setCurrentSurahId]);
+
+  // AC-7.4: Listen for RNTP track-changed events to handle auto-advance.
+  // When the intro (index 0) finishes and RNTP advances to ayah 1, this handler
+  // updates the Zustand store and enables RepeatMode.Track for the new ayah.
+  // This also covers manual skips (redundant but harmless: same index, same mode).
+  useTrackPlayerEvents([Event.PlaybackTrackChanged], async (event) => {
+    if (event.nextTrack != null) {
+      setCurrentTrackIndex(event.nextTrack);
+      if (event.nextTrack > 0) {
+        await TrackPlayer.setRepeatMode(RepeatMode.Track).catch(() => {});
+      }
+    }
+  });
 
   const isPrevDisabled = currentTrackIndex === 0;
   const isNextDisabled = currentTrackIndex === trackCount - 1;
@@ -145,8 +168,8 @@ export default function PlayerScreen() {
         {surah?.nameEnglish ?? (surahId as string)}
       </Text>
 
-      {/* Below surah name: Aya indicator — AC-4.3: 1-based track index */}
-      <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>Aya {currentTrackIndex + 1}</Text>
+      {/* Below surah name: Track label — AC-4.3/AC-7.4: "Intro" or "Aya N" */}
+      <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>{trackLabel}</Text>
 
       {/* Bottom: Playback controls — AC-4.2 */}
       <View style={styles.controls}>

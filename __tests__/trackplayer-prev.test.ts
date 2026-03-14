@@ -133,7 +133,7 @@ describe('AC-5.5 — Behavioral: skipToTrack for prev calls skip -> setRepeatMod
         setRepeatMode: mockSetRepeatMode,
         play: mockPlay,
       },
-      RepeatMode: { Track: 2 },
+      RepeatMode: { Off: 0, Queue: 1, Track: 2 },
     }));
 
     jest.mock('../data/audioMap', () => ({
@@ -172,11 +172,13 @@ describe('AC-5.5 — Behavioral: skipToTrack for prev calls skip -> setRepeatMod
     expect(mockSkip).toHaveBeenCalledWith(2);
   });
 
-  test('skipToTrack calls setRepeatMode with RepeatMode.Track (value 2)', async () => {
+  test('skipToTrack(0) calls setRepeatMode with RepeatMode.Off (value 0) — AC-7.4: prev to intro plays once', async () => {
+    // AC-7.4: Navigating back to intro (index 0) must use RepeatMode.Off so the
+    // intro plays once without looping.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { skipToTrack } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await skipToTrack(0);
-    expect(mockSetRepeatMode).toHaveBeenCalledWith(2);
+    expect(mockSetRepeatMode).toHaveBeenCalledWith(0); // RepeatMode.Off = 0
   });
 
   test('skipToTrack calls TrackPlayer.play() exactly once', async () => {
