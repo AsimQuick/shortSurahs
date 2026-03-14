@@ -8,9 +8,13 @@
  *              from a previous day. If the API call fails, an error
  *              message is stored for UI display (no crash) and the
  *              fetchTimes action serves as the retry mechanism.
+ *              AC-11.5: Offline graceful degradation — detects network
+ *              unavailability (TypeError) and sets isOffline flag with
+ *              a user-friendly offline message; resets on successful fetch.
  * @project shortSurahs
  * @story US-11: Prayer Times
  * @ac    AC-11.2: Prayer times data layer
+ * @ac    AC-11.5: Offline graceful degradation
  * @sprint Sprint 6
  * @author Dev Team
  * @created 2026-03-14
@@ -106,6 +110,12 @@ export interface PrayerStoreState {
   /** User-friendly error message from the last failed fetch, or null. */
   error: string | null;
   /**
+   * True when the last fetch failed due to a network error (no connectivity).
+   * Distinct from API-level errors (e.g., 500 responses).
+   * Reset to false on successful fetch.
+   */
+  isOffline: boolean;
+  /**
    * Fetches today's prayer times from the Aladhan API and updates all
    * state fields. Also serves as the retry action after a failure.
    */
@@ -129,6 +139,7 @@ export const usePrayerStore = create<PrayerStoreState>((set, get) => ({
   fetchTimestamp: null,
   isLoading: false,
   error: null,
+  isOffline: false,
 
   fetchTimes: async () => {
     set({ isLoading: true, error: null });
@@ -141,13 +152,25 @@ export const usePrayerStore = create<PrayerStoreState>((set, get) => ({
         nextPrayer,
         fetchTimestamp: Date.now(),
         isLoading: false,
+        isOffline: false,
         error: null,
       });
-    } catch {
-      set({
-        isLoading: false,
-        error: 'Unable to load prayer times. Please check your connection and try again.',
-      });
+    } catch (err) {
+      // TypeError indicates a network-level failure (no connectivity).
+      // Other error types indicate API-level failures (e.g., HTTP errors).
+      if (err instanceof TypeError) {
+        set({
+          isLoading: false,
+          isOffline: true,
+          error: 'You are offline. Prayer times will be available when you reconnect.',
+        });
+      } else {
+        set({
+          isLoading: false,
+          isOffline: false,
+          error: 'Unable to load prayer times. Please check your connection and try again.',
+        });
+      }
     }
   },
 

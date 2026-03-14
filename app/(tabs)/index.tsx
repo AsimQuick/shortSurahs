@@ -23,12 +23,16 @@
  *              (e.g., "Next Prayer: Asr, 4:12 PM"). After Isha, shows Fajr
  *              with the next day's time. While prayer times are loading, shows
  *              an ActivityIndicator. If unavailable, the banner is hidden.
+ *              Implements AC-11.5: Offline graceful degradation — when isOffline
+ *              is true and no cached data is available, the banner shows
+ *              "Prayer times unavailable" instead of hiding silently.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
  * @story US-11: Prayer Times
  * @ac    AC-9.1: Tab layout with three tabs
  * @ac    AC-9.2: Home tab shows surah list
  * @ac    AC-11.3: Next prayer banner on Home screen
+ * @ac    AC-11.5: Offline graceful degradation
  * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2,
  *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs), AC-9.2, AC-11.3
  * @author Dev Team
@@ -88,7 +92,7 @@ export default function SurahListScreen() {
   const bannerText = isDark ? '#ffffff' : '#000000';
   const bannerAccent = isDark ? '#0a84ff' : '#007aff';
 
-  const { prayerTimes, nextPrayer, isLoading, refreshIfStale } = usePrayerStore();
+  const { prayerTimes, nextPrayer, isLoading, isOffline, refreshIfStale } = usePrayerStore();
 
   useEffect(() => {
     refreshIfStale();
@@ -105,6 +109,18 @@ export default function SurahListScreen() {
           accessibilityLabel="Prayer times loading"
         >
           <ActivityIndicator size="small" color={bannerAccent} />
+        </View>
+      );
+    }
+    if (isOffline && !prayerTimes) {
+      return (
+        <View
+          style={[styles.banner, { backgroundColor: bannerBg }]}
+          accessibilityLabel="Prayer times unavailable"
+        >
+          <Text style={[styles.bannerLabel, { color: bannerText }]}>
+            Prayer times unavailable
+          </Text>
         </View>
       );
     }
