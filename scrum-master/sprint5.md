@@ -123,7 +123,7 @@ Phase 3 can run in parallel with Phases 1-2.
 
 #### Acceptance Criteria
 
-- - [x] **AC-7.1: Data layer rewrite — 17 surahs**
+- - [x] **AC-7.1: Data layer rewrite — 17 surahs** ✓
   - `data/surahs.json` contains exactly 17 surahs matching the V2 PRD inventory (Al-Fatiha, Az-Zalzalah through An-Nas)
   - Each surah entry includes: `id`, `number`, `nameArabic`, `nameEnglish`, `transliterationKey`, `ayahCount`, `totalTracks` (ayahs + intro)
   - Surah ordering matches the Quran order (1, 99, 100, 101, ..., 114)
@@ -132,7 +132,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - `getTracksForSurah()` returns tracks with an `isIntro` boolean field — `true` for the intro track, `false` for ayah tracks
   - All 17 surahs render correctly on the surah list screen
 
-- **AC-7.2: Audio map rewrite — 122 tracks**
+- - [x] **AC-7.2: Audio map rewrite — 122 tracks**
   - `data/audioMap.ts` contains exactly 122 `require()` entries (one per audio file)
   - Keys follow the asset naming convention: `{number}-{name}-intro` and `{number}-{name}-{ayahNumber}`
   - Every key in `audioMap.ts` resolves to an existing file in `assets/audio/`
@@ -319,7 +319,7 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: resolved
+### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
 **CI Fix — Loop Iteration 1 (2026-03-14):** Removed unused `Track` import from `__tests__/data-layer-v2.test.ts` line 19. Changed `import type { Surah, Track } from '../types'` → `import type { Surah } from '../types'`. Single-line fix resolves ESLint `no-unused-vars` warning that failed CI with `--max-warnings 0`.
 
@@ -334,6 +334,14 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 - Tests: All 28 suites pass (1063 tests). Coverage: 96.42% statements, 93.75% branches. New test file `data-layer-v2.test.ts` covers V2 data layer. Existing tests updated for V2 surah IDs and field names.
 - All code files include structured metadata headers.
 - Branch: `feature/US-7-AC-7.1`
+
+**AC-7.2 — Audio map rewrite (122 tracks): DONE** (2026-03-14)
+- `data/audioMap.ts`: Rewritten as a flat `Record<string, number>` with exactly 122 `require()` entries. Keys follow V2 convention: `{transliterationKey}-intro` and `{transliterationKey}-{n}`. Covers all 17 surahs (105 ayahs + 17 intros). `getAudioAsset(transliterationKey, trackPart)` builds the lookup key as `${transliterationKey}-${trackPart}` — backward-compatible with all existing mock usages in the test suite.
+- `__tests__/trackplayer-load-queue.test.ts`: Updated V1 path assertions (old `assets/audio/fatiha/01.mp3` pattern) to V2 flat-file paths. Updated `getAudioAsset` parameter-name test to match V2 signature.
+- `__tests__/audio-map-v2.test.ts`: New test file covering AC-7.2 — 122 entry count, V2 key naming, no-orphan, no-missing, and `getAudioAsset()` runtime assertions.
+- Tests: All 29 suites pass (1089 tests). Coverage: 100% on `audioMap.ts`. ESLint clean (`--max-warnings 0`). TypeScript clean (`tsc --noEmit`).
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.2`
 
 ### Tester Sprint Status: requirements-approved
 ### Tester Sprint Notes:
