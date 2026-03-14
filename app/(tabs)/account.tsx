@@ -21,6 +21,7 @@
  * @ac    AC-10.1: Log Out button
  * @ac    AC-10.2: Delete Account with confirmation and re-authentication
  * @ac    AC-10.3: Terms of Service and Privacy Policy links
+ * @ac    AC-10.4: Account screen layout and user info
  * @sprint Sprint 6
  * @author Dev Team
  * @created 2026-03-14
@@ -33,7 +34,7 @@ import { useAuth } from '../../contexts/AuthContext';
 export default function AccountScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { logout, deleteAccount } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
 
   const backgroundColor = isDark ? '#000000' : '#ffffff';
   const textColor = isDark ? '#ffffff' : '#000000';
@@ -85,26 +86,37 @@ export default function AccountScreen() {
   return (
     <ScrollView style={[styles.scroll, { backgroundColor }]}>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: textColor }]}>Account</Text>
-        <Text style={[styles.placeholder, { color: subtitleColor }]}>
-          Account management coming soon.
-        </Text>
-        <Pressable
-          style={[styles.logoutButton, { backgroundColor: buttonBgColor }]}
-          onPress={handleLogout}
-          accessibilityRole="button"
-          accessibilityLabel="Log Out"
-        >
-          <Text style={[styles.logoutText, { color: logoutColor }]}>Log Out</Text>
-        </Pressable>
-        <Pressable
-          style={styles.deleteButton}
-          onPress={handleDeleteAccount}
-          accessibilityRole="button"
-          accessibilityLabel="Delete Account"
-        >
-          <Text style={[styles.deleteText, { color: deleteColor }]}>Delete Account</Text>
-        </Pressable>
+        {/* User info section — top */}
+        <View style={styles.userInfoSection}>
+          <Text style={[styles.title, { color: textColor }]}>Account</Text>
+          {user?.email ? (
+            <Text style={[styles.emailText, { color: subtitleColor }]} accessibilityLabel="User email">
+              {user.email}
+            </Text>
+          ) : null}
+        </View>
+
+        {/* Actions section — middle */}
+        <View style={styles.actionsSection}>
+          <Pressable
+            style={[styles.logoutButton, { backgroundColor: buttonBgColor }]}
+            onPress={handleLogout}
+            accessibilityRole="button"
+            accessibilityLabel="Log Out"
+          >
+            <Text style={[styles.logoutText, { color: logoutColor }]}>Log Out</Text>
+          </Pressable>
+          <Pressable
+            style={styles.deleteButton}
+            onPress={handleDeleteAccount}
+            accessibilityRole="button"
+            accessibilityLabel="Delete Account"
+          >
+            <Text style={[styles.deleteText, { color: deleteColor }]}>Delete Account</Text>
+          </Pressable>
+        </View>
+
+        {/* Legal section — bottom */}
         <View style={styles.legalContainer}>
           <Pressable
             onPress={() => Linking.openURL(TOS_URL)}
@@ -134,16 +146,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
   },
+  userInfoSection: {
+    marginBottom: 8,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
   },
-  placeholder: {
-    fontSize: 16,
-    marginTop: 12,
+  emailText: {
+    fontSize: 15,
+    marginTop: 6,
+  },
+  actionsSection: {
+    marginTop: 32,
   },
   logoutButton: {
-    marginTop: 32,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,

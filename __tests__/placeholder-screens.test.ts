@@ -99,8 +99,10 @@ describe('AC-9.4 — account.tsx: file existence and structure', () => {
     expect(accountSource).toContain('Account');
   });
 
-  test('contains a placeholder message (coming soon or Account management)', () => {
-    expect(accountSource).toMatch(/coming soon|Account management/i);
+  test('contains account-related content (AC-10.4 supersedes placeholder)', () => {
+    // AC-9.4 placeholder message was replaced by full account content in AC-10.4.
+    // Verify account-related UI elements are present instead.
+    expect(accountSource).toMatch(/Account|Log Out|user\.email/i);
   });
 
   test('uses ScrollView (scrollable layout)', () => {
