@@ -77,7 +77,6 @@ export default function PlayerScreen() {
   const subtitleColor = isDark ? '#aaaaaa' : '#666666';
 
   const surah = getSurahs().find((s) => s.id === surahId);
-  const artwork = getArtwork(surahId as string);
   const trackCount = surah?.totalTracks ?? 0;
 
   // AC-5.7: Zustand store — read playback state from global store.
@@ -86,6 +85,10 @@ export default function PlayerScreen() {
   const setCurrentSurahId = usePlayerStore((s) => s.setCurrentSurahId);
   const setCurrentTrackIndex = usePlayerStore((s) => s.setCurrentTrackIndex);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
+
+  // AC-7.3: Per-ayah artwork — index 0 is intro, index N is ayah N.
+  const trackPart = currentTrackIndex === 0 ? 'intro' : String(currentTrackIndex);
+  const artwork = surah ? getArtwork(surah.transliterationKey, trackPart) : undefined;
 
   // AC-5.2: Load surah queue on mount; clears any previous surah's queue first.
   // AC-5.7: setCurrentSurahId resets store (index=0, isPlaying=true) to match

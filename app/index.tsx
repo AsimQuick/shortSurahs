@@ -33,7 +33,7 @@ function SurahRow({
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={onPress}
     >
-      <Image style={styles.artwork} source={getArtwork(item.id)} resizeMode="cover" />
+      <Image style={styles.artwork} source={getArtwork(item.id, 'intro')} resizeMode="cover" />
       <View style={styles.nameContainer}>
         <Text style={[styles.nameEnglish, { color: textColor }]}>{item.nameEnglish}</Text>
         <Text style={[styles.nameArabic, { color: textColor }]}>{item.nameArabic}</Text>

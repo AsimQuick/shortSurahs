@@ -69,8 +69,10 @@ describe('AC-3.2 — index.tsx uses bundled artwork source', () => {
     expect(indexSource).toMatch(/import.*getArtwork.*from.*artworkMap/);
   });
 
-  test('app/index.tsx passes getArtwork(item.id) as Image source', () => {
-    expect(indexSource).toMatch(/source=\{getArtwork\(item\.id\)\}/);
+  test('app/index.tsx passes getArtwork(item.id, intro) as Image source', () => {
+    // V2: per-ayah artworkMap requires two arguments — transliterationKey and trackPart.
+    // The surah list shows the intro artwork for each surah.
+    expect(indexSource).toMatch(/source=\{getArtwork\(item\.id,\s*['"]intro['"]\)\}/);
   });
 
   test('app/index.tsx does NOT use { uri: item.artwork } string URI for Image source', () => {

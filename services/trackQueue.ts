@@ -86,7 +86,7 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
       url: introAudioAsset as unknown as string,
       title: `${surah.nameEnglish} — Intro`,
       artist: 'shortSurahs',
-      artwork: getArtwork(introKey) as unknown as string,
+      artwork: getArtwork(surah.transliterationKey, 'intro') as unknown as string,
     });
   }
 
@@ -105,7 +105,7 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
       url: audioAsset as unknown as string,
       title: `${surah.nameEnglish} — Aya ${i + 1}`,
       artist: 'shortSurahs',
-      artwork: getArtwork(trackKey) as unknown as string,
+      artwork: getArtwork(surah.transliterationKey, String(i + 1)) as unknown as string,
     });
   }
 
