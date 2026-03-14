@@ -12,10 +12,20 @@
  *              users to /welcome and authenticated users away from public routes.
  *              Shows ActivityIndicator while auth state is resolving to prevent
  *              a flash of the wrong screen.
+ *              Implements AC-9.3: Auth guard routing for tab navigator. Public
+ *              routes (welcome, auth) are outside the (tabs) group — no tab bar
+ *              visible. When the user is not logged in, the guard redirects to
+ *              /welcome. When logged in, the guard redirects from public routes
+ *              to /(tabs) (the tab layout). Logging out triggers the !user path
+ *              and returns the user to /welcome. The (tabs) route group is treated
+ *              as the authenticated zone; welcome and auth routes are the public
+ *              zone.
  * @project shortSurahs
  * @story US-8: Firebase Authentication
+ * @story US-9: Bottom Tab Navigation
  * @ac    AC-8.6: Auth guard
- * @sprint Sprint 1 — US-2 AC-2.1 | Sprint 2 — US-5 AC-5.1 | Sprint 5 — US-8 AC-8.2, AC-8.6
+ * @ac    AC-9.3: Auth guard routing for tab navigator
+ * @sprint Sprint 1 — US-2 AC-2.1 | Sprint 2 — US-5 AC-5.1 | Sprint 5 — US-8 AC-8.2, AC-8.6 | Sprint 6 — US-9 AC-9.3
  * @author Dev Team
  * @created 2026-03-14
  */
@@ -44,17 +54,22 @@ function AuthGuard() {
   useEffect(() => {
     if (loading) return;
 
-    // Public routes: welcome screen and email auth screen
+    // Public routes: welcome screen and email auth screen (outside the (tabs) group)
     const isPublicRoute =
       segments[0] === 'welcome' || segments[0] === 'auth';
 
     if (!user && !isPublicRoute) {
-      // Unauthenticated — send to welcome screen
+      // Unauthenticated — send to welcome screen (no tab bar visible).
+      // Covers both initial load and logout: when user signs out, user becomes
+      // null, triggering this branch from any tab screen.
       router.replace('/welcome');
     } else if (user && isPublicRoute) {
-      // Authenticated — send to home screen
-      router.replace('/');
+      // Authenticated — send to tab layout (tab bar visible).
+      // Using /(tabs) explicitly targets the tab group entry point.
+      router.replace('/(tabs)');
     }
+    // If user is authenticated and already in (tabs), or unauthenticated and
+    // already on a public route, no redirect is needed.
   }, [user, loading, segments, router]);
 
   // Show loading indicator while Firebase resolves auth state.
