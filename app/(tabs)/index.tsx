@@ -18,21 +18,40 @@
  *              onto the root Stack (app/_layout.tsx). The root Stack renders
  *              the player over the full screen, hiding the tab bar. Pressing
  *              back pops the player and returns here with the tab bar visible.
+ *              Implements AC-11.3: Next prayer banner — a banner at the top of
+ *              the surah list shows the next upcoming prayer name and time
+ *              (e.g., "Next Prayer: Asr, 4:12 PM"). After Isha, shows Fajr
+ *              with the next day's time. While prayer times are loading, shows
+ *              an ActivityIndicator. If unavailable, the banner is hidden.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
+ * @story US-11: Prayer Times
  * @ac    AC-9.1: Tab layout with three tabs
  * @ac    AC-9.2: Home tab shows surah list
+ * @ac    AC-11.3: Next prayer banner on Home screen
  * @sprint Sprint 1 — US-3 AC-3.1, US-2 AC-2.3 | Sprint 2 — US-3 AC-3.2,
- *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs), AC-9.2
+ *         AC-3.4 | Sprint 6 — US-9 AC-9.1 (moved to tabs), AC-9.2, AC-11.3
  * @author Dev Team
  * @created 2026-03-14
  */
 
-import { FlatList, Image, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { useEffect } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
 import type { Surah } from '../../types';
+import { usePrayerStore } from '../../store/prayerStore';
+import { formatTime12h } from '../../utils/formatTime';
 
 function SurahRow({
   item,
@@ -65,9 +84,50 @@ export default function SurahListScreen() {
   const isDark = colorScheme === 'dark';
   const backgroundColor = isDark ? '#000000' : '#ffffff';
   const textColor = isDark ? '#ffffff' : '#000000';
+  const bannerBg = isDark ? '#1c1c1e' : '#f2f2f7';
+  const bannerText = isDark ? '#ffffff' : '#000000';
+  const bannerAccent = isDark ? '#0a84ff' : '#007aff';
+
+  const { prayerTimes, nextPrayer, isLoading, refreshIfStale } = usePrayerStore();
+
+  useEffect(() => {
+    refreshIfStale();
+  }, [refreshIfStale]);
+
+  const nextPrayerTime =
+    prayerTimes && nextPrayer ? prayerTimes[nextPrayer] : null;
+
+  const renderBanner = () => {
+    if (isLoading && !prayerTimes) {
+      return (
+        <View
+          style={[styles.banner, { backgroundColor: bannerBg }]}
+          accessibilityLabel="Prayer times loading"
+        >
+          <ActivityIndicator size="small" color={bannerAccent} />
+        </View>
+      );
+    }
+    if (!prayerTimes || !nextPrayer || !nextPrayerTime) {
+      return null;
+    }
+    return (
+      <View
+        style={[styles.banner, { backgroundColor: bannerBg }]}
+        accessibilityLabel={`Next Prayer: ${nextPrayer}, ${formatTime12h(nextPrayerTime)}`}
+      >
+        <Text style={[styles.bannerLabel, { color: bannerText }]}>Next Prayer: </Text>
+        <Text style={[styles.bannerPrayer, { color: bannerAccent }]}>{nextPrayer}</Text>
+        <Text style={[styles.bannerTime, { color: bannerText }]}>
+          {`, ${formatTime12h(nextPrayerTime)}`}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
+      {renderBanner()}
       <FlatList
         data={surahs}
         keyExtractor={(item) => item.id}
@@ -89,6 +149,22 @@ export default function SurahListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  bannerLabel: {
+    fontSize: 14,
+  },
+  bannerPrayer: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  bannerTime: {
+    fontSize: 14,
   },
   list: {
     flex: 1,
