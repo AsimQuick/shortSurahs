@@ -138,7 +138,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - Every key in `audioMap.ts` resolves to an existing file in `assets/audio/`
   - No orphaned entries (every map key has a corresponding file) and no missing entries (every audio file has a map key)
 
-- **AC-7.3: Artwork map rewrite — 122 per-ayah images**
+- - [x] **AC-7.3: Artwork map rewrite — 122 per-ayah images**
   - `data/artworkMap.ts` contains exactly 122 `require()` entries (one per image file)
   - Keys follow the same naming convention as audioMap: `{number}-{name}-intro` and `{number}-{name}-{ayahNumber}`
   - Every key in `artworkMap.ts` resolves to an existing file in `assets/images/`
