@@ -304,7 +304,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - Successful registration navigates to Home screen
   - Uses `signInWithEmailAndPassword()` and `createUserWithEmailAndPassword()` from Firebase Auth
 
-- **AC-8.5: Social authentication**
+- - [x] **AC-8.5: Social authentication**
   - **Apple Sign-In (iOS only):**
     - Uses `expo-apple-authentication` with `AppleAuthentication.signInAsync()`
     - Requests `FULL_NAME` and `EMAIL` scopes
