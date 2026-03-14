@@ -132,7 +132,7 @@ Phase 3 can run in parallel with Phases 1-2.
   - `getTracksForSurah()` returns tracks with an `isIntro` boolean field — `true` for the intro track, `false` for ayah tracks
   - All 17 surahs render correctly on the surah list screen
 
-- - [x] **AC-7.2: Audio map rewrite — 122 tracks**
+- - [x] - [x] **AC-7.2: Audio map rewrite — 122 tracks**
   - `data/audioMap.ts` contains exactly 122 `require()` entries (one per audio file)
   - Keys follow the asset naming convention: `{number}-{name}-intro` and `{number}-{name}-{ayahNumber}`
   - Every key in `audioMap.ts` resolves to an existing file in `assets/audio/`
