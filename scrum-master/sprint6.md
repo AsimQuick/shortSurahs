@@ -132,7 +132,7 @@ Original requirements-approved note: All four ACs remain unambiguous and testabl
 
 **Acceptance Criteria:**
 
-- [ ] **AC-10.1: Log Out button** — The Account screen displays a "Log Out" button. Tapping it signs the user out via Firebase Auth and navigates to the welcome screen. The button is styled consistently with the app theme (light/dark mode). No confirmation dialog is needed for logout.
+- [x] **AC-10.1: Log Out button** — The Account screen displays a "Log Out" button. Tapping it signs the user out via Firebase Auth and navigates to the welcome screen. The button is styled consistently with the app theme (light/dark mode). No confirmation dialog is needed for logout.
 
 - [ ] **AC-10.2: Delete Account with confirmation and re-authentication** — The Account screen displays a "Delete Account" button styled as a destructive action (red text or similar visual warning). Tapping it shows a confirmation dialog explaining that account deletion is permanent. If the user confirms, the app re-authenticates the user (Firebase requires recent authentication for account deletion), then deletes the account via Firebase Auth, and navigates to the welcome screen. If re-authentication fails, an error message is displayed. Reference implementation: finnaDo `/app/(tabs)/settings.tsx`.
 
