@@ -169,7 +169,7 @@ Reviewed 2026-03-14. All four ACs are unambiguous and testable: logout wiring to
 
 **Acceptance Criteria:**
 
-- [ ] **AC-11.1: Aladhan API integration** — The app fetches daily prayer times from the Aladhan Prayer Times API using the device's timezone (obtained via `expo-localization` or equivalent). No geolocation or location permissions are requested. The API call uses the timings-by-timezone endpoint. Prayer times are fetched for the current date. The API response is parsed to extract Fajr, Dhuhr, Asr, Maghrib, and Isha times.
+- [x] **AC-11.1: Aladhan API integration** — The app fetches daily prayer times from the Aladhan Prayer Times API using the device's timezone (obtained via `expo-localization` or equivalent). No geolocation or location permissions are requested. The API call uses the timings-by-timezone endpoint. Prayer times are fetched for the current date. The API response is parsed to extract Fajr, Dhuhr, Asr, Maghrib, and Isha times.
 
 - [ ] **AC-11.2: Prayer times data layer** — A Zustand store (or service module) manages prayer time state: the five daily prayer times, the current/next prayer, the fetch timestamp, and loading/error states. Prayer times are re-fetched when the app returns to the foreground if the cached data is from a previous day. If the API call fails, the app displays a user-friendly error message (not a crash) and allows retry.
 
