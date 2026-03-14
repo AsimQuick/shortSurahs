@@ -124,8 +124,8 @@ describe('AC-5.3 — Behavioral: loadSurahQueue enables loop and auto-starts pla
         setRepeatMode: mockSetRepeatMode,
         play: mockPlay,
       },
-      // RepeatMode.Track = 2 per RNTP v4 enum definition
-      RepeatMode: { Track: 2 },
+      // AC-7.4: RepeatMode.Off = 0, RepeatMode.Queue = 1, RepeatMode.Track = 2
+      RepeatMode: { Off: 0, Queue: 1, Track: 2 },
     }));
 
     jest.mock('../data/audioMap', () => ({
@@ -158,11 +158,14 @@ describe('AC-5.3 — Behavioral: loadSurahQueue enables loop and auto-starts pla
     expect(mockSetRepeatMode).toHaveBeenCalledTimes(1);
   });
 
-  test('setRepeatMode is called with RepeatMode.Track (value 2)', async () => {
+  test('setRepeatMode is called with RepeatMode.Off (value 0) — AC-7.4: intro plays once', async () => {
+    // AC-7.4: loadSurahQueue now sets RepeatMode.Off so the intro plays exactly once
+    // and RNTP auto-advances to ayah 1. The player event handler switches to
+    // RepeatMode.Track when the first ayah begins.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('1-fatiha');
-    expect(mockSetRepeatMode).toHaveBeenCalledWith(2); // RepeatMode.Track = 2
+    expect(mockSetRepeatMode).toHaveBeenCalledWith(0); // RepeatMode.Off = 0
   });
 
   test('play() is called after loading tracks', async () => {

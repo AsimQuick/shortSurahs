@@ -139,7 +139,7 @@ describe('AC-5.4 — Behavioral: skipToTrack calls skip -> setRepeatMode -> play
         setRepeatMode: mockSetRepeatMode,
         play: mockPlay,
       },
-      RepeatMode: { Track: 2 },
+      RepeatMode: { Off: 0, Queue: 1, Track: 2 },
     }));
 
     jest.mock('../data/audioMap', () => ({
@@ -178,11 +178,20 @@ describe('AC-5.4 — Behavioral: skipToTrack calls skip -> setRepeatMode -> play
     expect(mockSkip).toHaveBeenCalledWith(3);
   });
 
-  test('skipToTrack calls setRepeatMode with RepeatMode.Track (value 2)', async () => {
+  test('skipToTrack calls setRepeatMode with RepeatMode.Track (value 2) for ayah index', async () => {
+    // AC-7.4: skipToTrack uses RepeatMode.Track for index > 0 (ayah tracks).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { skipToTrack } = require('../services/trackQueue') as typeof import('../services/trackQueue');
+    await skipToTrack(1);
+    expect(mockSetRepeatMode).toHaveBeenCalledWith(2); // RepeatMode.Track = 2
+  });
+
+  test('skipToTrack calls setRepeatMode with RepeatMode.Off (value 0) for intro index 0 — AC-7.4', async () => {
+    // AC-7.4: skipToTrack uses RepeatMode.Off for index 0 (intro plays once).
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { skipToTrack } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await skipToTrack(0);
-    expect(mockSetRepeatMode).toHaveBeenCalledWith(2);
+    expect(mockSetRepeatMode).toHaveBeenCalledWith(0); // RepeatMode.Off = 0
   });
 
   test('skipToTrack calls TrackPlayer.play() exactly once', async () => {

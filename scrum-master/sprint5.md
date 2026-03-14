@@ -365,7 +365,7 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ## Sprint Review
 
-### Dev Team Sprint Status: resolved
+### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
 **CI Fix — AC-7.3 Loop Iteration 1 (2026-03-14):** Extended `moduleNameMapper` in `package.json` to cover image extensions. Changed `"\\.(mp3|wav|m4a)$"` → `"\\.(mp3|wav|m4a|jpg|jpeg|png|gif)$"`. The existing `__mocks__/fileMock.js` (returning `module.exports = 1`) is already the correct stub. This allows the fifth describe block in `artwork-map-v2.test.ts` (runtime `require('../data/artworkMap')`) to execute in CI where image files are absent. Future-proofs all image asset tests project-wide.
 
@@ -407,6 +407,17 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 - Branch: `feature/US-7-AC-7.2`
 
 **CI Fix — AC-7.2 Loop Iteration 1 (2026-03-14):** Applied Option A fix for audio asset resolution in CI. Added `moduleNameMapper` for `.(mp3|wav|m4a)$` → `<rootDir>/__mocks__/fileMock.js` to Jest config in `package.json`. Created `__mocks__/fileMock.js` returning `module.exports = 1` — the standard React Native/Expo pattern for binary asset mocking. This allows the fourth describe block in `audio-map-v2.test.ts` (runtime `require('../data/audioMap')`) to execute in CI where audio files are not present. Resolves `Cannot find module '../assets/audio/1-fatiha-intro.mp3'` error. Future-proofs all audio asset tests project-wide.
+
+**AC-7.4 — Intro play-once behavior: DONE** (2026-03-14)
+- `services/trackQueue.ts`: `loadSurahQueue()` sets `RepeatMode.Off` (not `RepeatMode.Track`) after adding tracks so the intro (index 0) plays exactly once, then RNTP auto-advances to ayah 1. `skipToTrack()` uses `RepeatMode.Off` for index 0 (intro navigation) and `RepeatMode.Track` for index > 0 (ayah looping).
+- `app/player/[surahId].tsx`: Added `useTrackPlayerEvents` listener for `Event.PlaybackTrackChanged`. When RNTP auto-advances from intro to ayah 1, the handler updates `currentTrackIndex` in Zustand and calls `TrackPlayer.setRepeatMode(RepeatMode.Track)`. Added `trackLabel` variable: "Intro" for index 0, "Aya N" for index N. Replaced hardcoded "Aya N+1" with dynamic `{trackLabel}`.
+- `__tests__/intro-play-once.test.ts`: New test file with 26 tests covering: source-level assertions (header docs, imports, RepeatMode usage), behavioral tests (loadSurahQueue sets RepeatMode.Off, skipToTrack(0) uses Off, skipToTrack(N>0) uses Track, call ordering), and player screen assertions (event handler, trackLabel, "Intro" label).
+- `__tests__/trackplayer-loop.test.ts`: Updated mock to include `RepeatMode.Off`. Changed assertion from `RepeatMode.Track(2)` to `RepeatMode.Off(0)` for initial load.
+- `__tests__/trackplayer-next.test.ts`: Updated mock to include `RepeatMode.Off`. Added separate tests for ayah index (Track) and intro index 0 (Off).
+- `__tests__/trackplayer-prev.test.ts`: Updated mock to include `RepeatMode.Off`. Changed assertion from `RepeatMode.Track(2)` to `RepeatMode.Off(0)` for `skipToTrack(0)`.
+- Tests: All 31 suites pass (1145 tests). Coverage: 96.77% statements, 94.44% branches, 100% functions. ESLint clean. TypeScript clean.
+- All code files include structured metadata headers.
+- Branch: `feature/US-7-AC-7.4`
 
 ### Tester Sprint Status: defect-found
 ### Tester Sprint Notes:

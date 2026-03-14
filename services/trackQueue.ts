@@ -34,8 +34,13 @@
  *              V2 (AC-7.1): Uses transliterationKey and totalTracks/ayahCount
  *              from the new Surah schema. Intro track built first, then ayah tracks.
  *              Track keys follow {transliterationKey}-intro and {transliterationKey}-{n}.
+ *              Implements AC-7.4: Intro play-once behavior.
+ *              loadSurahQueue() sets RepeatMode.Off after adding tracks so the intro
+ *              (index 0) plays exactly once, then RNTP auto-advances to ayah 1.
+ *              skipToTrack(index) sets RepeatMode.Off when index === 0 (navigating
+ *              back to intro) and RepeatMode.Track when index > 0 (ayah looping).
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2; Sprint 5 — US-7 AC-7.1
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2; Sprint 5 — US-7 AC-7.1, AC-7.4
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
@@ -119,22 +124,31 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
 
   await TrackPlayer.add(validTracks);
 
-  // AC-5.3: Enable per-track looping (PRD Rule 1) and start playback automatically.
-  await TrackPlayer.setRepeatMode(RepeatMode.Track);
+  // AC-7.4: Start with RepeatMode.Off so the intro (index 0) plays exactly once,
+  // then RNTP auto-advances to ayah 1. The player screen's event listener switches
+  // to RepeatMode.Track when the first ayah begins.
+  await TrackPlayer.setRepeatMode(RepeatMode.Off);
   await TrackPlayer.play();
 }
 
 /**
- * Skips to the track at the given queue index, re-enables loop, and starts playback.
+ * Skips to the track at the given queue index and starts playback.
  * Implements AC-5.4: Next behavior (PRD Rule 2).
  * Implements AC-5.5: Previous behavior (PRD Rule 3).
- * Call sequence: skip -> setRepeatMode(Track) -> play.
+ * Implements AC-7.4: Intro play-once — index 0 (intro) uses RepeatMode.Off so it
+ * plays exactly once and then auto-advances; index > 0 (ayah) uses RepeatMode.Track.
+ * Call sequence: skip -> setRepeatMode -> play.
  *
  * @param index - Zero-based queue index to skip to
  */
 export async function skipToTrack(index: number): Promise<void> {
   await TrackPlayer.skip(index);
-  await TrackPlayer.setRepeatMode(RepeatMode.Track);
+  // AC-7.4: Intro (index 0) plays once (no loop); ayah tracks loop.
+  if (index === 0) {
+    await TrackPlayer.setRepeatMode(RepeatMode.Off);
+  } else {
+    await TrackPlayer.setRepeatMode(RepeatMode.Track);
+  }
   await TrackPlayer.play();
 }
 
