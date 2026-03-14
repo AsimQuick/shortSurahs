@@ -273,7 +273,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - Exports `app`, `auth`, `firebaseConfig`
   - Type declaration (`types/firebase-auth-rn.d.ts`) added if needed for `getReactNativePersistence`
   - ESLint and TypeScript checks pass (`npx eslint . --max-warnings 0 && npx tsc --noEmit`)
-- [x] **AC-8.1.3:** Static assertion tests for Firebase SDK setup
+- [x] - [x] **AC-8.1.3:** Static assertion tests for Firebase SDK setup
   - `__tests__/firebase-sdk-setup.test.ts` created with tests covering: required packages in `package.json`, correct config values, Auth-with-AsyncStorage persistence pattern, Auth-only initialization (no Firestore/Storage/Functions/Analytics), Expo plugins in `app.json`, and structured metadata headers
   - All tests pass (`npm test`)
 
