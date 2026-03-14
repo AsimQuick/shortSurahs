@@ -367,6 +367,15 @@ Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully test
 
 ### Dev Team Sprint Status: in-progress
 ### Dev Team Sprint Notes:
+**AC-8.1 — Firebase SDK setup: DONE** (2026-03-14)
+- `config/firebaseConfig.ts`: Firebase app initialized with v2_prd.md credentials (projectId: shortsurahs-66204). Auth initialized with `getReactNativePersistence(AsyncStorage)` for session persistence. Auth-only — no Firestore, Storage, Functions, or Analytics imports. Exports `app`, `auth`, `firebaseConfig`.
+- `package.json`: Added `firebase@^12.10.0`, `@react-native-async-storage/async-storage@2.2.0`, `expo-apple-authentication@~55.0.8`, `expo-auth-session@~55.0.8`, `expo-web-browser@~55.0.9`, `expo-video@~55.0.10`.
+- `app.json`: Added `expo-apple-authentication`, `expo-web-browser`, `expo-video` plugins. Added `usesAppleSignIn: true` for iOS.
+- `__tests__/firebase-sdk-setup.test.ts`: 35 tests covering: required packages installed (6), correct config values from v2_prd.md (7), Auth with AsyncStorage persistence (6), Auth-only initialization — no other Firebase services (10), Expo plugins registered in app.json (4), structured metadata header (3).
+- Tests: All 33 suites pass (1202 tests). Coverage: 96.77% statements, 94.44% branches. ESLint clean. TypeScript clean.
+- All code files include structured metadata headers.
+- Branch: `feature/US-8-AC-AC-8.1`
+
 **AC-7.5 — Per-ayah artwork on Now Playing screen: DONE** (2026-03-14)
 - `app/player/[surahId].tsx`: Per-ayah artwork was implemented as part of AC-7.3 data layer work. `trackPart` is computed from `currentTrackIndex` (0 → `'intro'`, N → `String(N)`). `artwork` is resolved via `getArtwork(surah.transliterationKey, trackPart)`. The `artwork` variable recomputes on every render as `currentTrackIndex` changes from the Zustand store, so artwork updates automatically on next/previous/auto-advance without any extra effect. File header updated to document AC-7.5.
 - `__tests__/per-ayah-artwork.test.ts`: New test file with 22 tests covering: file header (AC-7.5 documented), `trackPart` computation (intro key for index 0, ayah key for index N), `artwork` variable derivation (getArtwork + trackPart), Image component rendering (ARTWORK_SIZE layout, no hardcoded asset), artwork reactivity (Zustand store, handleNext, handlePrev, auto-advance event handler), and intro track key ('intro' not '0').
