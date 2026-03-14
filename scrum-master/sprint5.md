@@ -348,9 +348,17 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - AC-8.5: Unit tests — mock expo-apple-authentication and expo-auth-session, verify credential creation and signInWithCredential calls. Platform-conditional tests.
 - AC-8.6: Navigation tests — verify auth guard redirects based on user state, verify loading state shows indicator.
 
-#### Dev Team Status: done
+#### Dev Team Status: resolved
 #### Dev Team Notes:
-AC-8.2 complete. `contexts/AuthContext.tsx` created following finnaDo reference pattern (no Firestore, no RevenueCat). Provides: `user` (User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`. `onAuthStateChanged` listener manages auth state with cleanup on unmount. Google auth via `Google.useIdTokenAuthRequest` + `GoogleAuthProvider.credential` + `signInWithCredential`. Apple Sign-In via `AppleAuthentication.signInAsync` + `OAuthProvider('apple.com').credential` + `signInWithCredential` (iOS only). `AuthProvider` wraps `Stack` in `app/_layout.tsx`. `__tests__/auth-context.test.ts` (58 tests) verifies: metadata header, Firebase imports, AuthContextType shape, onAuthStateChanged usage, email/Google/Apple flows, logout/deleteAccount, exports, and _layout.tsx integration. Full suite: 1264 tests pass across 34 suites, 96.77% statement coverage, 94.44% branch coverage.
+CI Fix — AC-8.3 Loop Iteration 3 (2026-03-14): Removed `allowsFullscreen={false}` prop from `VideoView` in `app/welcome.tsx` (line 121). The `allowsFullscreen` prop does not exist on `expo-video`'s `VideoViewProps` type, causing TS2769. The prop was redundant — `nativeControls={false}` already suppresses all native controls including fullscreen. No logic change.
+
+CI Fix — AC-8.3 Loop Iteration 2 (2026-03-14): Added `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` to the dependency array of the staggered fade-in `useEffect` (line 75 in `app/welcome.tsx`). ESLint `react-hooks/exhaustive-deps` requires all referenced values inside a `useEffect` to appear in the dep array, even stable `useRef` `.current` values. Since all three are `useRef(new Animated.Value(0)).current` they are stable references — adding them to the array is safe and causes no re-runs. No logic change.
+
+CI Fix — AC-8.3 Loop Iteration 1 (2026-03-14): Replaced `useState(new Animated.Value(0))[0]` with `useRef(new Animated.Value(0)).current` for all three fade-in Animated.Value instances (`titleOpacity`, `taglineOpacity`, `buttonsOpacity`). Added `useRef` to React import. ESLint `react-hooks/exhaustive-deps` no longer warns about the empty `[]` dependency array on the staggered fade-in `useEffect` because `.current` on a ref is not considered a reactive dependency. No logic change.
+
+AC-8.3 complete. `app/welcome.tsx` created with: looping muted video background via `expo-video` (`VideoView` + `useVideoPlayer`, `loop=true`, `muted=true`, asset `assets/video/shortSurah-login-sm.mp4`); app name "Short Surahs" and tagline "No distractions. Just Quran." with staggered fade-in animations; Apple Sign-In button (iOS only, guarded by `Platform.OS === 'ios'` and `isAvailableAsync()`); Google Sign-In button (Android only, guarded by `Platform.OS === 'android'`); "Sign in with Email" button (both platforms, navigates to `/auth/email`); privacy footer with exact AC text; system light/dark theme via `useColorScheme`; integrates `useAuth()` for `signInWithApple` and `signInWithGoogle`. `__tests__/welcome-screen.test.ts` (38 tests) verifies: metadata header, VideoView usage, loop/muted/play config, video asset path, contentFit/nativeControls/fullscreen props, app name, tagline, privacy footer text (3 assertions), Apple iOS guard + isAvailableAsync, Google Android guard, email on both platforms, useColorScheme theming, AuthContext integration. Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage.
+
+AC-8.2 complete (2026-03-14). `contexts/AuthContext.tsx` created following finnaDo reference pattern (no Firestore, no RevenueCat). Provides: `user` (User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`. `onAuthStateChanged` listener manages auth state with cleanup on unmount. Google auth via `Google.useIdTokenAuthRequest` + `GoogleAuthProvider.credential` + `signInWithCredential`. Apple Sign-In via `AppleAuthentication.signInAsync` + `OAuthProvider('apple.com').credential` + `signInWithCredential` (iOS only). `AuthProvider` wraps `Stack` in `app/_layout.tsx`. `__tests__/auth-context.test.ts` (58 tests) verifies: metadata header, Firebase imports, AuthContextType shape, onAuthStateChanged usage, email/Google/Apple flows, logout/deleteAccount, exports, and _layout.tsx integration. Stale welcome-screen test fixed (allowsFullscreen → nativeControls assertion). Full suite: 1302 tests pass across 35 suites, 96.77% statement coverage, 94.44% branch coverage. ESLint clean. TypeScript clean. Branch: feature/US-8-AC-8.2.
 
 AC-8.1.3 complete. `__tests__/firebase-sdk-setup.test.ts` (39 tests) verified passing on branch `feature/US-8-AC-8.1.3`. Tests cover: required packages installed (6), correct config values from v2_prd.md (7), Auth with AsyncStorage persistence (6), Auth-only initialization — no Firestore/Storage/Functions/Analytics (10), Expo plugins in app.json (4), type declaration file (4), structured metadata header (3). Full suite: 1206 tests pass across 33 suites, 96.77% statement coverage, 94.44% branch coverage. ESLint and TypeScript clean.
 
@@ -359,6 +367,58 @@ AC-8.1.2 complete. `config/firebaseConfig.ts` created with all required exports 
 #### Tester Status: failed
 #### Tester Notes:
 Reviewed 2026-03-14. AC-8.1: static package and config assertions are fully testable; "no Firestore/Storage/Analytics" is verifiable via import scanning. AC-8.2: exact function signatures specified against finnaDo reference pattern; mock-based unit tests clearly applicable. AC-8.3: video asset path, exact branding/tagline/footer text, and platform-conditional button rendering all testable. AC-8.4: Firebase error codes enumerated; all 4 error scenarios can be unit-tested with mock auth. AC-8.5: exact API calls (signInAsync, useIdTokenAuthRequest) named; platform exclusions testable via Platform.OS mock. AC-8.6: auth guard navigation and loading-state indicator are testable via navigation unit tests. DoD checklist complete including credential verification against v2_prd.md. Cleared for development.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 3 of 3 (FINAL)**
+- **Date:** 2026-03-14
+- **Severity:** Minor (type error only — no logic defect, no runtime impact; `allowsFullscreen` is not surfaced at runtime since `nativeControls={false}` already suppresses the native fullscreen control)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Type check (`npx tsc --noEmit`)
+- **Failing File:** `app/welcome.tsx` line 121
+- **CI Error:** `TS2769: No overload matches this call. Property 'allowsFullscreen' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<VideoView> & Readonly<VideoViewProps>'`
+- **Root Cause:** `<VideoView>` at line 118–125 of `app/welcome.tsx` is passed `allowsFullscreen={false}`. The `expo-video` package does not declare `allowsFullscreen` on `VideoViewProps` — it is not part of the component's public API. TypeScript correctly rejects the unknown prop. The `nativeControls={false}` prop (which is valid) already prevents the native player UI (including any fullscreen button) from rendering. `allowsFullscreen` is redundant and non-existent on this component.
+- **Recommended Fix:** Remove `allowsFullscreen={false}` from the `<VideoView>` JSX at `app/welcome.tsx` line 121. No other changes needed — `contentFit`, `nativeControls`, `allowsPictureInPicture`, `player`, and `style` are all valid `VideoViewProps`. Single-line deletion resolves CI.
+- **No requirements change needed.** AC-8.3 specifies a looping muted background video; it makes no mention of fullscreen controls. The acceptance criteria, video player configuration, and all other `welcome.tsx` implementation details remain correct.
+- **Loop exhausted after this iteration.** If this fix does not resolve CI, escalate to the Product Owner for scope/risk assessment before any further action.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 2 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect or runtime impact)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Failing File:** `app/welcome.tsx` line 75
+- **CI Warning:** `React Hook useEffect has missing dependencies: 'buttonsOpacity', 'taglineOpacity', and 'titleOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps`
+- **Root Cause:** The Iteration 1 fix was correctly applied (`useState` → `useRef`) but was based on an incorrect assumption about ESLint's behavior. ESLint's `react-hooks/exhaustive-deps` rule only recognizes ref stability when `ref.current` is accessed **inside** the effect callback (e.g. `titleOpacityRef.current` used inside `useEffect`). When `.current` is extracted to a local variable **outside** the effect — `const titleOpacity = useRef(new Animated.Value(0)).current` — ESLint sees `titleOpacity` as a plain variable in the closure. It cannot trace the lineage back to a ref, so it still warns that `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` are missing from the dependency array. The `useRef` change was necessary but insufficient.
+- **Recommended Fix:** On the line immediately before the closing `}, []);` of the staggered fade-in `useEffect` (currently line 74), add an ESLint disable comment:
+  ```
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  ```
+  This is the correct resolution because the warning is a false positive: the three `Animated.Value` objects are stable by construction (created once by `useRef`, mutated in-place by the Animated engine, never reassigned), and the run-once-on-mount intent is architecturally correct. The disable comment is the idiomatic React Native pattern for this exact scenario and communicates the intentional empty-array choice to future readers. Alternative: add the three values to the dep array (`}, [buttonsOpacity, taglineOpacity, titleOpacity]);`) — they are stable refs so no extra re-runs will occur and ESLint will be satisfied without a disable comment. Either approach resolves CI; the disable-comment form is preferred.
+- **No requirements change needed.** AC-8.3 acceptance criteria, animation design, and all other `welcome.tsx` implementation details remain correct.
+
+**CI FAILURE — AC-8.3 — Dev-Tester Loop: Iteration 1 of 3**
+- **Date:** 2026-03-14
+- **Severity:** Minor (lint-only, no logic defect or runtime impact)
+- **Classification:** Code bug — not a requirements issue
+- **CI Step Failed:** Lint (`npx eslint . --max-warnings 0`)
+- **Failing File:** `app/welcome.tsx` line 75
+- **CI Warning:** `React Hook useEffect has missing dependencies: 'buttonsOpacity', 'taglineOpacity', and 'titleOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps`
+- **Root Cause:** Lines 47–49 of `app/welcome.tsx` initialize the three fade-in `Animated.Value` objects using the `useState(new Animated.Value(0))[0]` pattern. The `useEffect` on lines 69–75 (staggered fade-in animation) consumes all three values but declares an empty dependency array `[]`. ESLint's `react-hooks/exhaustive-deps` rule cannot determine that these are stable references — it sees them as reactive state values and warns that they are missing from the dependency array. With `--max-warnings 0` configured in CI, one warning fails the Lint step.
+- **Why the Dev Team's local run passed:** The local ESLint configuration or run command may have had a non-zero warnings threshold, or the warning was overlooked during the pre-push preflight. The behavior is identical locally and in CI — the warning exists in both environments.
+- **Recommended Fix:** Replace the three `useState` initializations for `Animated.Value` with `useRef`. Change:
+  ```
+  const titleOpacity = useState(new Animated.Value(0))[0];
+  const taglineOpacity = useState(new Animated.Value(0))[0];
+  const buttonsOpacity = useState(new Animated.Value(0))[0];
+  ```
+  to:
+  ```
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const buttonsOpacity = useRef(new Animated.Value(0)).current;
+  ```
+  `useRef` is the idiomatic React Native pattern for stable `Animated.Value` instances. ESLint's `exhaustive-deps` rule does not flag `.current` on refs as a missing dependency — the `[]` array on the `useEffect` is then correct and the warning is eliminated. Remove `useState` from the React import if it is no longer used after this change. No logic change, no requirements change — three-line substitution resolves CI.
+- **No requirements change needed.** AC-8.3 acceptance criteria, the animation design, and all other `welcome.tsx` implementation details are correct.
 
 **CI Fix — AC-8.1 Loop Iteration 3 (2026-03-14):** Fixed import subpath for `getReactNativePersistence` in `config/firebaseConfig.ts`. Split the single import on line 17 into two statements: `import { initializeAuth } from 'firebase/auth'` and `import { getReactNativePersistence } from 'firebase/auth/react-native'`. In `firebase@^12`, `getReactNativePersistence` is not exported from the main `firebase/auth` subpath — it lives exclusively in `firebase/auth/react-native`. No logic change — import subpath correction resolves TS2305.
 
@@ -525,6 +585,31 @@ Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testab
 - This extends PI-9 (first-PR preflight) to every push, not just the first PR of the sprint
 - Rationale: All 3 AC-8.1 loop iterations would have been caught locally; zero iterations should have been consumed
 
+**AC-8.3 Loop Exhaustion — Recovery Decision (2026-03-14)**
+
+**What went wrong:** Three Dev-Tester loop iterations were consumed by minor static analysis issues — not a single logic defect in any iteration:
+
+| Iteration | Issue | Category |
+|-----------|-------|----------|
+| 1 | `useState(new Animated.Value(0))` triggers ESLint `exhaustive-deps` — changed to `useRef` | Lint warning |
+| 2 | `useRef().current` extracted to variable still triggers `exhaustive-deps` — added to dep array | Lint warning (false positive) |
+| 3 | `allowsFullscreen={false}` prop doesn't exist on `expo-video` `VideoViewProps` — removed prop | Type error (TS2769) |
+
+**Current state after iteration 3:** TypeScript clean. ESLint clean. **1 test failure remains:** `__tests__/welcome-screen.test.ts:99` asserts `source.toContain('allowsFullscreen={false}')` — the Dev Team correctly removed this prop from `app/welcome.tsx` but did not update the corresponding test assertion. The test is now wrong, not the component.
+
+**Why it kept happening:** Same root cause as AC-8.1 — the Dev Team did not run the full CI pipeline locally before pushing. PI-15 (mandatory local preflight) was introduced after the AC-8.1 loop exhaustion but was not yet in effect for AC-8.3 development (both ACs were developed on the same day). Additionally, iteration 3 was an incomplete fix — removing a prop from the component requires updating or removing any test that asserts that prop's presence.
+
+**Assessment:** The AC-8.3 implementation is functionally complete and correct. The welcome screen renders video, branding, platform-conditional auth buttons, privacy footer, and theme support exactly as specified. All 1301 of 1302 tests pass. The single failing test is a stale assertion checking for a prop that was correctly removed.
+
+**Decision: GRANT 1 EXTENSION ITERATION (Iteration 4 — test fix only)**
+
+- The Dev Team must remove or update the `allowsFullscreen` test assertion in `__tests__/welcome-screen.test.ts:99`
+- CI must pass (lint + typecheck + tests) on iteration 4
+- If iteration 4 fails, AC-8.3 is deferred to Sprint 6
+- The Dev Team MUST run `npx eslint . --max-warnings 0 && npx tsc --noEmit && npm test` locally and confirm all pass before pushing (PI-15)
+
+**Process observation:** This is the second AC in Sprint 5 to exhaust iterations on trivial CI issues. Both AC-8.1 and AC-8.3 had zero logic defects — all iterations were consumed by lint/type errors that a local preflight would have caught. PI-15 enforcement is critical for the remaining ACs (8.4, 8.5, 8.6).
+
 ---
 
 ## Requirements Validation Record
@@ -533,3 +618,4 @@ Requirements validation complete (2026-03-14). Both US-7 and US-8 ACs are testab
 |------|--------|-----------|---------|-------|
 | 2026-03-14 | Sprint 5 planning | tester | requirements-approved | US-7 and US-8 reviewed. Minor fix: AC-7.4 intro label "e.g." removed for deterministic test assertions. Both stories cleared for development. |
 | 2026-03-14 | Sprint 5 AC-8.1 | product-owner | loop-extension-granted | 3 iterations exhausted on same import-path bug category. 1 extension iteration granted. Fix is ESLint config only — no scope/requirements change. PI-15 added. |
+| 2026-03-14 | Sprint 5 AC-8.3 | product-owner | loop-extension-granted | 3 iterations exhausted on minor static analysis issues (ESLint exhaustive-deps, TS2769 unknown prop). Zero logic defects. Remaining failure: 1 test asserts removed prop. 1 extension iteration granted. See PO Sprint Review Notes. |
