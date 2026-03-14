@@ -277,7 +277,7 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
   - `__tests__/firebase-sdk-setup.test.ts` created with tests covering: required packages in `package.json`, correct config values, Auth-with-AsyncStorage persistence pattern, Auth-only initialization (no Firestore/Storage/Functions/Analytics), Expo plugins in `app.json`, and structured metadata headers
   - All tests pass (`npm test`)
 
-- - [x] **AC-8.2: AuthContext provider**
+- - [x] - [x] **AC-8.2: AuthContext provider**
   - `contexts/AuthContext.tsx` created following the finnaDo reference pattern
   - Provides: `user` (Firebase User | null), `loading` (boolean), `signInWithEmail()`, `signUpWithEmail()`, `signInWithGoogle()`, `signInWithApple()`, `logout()`, `deleteAccount()`
   - `onAuthStateChanged()` listener manages auth state
