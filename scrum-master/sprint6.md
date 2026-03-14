@@ -76,7 +76,7 @@ US-11 (Prayer Times) is the only story with external API dependency (Aladhan). I
 
 **Acceptance Criteria:**
 
-- [ ] **AC-9.1: Tab layout with three tabs** — The app displays a bottom tab bar with three tabs: Home (home icon), Prayers (moon/prayer icon), and Account (person icon). Each tab has a label and an icon. The active tab is visually distinguished from inactive tabs. The tab bar is visible on all tab screens and respects system light/dark mode.
+- [x] **AC-9.1: Tab layout with three tabs** — The app displays a bottom tab bar with three tabs: Home (home icon), Prayers (moon/prayer icon), and Account (person icon). Each tab has a label and an icon. The active tab is visually distinguished from inactive tabs. The tab bar is visible on all tab screens and respects system light/dark mode.
 
 - [ ] **AC-9.2: Home tab shows surah list** — The Home tab renders the existing surah list screen (currently at the root stack). Tapping a surah navigates to the Now Playing screen via a stack push within the Home tab. The Now Playing screen hides the tab bar. Pressing back from Now Playing returns to the surah list with the tab bar visible.
 
