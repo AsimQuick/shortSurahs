@@ -348,8 +348,10 @@ Reviewed 2026-03-14. AC-7.1–7.3: exact counts (17 surahs, 122 entries each) an
 - AC-8.5: Unit tests — mock expo-apple-authentication and expo-auth-session, verify credential creation and signInWithCredential calls. Platform-conditional tests.
 - AC-8.6: Navigation tests — verify auth guard redirects based on user state, verify loading state shows indicator.
 
-#### Dev Team Status: resolved
+#### Dev Team Status: review
 #### Dev Team Notes:
+AC-8.3 preflight verified (2026-03-14, iteration 4 extension): All 1302 tests pass across 35 suites (38 welcome-screen tests, all green). ESLint clean (`npx eslint . --max-warnings=0`). TypeScript clean (`npx tsc --noEmit`). Coverage: 96.77% statements, 94.44% branches, 100% functions. `app/welcome.tsx` and `__tests__/welcome-screen.test.ts` committed on `feature/US-8-AC-8.3`. AC-8.3 complete and ready for tester validation.
+
 CI Fix — AC-8.3 Loop Iteration 3 (2026-03-14): Removed `allowsFullscreen={false}` prop from `VideoView` in `app/welcome.tsx` (line 121). The `allowsFullscreen` prop does not exist on `expo-video`'s `VideoViewProps` type, causing TS2769. The prop was redundant — `nativeControls={false}` already suppresses all native controls including fullscreen. No logic change.
 
 CI Fix — AC-8.3 Loop Iteration 2 (2026-03-14): Added `titleOpacity`, `taglineOpacity`, and `buttonsOpacity` to the dependency array of the staggered fade-in `useEffect` (line 75 in `app/welcome.tsx`). ESLint `react-hooks/exhaustive-deps` requires all referenced values inside a `useEffect` to appear in the dep array, even stable `useRef` `.current` values. Since all three are `useRef(new Animated.Value(0)).current` they are stable references — adding them to the array is safe and causes no re-runs. No logic change.
