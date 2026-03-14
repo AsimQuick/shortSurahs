@@ -49,8 +49,14 @@
  *              currentTrackIndex in the store and calls skipToTrack's underlying
  *              RepeatMode.Track via TrackPlayer.setRepeatMode. The track label
  *              displays "Intro" for index 0 and "Aya N" for index N (1-based).
+ *              Implements AC-7.5: Per-ayah artwork on Now Playing screen.
+ *              trackPart is computed from currentTrackIndex: index 0 → 'intro',
+ *              index N → String(N). getArtwork(surah.transliterationKey, trackPart)
+ *              resolves the per-ayah asset. The artwork variable updates every
+ *              render as currentTrackIndex changes (Zustand store), so artwork
+ *              changes on next/previous/auto-advance without any extra effect.
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8; Sprint 5 — US-7 AC-7.4
+ * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8; Sprint 5 — US-7 AC-7.4, AC-7.5
  */
 
 import { useEffect } from 'react';
@@ -93,7 +99,9 @@ export default function PlayerScreen() {
   const setCurrentTrackIndex = usePlayerStore((s) => s.setCurrentTrackIndex);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
 
-  // AC-7.3: Per-ayah artwork — index 0 is intro, index N is ayah N.
+  // AC-7.5: Per-ayah artwork — trackPart derived from currentTrackIndex.
+  // Index 0 is the intro track ('intro' key); index N maps to ayah N (String key).
+  // artwork recomputes on every render when currentTrackIndex changes (Zustand).
   const trackPart = currentTrackIndex === 0 ? 'intro' : String(currentTrackIndex);
   const artwork = surah ? getArtwork(surah.transliterationKey, trackPart) : undefined;
 
