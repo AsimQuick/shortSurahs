@@ -1,6 +1,6 @@
 /**
  * @file components/patterns/SurahNumberStar.tsx
- * @description 44×44 Islamic 10-point star badge containing the surah number.
+ * @description 44×44 Islamic 5-point star badge containing the surah number.
  *              The app's signature surah identifier.
  *              Stroke: Gold (#D4A853) at 0.8px. Fill: Gold at 15% opacity.
  *              Number: Outfit SemiBold 14px, Cream (#F2E8D5), centered.
@@ -26,16 +26,17 @@ interface SurahNumberStarProps {
 // ---------------------------------------------------------------------------
 
 /**
- * Generates the SVG path string for a 10-point Islamic star ({10/4} polygon).
+ * Generates the SVG path string for a 5-point star.
  *
  * Construction:
- * - 10 outer vertices on a circle of radius R, evenly spaced at 36° intervals
- * - 10 inner vertices on a circle of radius r, offset 18° from the outer vertices
+ * - 5 outer vertices on a circle of radius R, evenly spaced at 72° intervals
+ * - 5 inner vertices on a circle of radius r, offset 36° from the outer vertices
  * - Path alternates: outer[0], inner[0], outer[1], inner[1], ..., Z
  * - The -90° offset places the first outer vertex at the top of the star
  */
 function buildStarPath(cx: number, cy: number, outerR: number, innerR: number): string {
-  const totalPoints = 20; // 10 outer + 10 inner, alternating
+  const points = 5;
+  const totalPoints = points * 2; // 5 outer + 5 inner, alternating
   const degreesPerPoint = 360 / totalPoints;
   let d = '';
 

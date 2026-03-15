@@ -1,13 +1,13 @@
 /**
  * @file components/icons/TabPrayers.tsx
- * @description Custom SVG icon — Prayers tab. Geometrically constructed crescent moon
- *              (two overlapping arcs, Islamic mathematical tradition) + angular 4-point star.
- *              Monoline 1.5px stroke. No fills. No icon library.
+ * @description Custom SVG icon — Prayers tab. Prayer mat design with geometric
+ *              diamond motif at center and fringed edges. Monoline 1.5px stroke.
+ *              No fills. No icon library.
  * @project shortSurahs
  */
 
 import React from 'react';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Line } from 'react-native-svg';
 import { colors } from '@/components/theme/colors';
 
 interface IconProps {
@@ -25,14 +25,13 @@ export default function TabPrayers({ color = colors.textPrimary, size = 24 }: Ic
       importantForAccessibility="no"
     >
       {/*
-        Crescent: two arcs sharing the same horn endpoints (15,7) and (15,17).
-        Outer arc (r=8, center≈9,12): large CCW sweep — goes far left (fat side of crescent).
-        Inner arc (r=6, center≈12,12): large CCW sweep — goes slightly left (inner concave edge).
-        The visual crescent body is the area between the two arcs on the left.
-        fill="none" renders only the stroked outline.
+        Prayer mat body: rounded rectangle with a pointed arch (mihrab) at the top.
+        The arch is the distinctive prayer mat shape — pointed like a mosque niche.
+        Path: start bottom-left, go up left side, arch up to center peak, down right
+        side, across bottom, close.
       */}
       <Path
-        d="M 15,7 A 8,8 0 1 0 15,17 A 6,6 0 1 0 15,7 Z"
+        d="M 5,20 L 5,9 Q 5,6 8,5 L 12,3 L 16,5 Q 19,6 19,9 L 19,20 Z"
         fill="none"
         stroke={color}
         strokeWidth={1.5}
@@ -40,22 +39,24 @@ export default function TabPrayers({ color = colors.textPrimary, size = 24 }: Ic
         strokeLinejoin="miter"
       />
       {/*
-        Angular 4-pointed star at upper-right of crescent.
-        Constructed geometrically: outer R=2, inner r≈0.71, center (20,5).
-        8 vertices: 4 outer tips at 0°/90°/180°/270° (diamond-cross axes),
-        4 inner concavities at 45°/135°/225°/315°.
-        Top(20,3) → inner(20.5,4.5) → Right(22,5) → inner(20.5,5.5)
-        → Bottom(20,7) → inner(19.5,5.5) → Left(18,5) → inner(19.5,4.5) → close.
-        stroke only — no fill.
+        Inner geometric diamond — Islamic ornamental motif centered on mat.
+        Small diamond shape at the center of the mat body.
       */}
       <Path
-        d="M 20,3 L 20.5,4.5 L 22,5 L 20.5,5.5 L 20,7 L 19.5,5.5 L 18,5 L 19.5,4.5 Z"
+        d="M 12,9 L 14.5,13 L 12,17 L 9.5,13 Z"
         fill="none"
         stroke={color}
         strokeWidth={1.5}
         strokeLinecap="butt"
         strokeLinejoin="miter"
       />
+      {/*
+        Bottom fringe — three short vertical lines at the mat bottom edge.
+        Evokes the tassels/fringe found on real prayer mats.
+      */}
+      <Line x1="9" y1="20" x2="9" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
+      <Line x1="12" y1="20" x2="12" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
+      <Line x1="15" y1="20" x2="15" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
     </Svg>
   );
 }

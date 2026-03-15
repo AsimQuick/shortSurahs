@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     letterSpacing: 0,                         // no modification — calligraphic font
     color: colors.accentGold,                 // #D4A853 Gold — ornamental Arabic
-    textAlign: 'right',
+    textAlign: 'left',
     writingDirection: 'rtl',
   },
   metaBlock: {

@@ -65,18 +65,32 @@ import PauseIcon from '@/components/icons/PauseIcon';
 // NowPlayingArtwork — 40×40 per-surah geometric badge
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Arabic numeral helpers
+// ---------------------------------------------------------------------------
+
+const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+/** Converts a Western number to Eastern Arabic numeral string (e.g. 114 → "١١٤") */
+function toArabicNumeral(n: number): string {
+  return String(n)
+    .split('')
+    .map((d) => ARABIC_DIGITS[parseInt(d, 10)])
+    .join('');
+}
+
 interface ArtworkProps {
   /** Surah ID used to derive a unique gradient ID (prevents SVG defs collision) */
   surahId: string;
-  /** First Arabic character of the surah name */
-  arabicChar: string;
+  /** Surah number displayed as Arabic numeral */
+  surahNumber: number;
 }
 
 /**
  * 40×40 SVG artwork: indigo-to-terracotta gradient background, tessellation overlay,
  * and the surah's first Arabic character centered via a RN Text overlay.
  */
-function NowPlayingArtwork({ surahId, arabicChar }: ArtworkProps) {
+function NowPlayingArtwork({ surahId, surahNumber }: ArtworkProps) {
   // Derive a safe SVG ID from the surah ID (no hyphens in SVG IDs for safety)
   const gradId = `npb-art-${surahId.replace(/[^a-z0-9]/gi, '')}`;
 
@@ -118,12 +132,19 @@ function NowPlayingArtwork({ surahId, arabicChar }: ArtworkProps) {
       </Svg>
 
       {/*
-        Arabic first character — rendered as RN Text for reliable Amiri font rendering.
+        Surah number in Arabic numerals — rendered as RN Text for reliable Amiri font rendering.
         Absolutely positioned over the SVG, centered within the 40×40 artwork.
-        Amiri_400Regular at 18px (>= 16px spec, sized up 2px for visual balance in 40×40).
+        Font size scales down for multi-digit numbers to fit within the badge.
       */}
       <View style={artworkStyles.letterOverlay} pointerEvents="none">
-        <Text style={artworkStyles.arabicLetter}>{arabicChar}</Text>
+        <Text
+          style={[
+            artworkStyles.arabicLetter,
+            surahNumber >= 100 && { fontSize: 12, lineHeight: 16 },
+          ]}
+        >
+          {toArabicNumeral(surahNumber)}
+        </Text>
       </View>
     </View>
   );
@@ -264,8 +285,7 @@ export default function NowPlayingBar() {
     togglePlayPause(isPlaying);
   };
 
-  // First Arabic character for the artwork badge
-  const arabicFirstChar = surah.nameArabic.charAt(0);
+  // Surah number for the artwork badge (displayed as Arabic numeral)
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -333,7 +353,7 @@ export default function NowPlayingBar() {
           accessibilityLabel={barAccessibilityLabel}
         >
           {/* Artwork: 40×40 geometric SVG badge */}
-          <NowPlayingArtwork surahId={currentSurahId} arabicChar={arabicFirstChar} />
+          <NowPlayingArtwork surahId={currentSurahId} surahNumber={surah.number} />
 
           {/* Gap: artwork → text (12px per spec) */}
           <View style={styles.artworkGap} />
