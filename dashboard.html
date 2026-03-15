@@ -319,6 +319,7 @@
 <script>
 const STATE_URL = './project-state.json';
 let autoRefreshInterval = null;
+let dashboardInitialized = false;
 
 async function loadState() {
   try {
@@ -346,17 +347,21 @@ function render(state) {
   badge.textContent = (state.status || '—').replace(/-/g, ' ');
   badge.className = 'header-status status-' + (state.status || 'active');
 
-  const tmpl = document.getElementById('dashboard-template');
-  const grid = document.getElementById('main-grid');
-  grid.innerHTML = '';
-  grid.appendChild(tmpl.content.cloneNode(true));
+  if (!dashboardInitialized) {
+    const tmpl = document.getElementById('dashboard-template');
+    const grid = document.getElementById('main-grid');
+    grid.innerHTML = '';
+    grid.appendChild(tmpl.content.cloneNode(true));
+    dashboardInitialized = true;
+    // Load agent logs only on first render
+    loadAgentLogs();
+  }
 
   renderTask(state);
   renderSpend(state);
   renderSprint(state);
   renderRequests(state);
   renderLog(state);
-  loadAgentLogs();
 }
 
 function renderTask(state) {
@@ -546,7 +551,10 @@ function statusToDot(s) {
 
 // Init
 loadState();
-autoRefreshInterval = setInterval(loadState, 15000);
+// State refresh: every 60 seconds
+autoRefreshInterval = setInterval(loadState, 60000);
+// Agent logs refresh: every 120 seconds (less frequent, preserves accordion)
+setInterval(loadAgentLogs, 120000);
 </script>
 </body>
 </html>

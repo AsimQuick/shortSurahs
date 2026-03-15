@@ -2,18 +2,14 @@
  * @file app/(tabs)/prayers.tsx
  * @description Prayers tab — Full daily prayer schedule screen.
  *              Displays the five daily prayers (Fajr, Dhuhr, Asr, Maghrib, Isha)
- *              with their times. The current or next prayer is visually highlighted
- *              with bold text and an accent color. Shows the current date at the top.
- *              Respects system light/dark mode. Shows a loading indicator while
- *              fetching, and an error state with a retry button if the API call fails.
- *              AC-11.5: Offline graceful degradation — when isOffline is true and
- *              no cached data is available, displays a clear offline message with
- *              a retry button. The rest of the app (surah list, playback) is
- *              unaffected. No crashes occur from network unavailability.
- *              Implements AC-9.4: Prayers tab placeholder screen (superseded by
- *              AC-11.4 full implementation).
- *              Implements AC-11.4: Prayers tab full schedule.
- *              Implements AC-11.5: Offline graceful degradation.
+ *              with their times. The next prayer is visually highlighted with
+ *              semantic-indigo background and terracotta left border.
+ *              Single dark theme — no light/dark branching.
+ *              Loading: branded Gold pulsing dot. Offline/Error: terracotta retry.
+ *              Page load stagger: header → date → rows 1-5 → divider.
+ *              Resolves P5 (prayers tab underwhelming) and P8 (safe area padding).
+ *              AC-11.4: Prayers tab full schedule.
+ *              AC-11.5: Offline graceful degradation.
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
  * @story US-11: Prayer Times
@@ -25,20 +21,55 @@
  * @created 2026-03-14
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
-  ActivityIndicator,
+  Animated,
+  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { usePrayerStore, PRAYER_ORDER, type PrayerName } from '../../store/prayerStore';
 import { formatTime12h } from '../../utils/formatTime';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { OrnamentalDivider } from '../../components/patterns/OrnamentalDivider';
+import { SectionLabelLine } from '../../components/patterns/SectionLabelLine';
+import { PrayerRow } from '../../components/PrayerRow';
+import { colors } from '../../components/theme/colors';
+import {
+  sectionLabel,
+  fontOutfitBold,
+  fontOutfitRegular,
+  fontOutfitSemiBold,
+  fontAmiriRegular,
+} from '../../components/theme/typography';
+import { spacing, screenPadding } from '../../components/theme/spacing';
+import {
+  duration,
+  stagger as staggerConfig,
+  easing,
+  useReduceMotion,
+} from '../../components/theme/animations';
 
-/** Formats today's date as a human-readable string (e.g., "Saturday, March 14, 2026"). */
+// ---------------------------------------------------------------------------
+// Arabic prayer names map
+// ---------------------------------------------------------------------------
+
+const ARABIC_NAMES: Record<PrayerName, string> = {
+  Fajr: 'الفجر',
+  Dhuhr: 'الظهر',
+  Asr: 'العصر',
+  Maghrib: 'المغرب',
+  Isha: 'العشاء',
+};
+
+// ---------------------------------------------------------------------------
+// Date formatter
+// ---------------------------------------------------------------------------
+
 function formatCurrentDate(): string {
   return new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -48,20 +79,26 @@ function formatCurrentDate(): string {
   });
 }
 
-export default function PrayersScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+// ---------------------------------------------------------------------------
+// Animated element indices
+// 0: header  1: date  2–6: rows Fajr→Isha  7: divider
+// ---------------------------------------------------------------------------
 
-  const backgroundColor = isDark ? '#000000' : '#ffffff';
-  const textColor = isDark ? '#ffffff' : '#000000';
-  const subtitleColor = isDark ? '#aaaaaa' : '#666666';
-  const accentColor = isDark ? '#0a84ff' : '#007aff';
-  const rowBg = isDark ? '#1c1c1e' : '#f2f2f7';
-  const highlightBg = isDark ? '#0a2a5e' : '#e8f0ff';
+const ANIM_COUNT = 8;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function PrayersScreen() {
+  const { width: screenWidth } = useWindowDimensions();
+  const reduceMotion = useReduceMotion();
+
+  const horizontalPadding =
+    screenWidth < 375 ? screenPadding.horizontalCompact : screenPadding.horizontal;
 
   const {
     prayerTimes,
-    currentPrayer,
     nextPrayer,
     isLoading,
     error,
@@ -76,173 +113,366 @@ export default function PrayersScreen() {
 
   const currentDate = formatCurrentDate();
 
-  // Loading state — no cached data yet
-  if (isLoading && !prayerTimes) {
-    return (
-      <View style={[styles.centered, { backgroundColor }]}>
-        <ActivityIndicator size="large" color={accentColor} />
+  // -------------------------------------------------------------------------
+  // Stagger animation values
+  // -------------------------------------------------------------------------
+
+  const staggerAnims = useRef(
+    Array(ANIM_COUNT)
+      .fill(null)
+      .map(() => ({
+        opacity: new Animated.Value(0),
+        translateY: new Animated.Value(staggerConfig.slideUpDistance),
+      }))
+  ).current;
+
+  // Animate header on mount (always visible)
+  useEffect(() => {
+    if (reduceMotion) {
+      staggerAnims[0].opacity.setValue(1);
+      staggerAnims[0].translateY.setValue(0);
+      return;
+    }
+    Animated.parallel([
+      Animated.timing(staggerAnims[0].opacity, {
+        toValue: 1,
+        duration: duration.slow,
+        easing: Easing.bezier(...easing.default),
+        useNativeDriver: true,
+      }),
+      Animated.timing(staggerAnims[0].translateY, {
+        toValue: 0,
+        duration: duration.slow,
+        easing: Easing.bezier(...easing.default),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Animate content (date + rows + divider) once when prayer times arrive
+  const contentAnimated = useRef(false);
+  useEffect(() => {
+    if (!prayerTimes || contentAnimated.current) return;
+    contentAnimated.current = true;
+
+    if (reduceMotion) {
+      for (let i = 1; i < ANIM_COUNT; i++) {
+        staggerAnims[i].opacity.setValue(1);
+        staggerAnims[i].translateY.setValue(0);
+      }
+      return;
+    }
+
+    const anims = staggerAnims.slice(1).map(({ opacity, translateY }) =>
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: duration.slow,
+          easing: Easing.bezier(...easing.default),
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: duration.slow,
+          easing: Easing.bezier(...easing.default),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    Animated.stagger(staggerConfig.delay, anims).start();
+  }, [prayerTimes, reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -------------------------------------------------------------------------
+  // Loading pulse animation
+  // -------------------------------------------------------------------------
+
+  const pulseOpacity = useRef(new Animated.Value(0.3)).current;
+  const pulseRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    const isLoadingNoData = isLoading && !prayerTimes;
+
+    if (isLoadingNoData) {
+      if (reduceMotion) {
+        pulseOpacity.setValue(1);
+        return;
+      }
+      pulseRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseOpacity, {
+            toValue: 1.0,
+            duration: 750,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.3,
+            duration: 750,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulseRef.current.start();
+    } else {
+      pulseRef.current?.stop();
+      pulseOpacity.setValue(0.3);
+    }
+
+    return () => {
+      pulseRef.current?.stop();
+    };
+  }, [isLoading, prayerTimes, reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -------------------------------------------------------------------------
+  // Helper: animated style for each element index
+  // -------------------------------------------------------------------------
+
+  const animStyle = (index: number) => ({
+    opacity: staggerAnims[index].opacity,
+    transform: [{ translateY: staggerAnims[index].translateY }],
+  });
+
+  // -------------------------------------------------------------------------
+  // Content renderers
+  // -------------------------------------------------------------------------
+
+  const renderLoading = () => (
+    <View
+      style={styles.centeredContent}
+      accessibilityLabel="Loading prayer times"
+    >
+      <Animated.View style={[styles.pulseDot, { opacity: pulseOpacity }]} />
+    </View>
+  );
+
+  const renderOffline = () => (
+    <View style={[styles.stateContent, { paddingHorizontal: horizontalPadding }]}>
+      <Text style={styles.stateMessage}>Prayer times unavailable</Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.retryButton,
+          pressed && styles.retryButtonPressed,
+        ]}
+        onPress={fetchTimes}
+        accessibilityRole="button"
+        accessibilityLabel="Retry loading prayer times"
+      >
+        <Text style={styles.retryButtonText}>Retry</Text>
+      </Pressable>
+    </View>
+  );
+
+  const renderError = () => (
+    <View style={[styles.stateContent, { paddingHorizontal: horizontalPadding }]}>
+      <Text style={styles.stateMessage}>{error}</Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.retryButton,
+          pressed && styles.retryButtonPressed,
+        ]}
+        onPress={fetchTimes}
+        accessibilityRole="button"
+        accessibilityLabel="Retry loading prayer times"
+      >
+        <Text style={styles.retryButtonText}>Retry</Text>
+      </Pressable>
+    </View>
+  );
+
+  const renderSchedule = () => (
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={[
+        styles.scrollContent,
+        { paddingHorizontal: horizontalPadding },
+        screenWidth > 414 && styles.scrollContentWide,
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Date */}
+      <Animated.Text style={[styles.dateText, animStyle(1)]}>
+        {currentDate}
+      </Animated.Text>
+
+      {/* Prayer rows */}
+      <View style={styles.scheduleContainer}>
+        {PRAYER_ORDER.map((prayer: PrayerName, index: number) => {
+          const isHighlighted = prayer === nextPrayer;
+          const time = prayerTimes ? formatTime12h(prayerTimes[prayer]) : '';
+          const label = `${prayer}, ${time}${isHighlighted ? ', next prayer' : ''}`;
+
+          return (
+            <Animated.View key={prayer} style={animStyle(2 + index)}>
+              <PrayerRow
+                englishName={prayer}
+                arabicName={ARABIC_NAMES[prayer]}
+                time={time}
+                isHighlighted={isHighlighted}
+                accessibilityLabel={label}
+              />
+            </Animated.View>
+          );
+        })}
       </View>
-    );
-  }
 
-  // Offline state — no network connectivity, no cached data
-  if (isOffline && !prayerTimes) {
-    return (
-      <ScrollView style={[styles.scroll, { backgroundColor }]}>
-        <View style={styles.container}>
-          <Text style={[styles.title, { color: textColor }]}>Prayer Times</Text>
-          <Text
-            style={[styles.offlineText, { color: subtitleColor }]}
-            accessibilityLabel="You are offline"
-          >
-            You are offline
-          </Text>
-          <Text style={[styles.errorText, { color: subtitleColor }]}>{error}</Text>
-          <Pressable
-            style={[styles.retryButton, { backgroundColor: accentColor }]}
-            onPress={fetchTimes}
-            accessibilityRole="button"
-            accessibilityLabel="Retry"
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    );
-  }
+      {/* Ornamental divider */}
+      <Animated.View style={[styles.dividerContainer, animStyle(7)]}>
+        <OrnamentalDivider />
+      </Animated.View>
+    </ScrollView>
+  );
 
-  // Error state — fetch failed (non-offline) and no cached data
-  if (error && !prayerTimes) {
-    return (
-      <ScrollView style={[styles.scroll, { backgroundColor }]}>
-        <View style={styles.container}>
-          <Text style={[styles.title, { color: textColor }]}>Prayer Times</Text>
-          <Text style={[styles.errorText, { color: subtitleColor }]}>{error}</Text>
-          <Pressable
-            style={[styles.retryButton, { backgroundColor: accentColor }]}
-            onPress={fetchTimes}
-            accessibilityRole="button"
-            accessibilityLabel="Retry"
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    );
-  }
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
+
+  const isLoadingNoData = isLoading && !prayerTimes;
+  const isOfflineNoData = isOffline && !prayerTimes;
+  const isErrorNoData = !!error && !prayerTimes;
 
   return (
-    <ScrollView style={[styles.scroll, { backgroundColor }]}>
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: textColor }]}>Prayer Times</Text>
-        <Text style={[styles.dateText, { color: subtitleColor }]}>{currentDate}</Text>
+    <ScreenHeader>
+      {/* Header title area — always visible */}
+      <Animated.View
+        style={[
+          styles.headerArea,
+          { paddingHorizontal: horizontalPadding },
+          animStyle(0),
+        ]}
+        accessibilityRole="header"
+        accessibilityLabel="Prayer Times"
+      >
+        <Text style={styles.sectionLabelText}>PRAYER TIMES</Text>
+        <SectionLabelLine />
+        <Text style={styles.screenTitle}>Prayer Times</Text>
+        <Text style={styles.arabicSubtitle}>أوقات الصلاة</Text>
+      </Animated.View>
 
-        {prayerTimes ? (
-          <View style={styles.scheduleContainer}>
-            {PRAYER_ORDER.map((prayer: PrayerName) => {
-              const isHighlighted = prayer === currentPrayer || prayer === nextPrayer;
-              const time = prayerTimes[prayer];
-              return (
-                <View
-                  key={prayer}
-                  style={[
-                    styles.prayerRow,
-                    { backgroundColor: isHighlighted ? highlightBg : rowBg },
-                  ]}
-                  accessibilityLabel={`${prayer} ${formatTime12h(time)}${isHighlighted ? ' highlighted' : ''}`}
-                >
-                  <Text
-                    style={[
-                      styles.prayerName,
-                      { color: isHighlighted ? accentColor : textColor },
-                      isHighlighted && styles.prayerNameHighlighted,
-                    ]}
-                  >
-                    {prayer}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.prayerTime,
-                      { color: isHighlighted ? accentColor : subtitleColor },
-                      isHighlighted && styles.prayerTimeHighlighted,
-                    ]}
-                  >
-                    {formatTime12h(time)}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        ) : null}
-      </View>
-    </ScrollView>
+      {/* Content area — varies by state */}
+      {isLoadingNoData && renderLoading()}
+      {isOfflineNoData && renderOffline()}
+      {!isLoadingNoData && !isOfflineNoData && isErrorNoData && renderError()}
+      {prayerTimes && renderSchedule()}
+    </ScreenHeader>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
 const styles = StyleSheet.create({
+  // Header area
+  headerArea: {
+    paddingBottom: spacing.space6, // 24px
+  },
+  sectionLabelText: {
+    ...sectionLabel,
+    marginBottom: spacing.space1, // 4px before SectionLabelLine
+  },
+  screenTitle: {
+    fontFamily: fontOutfitBold,
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 36,
+    letterSpacing: -0.56,
+    color: colors.textPrimary,
+    marginTop: spacing.space4, // 16px below section label area
+  },
+  arabicSubtitle: {
+    fontFamily: fontAmiriRegular,
+    fontSize: 20,
+    fontWeight: '400',
+    lineHeight: 28,
+    letterSpacing: 0,
+    color: colors.accentGold,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    marginTop: spacing.space1, // 4px below title
+  },
+
+  // Scroll
   scroll: {
     flex: 1,
+    backgroundColor: colors.bgPrimary,
   },
-  centered: {
+  scrollContent: {
+    paddingBottom: spacing.space8, // 32px
+  },
+  scrollContentWide: {
+    maxWidth: 414,
+    alignSelf: 'center',
+  },
+
+  // Date
+  dateText: {
+    fontFamily: fontOutfitRegular,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: colors.textSecondary,
+    marginBottom: spacing.space6, // 24px to first prayer row
+  },
+
+  // Prayer schedule
+  scheduleContainer: {
+    gap: spacing.space2, // 8px between rows
+  },
+
+  // Ornamental divider
+  dividerContainer: {
+    marginTop: spacing.space8,   // 32px from last row
+    marginBottom: spacing.space8, // 32px minimum
+  },
+
+  // Loading state
+  centeredContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accentGold,
+  },
+
+  // Offline / error state
+  stateContent: {
     flex: 1,
-    padding: 24,
+    paddingTop: spacing.space6, // 24px from header
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  dateText: {
-    fontSize: 14,
-    marginTop: 4,
-    marginBottom: 24,
-  },
-  scheduleContainer: {
-    gap: 8,
-  },
-  prayerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-  },
-  prayerName: {
-    fontSize: 17,
-  },
-  prayerNameHighlighted: {
-    fontWeight: '700',
-  },
-  prayerTime: {
-    fontSize: 17,
-  },
-  prayerTimeHighlighted: {
-    fontWeight: '700',
-  },
-  offlineText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 4,
-  },
-  errorText: {
+  stateMessage: {
+    fontFamily: fontOutfitRegular,
     fontSize: 16,
-    marginTop: 12,
-    marginBottom: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+    letterSpacing: 0,
+    color: colors.textSecondary,
   },
   retryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    backgroundColor: colors.accentTerracotta,
+    height: 48,
     borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.space6, // 24px
     alignSelf: 'flex-start',
+    marginTop: spacing.space4, // 16px
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  retryButtonPressed: {
+    backgroundColor: colors.accentTerracottaLight,
   },
   retryButtonText: {
-    color: '#ffffff',
+    fontFamily: fontOutfitSemiBold,
     fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    letterSpacing: 0,
+    color: colors.textPrimary,
   },
 });

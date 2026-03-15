@@ -15,9 +15,11 @@ export interface Surah {
   number: number;
   nameEnglish: string;
   nameArabic: string;
+  meaning: string;
   transliterationKey: string;
   ayahCount: number;
   totalTracks: number;
+  revelationType: 'Meccan' | 'Medinan';
 }
 
 /**

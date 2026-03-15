@@ -20,6 +20,9 @@
  *              and returns the user to /welcome. The (tabs) route group is treated
  *              as the authenticated zone; welcome and auth routes are the public
  *              zone.
+ *              Theme Foundation: loads Outfit + Amiri fonts via useFontLoader().
+ *              Splash screen stays visible until fonts are ready — no flash of
+ *              system fonts. Loading state uses bgPrimary + Terracotta indicator.
  * @project shortSurahs
  * @story US-8: Firebase Authentication
  * @story US-9: Bottom Tab Navigation
@@ -33,10 +36,16 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import TrackPlayer from 'react-native-track-player';
 import { PlaybackService } from '../services/playbackService';
 import { setupTrackPlayer } from '../services/trackPlayerSetup';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { useFontLoader } from '../components/theme/typography';
+import { colors } from '../components/theme/colors';
+
+// Keep the splash screen visible while fonts load.
+SplashScreen.preventAutoHideAsync();
 
 // Register the playback service at module level — must happen before any
 // TrackPlayer API call and before the app tree mounts.
@@ -72,12 +81,13 @@ function AuthGuard() {
     // already on a public route, no redirect is needed.
   }, [user, loading, segments, router]);
 
-  // Show loading indicator while Firebase resolves auth state.
+  // Show branded loading indicator while Firebase resolves auth state.
   // This prevents a flash of the wrong screen on app start.
+  // Fonts are guaranteed loaded by this point (RootLayout returns null until ready).
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPrimary }}>
+        <ActivityIndicator size="large" color={colors.accentTerracotta} />
       </View>
     );
   }
@@ -86,6 +96,8 @@ function AuthGuard() {
 }
 
 export default function RootLayout() {
+  const { loaded, error } = useFontLoader();
+
   useEffect(() => {
     // Initialise TrackPlayer once on app start. If already set up (e.g. fast-
     // refresh dev cycle), setupPlayer throws — we swallow the error safely.
@@ -93,6 +105,18 @@ export default function RootLayout() {
       // Player already initialised — no action needed.
     });
   }, []);
+
+  useEffect(() => {
+    if (loaded || error) {
+      // Fonts are ready (or failed — render anyway to avoid blank screen).
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  // Keep splash visible until fonts are loaded — prevents flash of system fonts.
+  if (!loaded && !error) {
+    return null;
+  }
 
   return (
     <AuthProvider>

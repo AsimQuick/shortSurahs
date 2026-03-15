@@ -1,125 +1,223 @@
 /**
  * @file app/player/[surahId].tsx
- * @description Player screen — Now Playing layout for surah memorization.
- *              Implements AC-4.1: Layout matches PRD player design.
- *              Implements AC-4.2: Playback controls — 44pt minimum hit areas,
- *              disabled states at track boundaries (first/last track), and
- *              Play/Pause icon toggle based on isPlaying state.
- *              Implements AC-4.3: Dynamic content — artwork from bundled assets,
- *              surah name from data model, aya number updates when track changes
- *              (displayed as currentTrackIndex + 1, 1-based).
- *              Implements AC-4.4: Visual polish — system light/dark theme via
- *              useColorScheme applied to background and text colors; no progress
- *              bar (tracks loop, no linear progress); no volume slider (system
- *              volume used).
- *              Layout: back button (top), large artwork (>=80% screen width,
- *              computed at runtime via Dimensions.get('window').width), surah
- *              English name, aya indicator, and playback controls (bottom).
- *              Implements AC-5.2: Loads surah tracks into TrackPlayer queue
- *              on mount via loadSurahQueue() (clears previous queue first).
- *              Implements AC-5.3: Loop behavior (PRD Rule 1) — isPlaying
- *              initialises to true because loadSurahQueue() starts playback
- *              automatically (RepeatMode.Track + TrackPlayer.play()).
- *              Implements AC-5.4: Next behavior (PRD Rule 2) — handleNext()
- *              calls skipToTrack(currentTrackIndex + 1) to stop current loop,
- *              skip to next track, re-enable loop, and start playback.
- *              Next button is disabled on last track: audio-layer no-op via
- *              !isNextDisabled guard + visually disabled per AC-4.2.
- *              Implements AC-5.5: Previous behavior (PRD Rule 3) — handlePrev()
- *              calls skipToTrack(currentTrackIndex - 1) to stop current loop,
- *              skip to previous track, re-enable loop, and start playback.
- *              Previous button is disabled on first track: audio-layer no-op
- *              via !isPrevDisabled guard + visually disabled per AC-4.2.
- *              Implements AC-5.6: Play/Pause — handlePlayPause() calls
- *              togglePlayPause(isPlaying) which calls TrackPlayer.pause() to
- *              retain track position (not stop/reset), or TrackPlayer.play()
- *              to resume from the same position. UI icon toggles between
- *              ⏸ (pause) and ▶ (play) based on isPlaying state.
- *              Implements AC-5.7: Zustand state management — currentSurahId,
- *              currentTrackIndex, and isPlaying are read from and written to
- *              the global usePlayerStore (store/playerStore.ts) instead of
- *              local useState. Store is updated on every track change and
- *              every play/pause event.
- *              Implements AC-5.8: Error handling — isPlayDisabled computed as
- *              trackCount === 0. Play/Pause button is disabled (audio-layer
- *              no-op + visually disabled per AC-4.2) when surah has no tracks.
- *              Implements AC-7.4: Intro play-once behavior.
- *              useTrackPlayerEvents listens for PlaybackTrackChanged. When RNTP
- *              auto-advances from intro (index 0) to ayah 1, the handler updates
- *              currentTrackIndex in the store and calls skipToTrack's underlying
- *              RepeatMode.Track via TrackPlayer.setRepeatMode. The track label
- *              displays "Intro" for index 0 and "Aya N" for index N (1-based).
- *              Implements AC-7.5: Per-ayah artwork on Now Playing screen.
- *              trackPart is computed from currentTrackIndex: index 0 → 'intro',
- *              index N → String(N). getArtwork(surah.transliterationKey, trackPart)
- *              resolves the per-ayah asset. The artwork variable updates every
- *              render as currentTrackIndex changes (Zustand store), so artwork
- *              changes on next/previous/auto-advance without any extra effect.
+ * @description Player screen — Immersive, focused listening environment.
+ *              UI Designer redesign: artwork-dominant layout, dark sanctuary aesthetic,
+ *              custom SVG controls, Arabic display, stagger entry animation,
+ *              artwork crossfade on ayah change, ambient glow.
+ *
+ *              Preserves all business logic:
+ *              AC-5.2: useEffect for loadSurahQueue on mount
+ *              AC-7.4: useTrackPlayerEvents for intro→ayah auto-advance
+ *              AC-5.5/5.4: handlePrev / handleNext via skipToTrack
+ *              AC-5.6: handlePlayPause via togglePlayPause
+ *              AC-5.7: Zustand store reads/writes (currentTrackIndex, isPlaying, etc.)
+ *              AC-5.8: isPlayDisabled when trackCount === 0
+ *              AC-7.5: getArtwork() per-ayah artwork resolution
+ *
+ *              Track label format updated to "Intro" / "Ayah N of M".
  * @project shortSurahs
- * @sprint Sprint 2 — US-4 AC-4.1–4.4; US-5 AC-5.2–5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.7, AC-5.8; Sprint 5 — US-7 AC-7.4, AC-7.5
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
+  Animated,
   Dimensions,
-  Image,
+  Easing,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import TrackPlayer, { Event, RepeatMode, useTrackPlayerEvents } from 'react-native-track-player';
+import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
 import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
 import { usePlayerStore } from '../../store/playerStore';
+import { colors } from '../../components/theme/colors';
+import { fontAmiriBold, fontOutfitMedium, fontOutfitRegular, fontOutfitSemiBold } from '../../components/theme/typography';
+import { useReduceMotion, duration } from '../../components/theme/animations';
+import { SectionLabelLine } from '../../components/patterns/SectionLabelLine';
+import BackChevron from '../../components/icons/BackChevron';
+import PlayerControls from '../../components/PlayerControls';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const ARTWORK_SIZE = SCREEN_WIDTH * 0.85;
+// Cap artwork at 85% of 414px for wide screens; use 16px horizontal padding
+// on narrow screens (< 375px)
+const ARTWORK_SIZE = Math.min(SCREEN_WIDTH * 0.85, 352);
+const HORIZONTAL_PADDING = SCREEN_WIDTH < 375 ? 16 : 24;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function PlayerScreen() {
   const { surahId } = useLocalSearchParams<{ surahId: string }>();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-
-  const isDark = colorScheme === 'dark';
-  const backgroundColor = isDark ? '#000000' : '#ffffff';
-  const textColor = isDark ? '#ffffff' : '#000000';
-  const subtitleColor = isDark ? '#aaaaaa' : '#666666';
+  const insets = useSafeAreaInsets();
+  const reduceMotion = useReduceMotion();
 
   const surah = getSurahs().find((s) => s.id === surahId);
   const trackCount = surah?.totalTracks ?? 0;
 
-  // AC-5.7: Zustand store — read playback state from global store.
+  // Zustand store — read playback state from global store (AC-5.7)
   const currentTrackIndex = usePlayerStore((s) => s.currentTrackIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const setCurrentSurahId = usePlayerStore((s) => s.setCurrentSurahId);
   const setCurrentTrackIndex = usePlayerStore((s) => s.setCurrentTrackIndex);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
 
-  // AC-7.5: Per-ayah artwork — trackPart derived from currentTrackIndex.
-  // Index 0 is the intro track ('intro' key); index N maps to ayah N (String key).
-  // artwork recomputes on every render when currentTrackIndex changes (Zustand).
+  // Per-ayah artwork (AC-7.5): index 0 → 'intro', index N → String(N)
   const trackPart = currentTrackIndex === 0 ? 'intro' : String(currentTrackIndex);
   const artwork = surah ? getArtwork(surah.transliterationKey, trackPart) : undefined;
 
-  // AC-7.4: Track label — "Intro" for index 0, "Aya N" for index N (ayah number = track index).
-  const trackLabel = currentTrackIndex === 0 ? 'Intro' : `Aya ${currentTrackIndex}`;
+  // Track label: "Intro" for index 0, "Ayah N of M" for ayah tracks
+  const ayahCount = surah?.ayahCount ?? 0;
+  const trackLabel =
+    currentTrackIndex === 0 ? 'Intro' : `Ayah ${currentTrackIndex} of ${ayahCount}`;
 
-  // AC-5.2: Load surah queue on mount; clears any previous surah's queue first.
-  // AC-5.7: setCurrentSurahId resets store (index=0, isPlaying=true) to match
-  //         loadSurahQueue() auto-start behaviour.
+  // Disabled states
+  const isPrevDisabled = currentTrackIndex === 0;
+  const isNextDisabled = currentTrackIndex === trackCount - 1;
+  const isPlayDisabled = trackCount === 0; // AC-5.8
+
+  // ---------------------------------------------------------------------------
+  // Entry animation values
+  // ---------------------------------------------------------------------------
+
+  const artworkOpacity = useRef(new Animated.Value(0)).current;
+  const artworkTranslateY = useRef(new Animated.Value(16)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const textTranslateY = useRef(new Animated.Value(16)).current;
+  const controlsOpacity = useRef(new Animated.Value(0)).current;
+  const controlsTranslateY = useRef(new Animated.Value(16)).current;
+
+  // Artwork crossfade on ayah change
+  const imageOpacity = useRef(new Animated.Value(1)).current;
+  const prevTrackIndexRef = useRef(currentTrackIndex);
+
+  // Ambient glow pulse
+  const glowOpacity = useRef(new Animated.Value(0.15)).current;
+
+  // ---------------------------------------------------------------------------
+  // Page entry stagger animation (runs once on mount)
+  // ---------------------------------------------------------------------------
+
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    if (reduceMotion) {
+      artworkOpacity.setValue(1);
+      artworkTranslateY.setValue(0);
+      textOpacity.setValue(1);
+      textTranslateY.setValue(0);
+      controlsOpacity.setValue(1);
+      controlsTranslateY.setValue(0);
+      return;
+    }
+
+    const animConfig = {
+      duration: duration.slow, // 400ms
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+      useNativeDriver: true,
+    };
+
+    Animated.stagger(70, [
+      Animated.parallel([
+        Animated.timing(artworkOpacity, { toValue: 1, ...animConfig }),
+        Animated.timing(artworkTranslateY, { toValue: 0, ...animConfig }),
+      ]),
+      Animated.parallel([
+        Animated.timing(textOpacity, { toValue: 1, ...animConfig }),
+        Animated.timing(textTranslateY, { toValue: 0, ...animConfig }),
+      ]),
+      Animated.parallel([
+        Animated.timing(controlsOpacity, { toValue: 1, ...animConfig }),
+        Animated.timing(controlsTranslateY, { toValue: 0, ...animConfig }),
+      ]),
+    ]).start();
+  }, [reduceMotion]);
+
+  // ---------------------------------------------------------------------------
+  // Artwork crossfade on ayah/track change (200ms dissolve)
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (prevTrackIndexRef.current === currentTrackIndex) return;
+    prevTrackIndexRef.current = currentTrackIndex;
+
+    if (reduceMotion) return;
+
+    Animated.sequence([
+      Animated.timing(imageOpacity, {
+        toValue: 0,
+        duration: 100,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(imageOpacity, {
+        toValue: 1,
+        duration: 100,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentTrackIndex, reduceMotion]);
+
+  // ---------------------------------------------------------------------------
+  // Ambient glow pulse (8000ms cycle)
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (reduceMotion) {
+      glowOpacity.setValue(0.15);
+      return;
+    }
+
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowOpacity, {
+          toValue: 0.28,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowOpacity, {
+          toValue: 0.15,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+
+    return () => pulse.stop();
+  }, [reduceMotion]);
+
+  // ---------------------------------------------------------------------------
+  // Audio: Load queue on mount (AC-5.2)
+  // ---------------------------------------------------------------------------
+
   useEffect(() => {
     setCurrentSurahId(surahId as string);
     loadSurahQueue(surahId as string).catch(() => {});
   }, [surahId, setCurrentSurahId]);
 
-  // AC-7.4: Listen for RNTP track-changed events to handle auto-advance.
-  // When the intro (index 0) finishes and RNTP advances to ayah 1, this handler
-  // updates the Zustand store and enables RepeatMode.Track for the new ayah.
-  // This also covers manual skips (redundant but harmless: same index, same mode).
+  // ---------------------------------------------------------------------------
+  // Audio: Track change events (AC-7.4)
+  // ---------------------------------------------------------------------------
+
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async (event) => {
     if (event.nextTrack != null) {
       setCurrentTrackIndex(event.nextTrack);
@@ -129,14 +227,10 @@ export default function PlayerScreen() {
     }
   });
 
-  const isPrevDisabled = currentTrackIndex === 0;
-  const isNextDisabled = currentTrackIndex === trackCount - 1;
-  // AC-5.8: Disable Play button when surah has no tracks.
-  const isPlayDisabled = trackCount === 0;
+  // ---------------------------------------------------------------------------
+  // Playback handlers (AC-5.4, AC-5.5, AC-5.6)
+  // ---------------------------------------------------------------------------
 
-  // AC-5.5: Previous — stop current loop, skip to prev track, re-enable loop, start playback.
-  // Audio-layer no-op: skipToTrack is only called when !isPrevDisabled.
-  // AC-5.7: Updates currentTrackIndex in Zustand store.
   async function handlePrev() {
     if (!isPrevDisabled) {
       await skipToTrack(currentTrackIndex - 1).catch(() => {});
@@ -144,9 +238,6 @@ export default function PlayerScreen() {
     }
   }
 
-  // AC-5.4: Next — stop current loop, skip to next track, re-enable loop, start playback.
-  // Audio-layer no-op: skipToTrack is only called when !isNextDisabled.
-  // AC-5.7: Updates currentTrackIndex in Zustand store.
   async function handleNext() {
     if (!isNextDisabled) {
       await skipToTrack(currentTrackIndex + 1).catch(() => {});
@@ -154,115 +245,356 @@ export default function PlayerScreen() {
     }
   }
 
-  // AC-5.6: Play/Pause — pause retains position (TrackPlayer.pause, not stop/reset).
-  // AC-5.7: Updates isPlaying in Zustand store.
   async function handlePlayPause() {
     await togglePlayPause(isPlaying).catch(() => {});
     setIsPlaying(!isPlaying);
   }
 
-  return (
-    <View style={[styles.container, { backgroundColor }]}>
-      {/* Top: Back button */}
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={[styles.backText, { color: textColor }]}>‹ Back</Text>
-      </Pressable>
+  // ---------------------------------------------------------------------------
+  // Render: Surah not found
+  // ---------------------------------------------------------------------------
 
-      {/* Middle: Large artwork */}
-      <Image style={styles.artwork} source={artwork} resizeMode="cover" />
-
-      {/* Below artwork: Surah name (English) */}
-      <Text style={[styles.surahName, { color: textColor }]}>
-        {surah?.nameEnglish ?? (surahId as string)}
-      </Text>
-
-      {/* Below surah name: Track label — AC-4.3/AC-7.4: "Intro" or "Aya N" */}
-      <Text style={[styles.ayaIndicator, { color: subtitleColor }]}>{trackLabel}</Text>
-
-      {/* Bottom: Playback controls — AC-4.2 */}
-      <View style={styles.controls}>
-        <Pressable
-          style={[styles.controlButton, isPrevDisabled && styles.controlButtonDisabled]}
-          onPress={handlePrev}
-          disabled={isPrevDisabled}
-          accessibilityLabel="Previous"
-        >
-          <Text style={[styles.controlText, { color: textColor }]}>⏮</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.controlButton, isPlayDisabled && styles.controlButtonDisabled]}
-          onPress={handlePlayPause}
-          disabled={isPlayDisabled}
-          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
-        >
-          <Text style={[styles.controlText, { color: textColor }]}>
-            {isPlaying ? '⏸' : '▶'}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.controlButton, isNextDisabled && styles.controlButtonDisabled]}
-          onPress={handleNext}
-          disabled={isNextDisabled}
-          accessibilityLabel="Next"
-        >
-          <Text style={[styles.controlText, { color: textColor }]}>⏭</Text>
-        </Pressable>
+  if (!surah) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.notFound}>Surah not found</Text>
       </View>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
+  return (
+    <View style={styles.container}>
+      {/* Ambient glow — terracotta radial gradient at top, behind everything */}
+      <Animated.View
+        style={[styles.ambientGlow, { opacity: glowOpacity }]}
+        accessible={false}
+        importantForAccessibility="no"
+        pointerEvents="none"
+      >
+        <Svg
+          width={SCREEN_WIDTH}
+          height={SCREEN_WIDTH * 0.8}
+          accessible={false}
+        >
+          <Defs>
+            <RadialGradient
+              id="ambientGlow"
+              cx="50%"
+              cy="0%"
+              rx="70%"
+              ry="100%"
+              gradientUnits="objectBoundingBox"
+            >
+              <Stop offset="0%" stopColor={colors.accentTerracotta} stopOpacity={1} />
+              <Stop offset="100%" stopColor={colors.accentTerracotta} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Ellipse
+            cx={SCREEN_WIDTH / 2}
+            cy={0}
+            rx={SCREEN_WIDTH * 0.7}
+            ry={SCREEN_WIDTH * 0.5}
+            fill="url(#ambientGlow)"
+          />
+        </Svg>
+      </Animated.View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + 8,
+            paddingBottom: insets.bottom + 32,
+            paddingHorizontal: HORIZONTAL_PADDING,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        scrollEventThrottle={16}
+      >
+        {/* Back button — top-left, 48px touch target */}
+        <Animated.View
+          style={[
+            styles.backButtonWrapper,
+            {
+              opacity: artworkOpacity,
+              transform: [{ translateY: artworkTranslateY }],
+            },
+          ]}
+        >
+          <Pressable
+            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => router.back()}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+          >
+            <BackChevron color={colors.textPrimary} size={24} />
+          </Pressable>
+        </Animated.View>
+
+        {/* Artwork container — 85% screen width, square, 8px radius */}
+        <Animated.View
+          style={[
+            styles.artworkContainer,
+            {
+              opacity: artworkOpacity,
+              transform: [{ translateY: artworkTranslateY }],
+            },
+          ]}
+        >
+          <Animated.Image
+            style={[styles.artwork, { opacity: imageOpacity }]}
+            source={artwork}
+            resizeMode="cover"
+            accessibilityLabel={`Artwork for ${surah.nameEnglish}, ${trackLabel}`}
+            accessibilityRole="image"
+          />
+          {/* Gradient overlay — bg-primary 0% → 80% opacity over bottom 120px */}
+          <View
+            style={styles.artworkGradientOverlay}
+            pointerEvents="none"
+            accessible={false}
+            importantForAccessibility="no"
+          >
+            <Svg width={ARTWORK_SIZE} height={120} accessible={false}>
+              <Defs>
+                <LinearGradient
+                  id="artworkFade"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <Stop offset="0%" stopColor={colors.bgPrimary} stopOpacity={0} />
+                  <Stop offset="100%" stopColor={colors.bgPrimary} stopOpacity={0.8} />
+                </LinearGradient>
+              </Defs>
+              <Rect x={0} y={0} width={ARTWORK_SIZE} height={120} fill="url(#artworkFade)" />
+            </Svg>
+          </View>
+        </Animated.View>
+
+        {/* Text cluster — surah metadata */}
+        <Animated.View
+          style={[
+            styles.textCluster,
+            {
+              opacity: textOpacity,
+              transform: [{ translateY: textTranslateY }],
+            },
+          ]}
+        >
+          {/* English surah name — Outfit SemiBold 24px, Cream */}
+          <Text style={styles.englishName} numberOfLines={1}>
+            {surah.nameEnglish}
+          </Text>
+
+          {/* Arabic surah name — Amiri Bold 28px, Gold, RTL */}
+          <Text style={styles.arabicName}>
+            {surah.nameArabic}
+          </Text>
+
+          {/* Meaning — Outfit Regular 14px, text-secondary */}
+          <Text style={styles.meaning} numberOfLines={1}>
+            {surah.meaning}
+          </Text>
+
+          {/* Metadata — "{ayahCount} Ayahs · Meccan/Medinan" — Outfit Regular 12px, text-secondary */}
+          <Text style={styles.metadata} numberOfLines={1}>
+            {surah.ayahCount} Ayahs · {surah.revelationType}
+          </Text>
+
+          {/* Section label line — gold fade accent, centered */}
+          <View style={styles.sectionLineWrapper}>
+            <SectionLabelLine />
+          </View>
+
+          {/* Track indicator — "Intro" or "Ayah N of M" */}
+          <Text style={styles.trackIndicator} numberOfLines={1}>
+            {trackLabel}
+          </Text>
+        </Animated.View>
+
+        {/* Controls */}
+        <Animated.View
+          style={[
+            styles.controlsWrapper,
+            {
+              opacity: controlsOpacity,
+              transform: [{ translateY: controlsTranslateY }],
+            },
+          ]}
+        >
+          <PlayerControls
+            isPlaying={isPlaying}
+            isPrevDisabled={isPrevDisabled}
+            isNextDisabled={isNextDisabled}
+            isPlayDisabled={isPlayDisabled}
+            onPrev={handlePrev}
+            onPlayPause={handlePlayPause}
+            onNext={handleNext}
+          />
+        </Animated.View>
+      </ScrollView>
     </View>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.bgPrimary,
+  },
+
+  // Ambient glow — absolute, top of screen, behind everything
+  ambientGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 0,
+  },
+
+  scrollView: {
+    flex: 1,
+    zIndex: 1,
+  },
+
+  scrollContent: {
     alignItems: 'center',
-    paddingHorizontal: 24,
   },
-  backButton: {
+
+  // Back button — top-left, 48px touch target
+  backButtonWrapper: {
     alignSelf: 'flex-start',
-    paddingVertical: 16,
-    paddingHorizontal: 4,
+    marginLeft: -4, // Optical alignment: chevron starts at 20px safe area within 24px bounding box
   },
-  backText: {
-    fontSize: 18,
+
+  backButton: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
+
+  // Artwork — 85% screen width, square, 8px radius, 8px below back button
+  artworkContainer: {
+    marginTop: 8,
+    width: ARTWORK_SIZE,
+    height: ARTWORK_SIZE,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+
   artwork: {
     width: ARTWORK_SIZE,
     height: ARTWORK_SIZE,
-    borderRadius: 12,
-    marginTop: 32,
+    borderRadius: 8,
   },
-  surahName: {
+
+  artworkGradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+  },
+
+  // Text cluster — centered, 24px below artwork
+  textCluster: {
+    marginTop: 24,
+    alignItems: 'center',
+    width: '100%',
+  },
+
+  // English surah name — Outfit SemiBold 24px, Cream, center
+  englishName: {
+    fontFamily: fontOutfitSemiBold,
     fontSize: 24,
     fontWeight: '600',
-    marginTop: 24,
+    lineHeight: 32,
+    letterSpacing: -0.48,
+    color: colors.textPrimary,
     textAlign: 'center',
   },
-  ayaIndicator: {
-    fontSize: 16,
+
+  // Arabic surah name — Amiri Bold 28px, Gold, center, RTL — 4px below English
+  arabicName: {
+    fontFamily: fontAmiriBold,
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 36,
+    letterSpacing: 0,
+    color: colors.accentGold,
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    marginTop: 4,
+  },
+
+  // Meaning — Outfit Regular 14px, text-secondary — 4px below Arabic
+  meaning: {
+    fontFamily: fontOutfitRegular,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  // Metadata — Outfit Regular 12px, text-secondary — 4px below meaning
+  metadata: {
+    fontFamily: fontOutfitRegular,
+    fontSize: 12,
+    fontWeight: '400',
+    lineHeight: 16,
+    letterSpacing: 0,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  // Section label line wrapper — centers the 60px fade line
+  sectionLineWrapper: {
     marginTop: 8,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+
+  // Track indicator — Outfit Medium 14px, text-secondary
+  trackIndicator: {
+    fontFamily: fontOutfitMedium,
+    fontSize: 14,
+    fontWeight: '500',
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 48,
-    gap: 32,
-  },
-  controlButton: {
-    minWidth: 44,
-    minHeight: 44,
-    justifyContent: 'center',
+
+  // Controls wrapper — 24px below track indicator
+  controlsWrapper: {
+    marginTop: 24,
+    width: '100%',
     alignItems: 'center',
   },
-  controlButtonDisabled: {
-    opacity: 0.3,
-  },
-  controlText: {
-    fontSize: 24,
+
+  // Not-found state
+  notFound: {
+    fontFamily: fontOutfitRegular,
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 120,
   },
 });
