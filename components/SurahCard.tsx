@@ -7,7 +7,7 @@
  *              reveal, and page-load stagger entry animation.
  *
  *              Layout: SurahNumberStar (44×44) → text block (flex:1) → meta block
- *              Card resting: bg-card (#231D2B). Pressed: bg-card-active (#2D2538).
+ *              Card resting: bg-card (#2E2A2A). Pressed: bg-card-active (#3A3434).
  *              Press-in: 300ms, translateX 4px, CardHoverPattern 0→15% opacity.
  *              Release: 200ms. Reduce Motion: instant state change, no translation.
  *              Entry stagger: opacity 0→1 + translateY 16→0, 400ms, ease-default.
@@ -98,14 +98,14 @@ const SurahCardInner = ({ surah, onPress, animationDelay = 0 }: SurahCardProps) 
       ),
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [animationDelay, entryAnim, reduceMotion]);
 
   // If reduce motion becomes enabled after mount, snap to visible immediately.
   useEffect(() => {
     if (reduceMotion) {
       entryAnim.setValue(1);
     }
-  }, [reduceMotion]);
+  }, [reduceMotion, entryAnim]);
 
   // ---------------------------------------------------------------------------
   // Press interaction
@@ -166,7 +166,7 @@ const SurahCardInner = ({ surah, onPress, animationDelay = 0 }: SurahCardProps) 
 
   const animatedBgColor = pressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.bgCard, colors.bgCardActive], // #231D2B → #2D2538
+    outputRange: [colors.bgCard, colors.bgCardActive], // #2E2A2A → #3A3434
   });
 
   const animatedTranslateX = pressAnim.interpolate({
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 26,
     letterSpacing: -0.18,                     // -0.01em at 18px
-    color: colors.textPrimary,                // #F2E8D5 Cream
+    color: colors.textPrimary,                // #f0e6d3 Cream
     textAlign: 'left',
   },
   meaning: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 20,
     letterSpacing: 0,
-    color: colors.textSecondaryCard,          // #9A8E7B Muted on Card
+    color: colors.textSecondaryCard,          // #B09A80 Muted on Card
     textAlign: 'left',
   },
   nameArabic: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 28,
     letterSpacing: 0,                         // no modification — calligraphic font
-    color: colors.accentGold,                 // #D4A853 Gold — ornamental Arabic
+    color: colors.accentGold,                 // #f9bc60 Gold — ornamental Arabic
     textAlign: 'left',
     writingDirection: 'rtl',
   },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0,
-    color: colors.textSecondaryCard,          // #9A8E7B Muted on Card
+    color: colors.textSecondaryCard,          // #B09A80 Muted on Card
     textAlign: 'right',
   },
   ayahLabel: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0,
-    color: colors.textSecondaryCard,          // #9A8E7B Muted on Card
+    color: colors.textSecondaryCard,          // #B09A80 Muted on Card
     textAlign: 'right',
   },
 });

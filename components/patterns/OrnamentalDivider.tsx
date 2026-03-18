@@ -1,9 +1,9 @@
 /**
  * @file components/patterns/OrnamentalDivider.tsx
  * @description The app's signature ornamental section divider.
- *              Two gradient gold lines flanking a central Terracotta diamond.
+ *              Two gradient gold lines flanking a central gold diamond.
  *              Total width: ~100px. Center-aligned within its parent.
- *              Not interactive. Decorative only.
+ *              Not interactive. Decorative only. Gold-only — no terracotta in header zone.
  * @project shortSurahs
  */
 
@@ -29,7 +29,6 @@ const OrnamentalDividerInner = ({ width = 100 }: OrnamentalDividerProps) => {
   const SVG_HEIGHT = 16;
   const LINE_Y = 8; // vertical midpoint
   const LINE_H = 1;
-  const LINE_W = 40;
 
   // Diamond geometry: 12×12 centered at (50, 8), rotated 45°
   // The <Rect> spans x=44 to x=56, y=2 to y=14; center at (50, 8)
@@ -79,7 +78,7 @@ const OrnamentalDividerInner = ({ width = 100 }: OrnamentalDividerProps) => {
           fill="url(#leftGrad)"
         />
 
-        {/* Central diamond: 12×12 rect rotated 45° around its own center */}
+        {/* Central diamond: 12×12 rect rotated 45° around its own center — gold fill */}
         <Rect
           x={DIAMOND_X}
           y={DIAMOND_Y}
@@ -88,7 +87,7 @@ const OrnamentalDividerInner = ({ width = 100 }: OrnamentalDividerProps) => {
           transform={`rotate(45, ${DIAMOND_CX}, ${DIAMOND_CY})`}
           stroke={colors.accentGold}
           strokeWidth={1.5}
-          fill={colors.accentTerracotta}
+          fill={colors.accentGold}
         />
 
         {/* Right gradient line */}
