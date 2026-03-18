@@ -31,7 +31,7 @@ export default function TabSurahs({ color = colors.textPrimary, size = 24 }: Ico
         y2="5"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
+        strokeLinecap="round"
       />
       {/* Left page: angular diamond-form (kente rhombus), from spine-top angling up-left then down-left */}
       <Path
@@ -39,8 +39,8 @@ export default function TabSurahs({ color = colors.textPrimary, size = 24 }: Ico
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       {/* Right page: mirror of left page */}
       <Path
@@ -48,8 +48,8 @@ export default function TabSurahs({ color = colors.textPrimary, size = 24 }: Ico
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   );

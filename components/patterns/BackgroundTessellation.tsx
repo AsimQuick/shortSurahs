@@ -2,7 +2,7 @@
  * @file components/patterns/BackgroundTessellation.tsx
  * @description 80×80 kente-inspired repeating SVG pattern for home screen header area.
  *              Static, decorative only. GPU-composited for performance.
- *              Stroke: Gold (#D4A853) at 6% opacity. No fill. Seamlessly tiling.
+ *              Stroke: accentGold (#f9bc60) at 6% opacity. No fill. Seamlessly tiling.
  * @project shortSurahs
  */
 
@@ -25,7 +25,7 @@ interface BackgroundTessellationProps {
 // ---------------------------------------------------------------------------
 
 const BackgroundTessellationInner = ({ width, height }: BackgroundTessellationProps) => {
-  const GOLD = colors.accentGold; // #D4A853
+  const GOLD = colors.accentGold; // #f9bc60
   const OPACITY = 0.06;
   const WEIGHT = 0.5;
 

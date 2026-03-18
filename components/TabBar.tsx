@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.bgSurface,
     paddingTop: 8,
-    // No borderTopWidth — color shift from bg-primary (#0D0B0E) to bg-surface (#1A1520) provides separation
+    // No borderTopWidth — color shift from bg-primary (#16161a) to bg-surface (#242629) provides separation
   },
   tab: {
     flex: 1,

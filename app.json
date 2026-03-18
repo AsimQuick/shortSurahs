@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "shortSurahs",
+    "name": "Short Surahs",
     "slug": "shortSurahs",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -22,7 +22,7 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "7"
+      "buildNumber": "10"
     },
     "android": {
       "adaptiveIcon": {

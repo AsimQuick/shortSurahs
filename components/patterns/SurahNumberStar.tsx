@@ -2,8 +2,8 @@
  * @file components/patterns/SurahNumberStar.tsx
  * @description 44×44 Islamic 5-point star badge containing the surah number.
  *              The app's signature surah identifier.
- *              Stroke: Gold (#D4A853) at 0.8px. Fill: Gold at 15% opacity.
- *              Number: Outfit SemiBold 14px, Cream (#F2E8D5), centered.
+ *              Stroke: Gold (#f9bc60) at 0.8px. Fill: Gold at 15% opacity.
+ *              Number: Outfit SemiBold 14px, Cream (#f0e6d3), centered.
  * @project shortSurahs
  */
 
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     fontFamily: fontOutfitSemiBold, // 'Outfit_600SemiBold'
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary, // #F2E8D5 Cream
+    color: colors.textPrimary, // #f0e6d3 Cream
     textAlign: 'center',
     // Prevent Dynamic Type from scaling the badge label — it's inside a fixed SVG
     lineHeight: 14,

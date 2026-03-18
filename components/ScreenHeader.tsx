@@ -2,7 +2,7 @@
  * @file components/ScreenHeader.tsx
  * @description Safe area wrapper for all tab screens. Applies system top inset +
  *              16px padding, preventing content from being obscured by the status
- *              bar, notch, or Dynamic Island. Background: bg-primary (#0D0B0E).
+ *              bar, notch, or Dynamic Island. Background: bg-primary (#16161a).
  *              Reusable across Home, Prayers, and Account tab screens.
  *              Resolves P8: tabs lack top padding / safe area.
  * @project shortSurahs

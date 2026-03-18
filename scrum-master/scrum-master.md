@@ -20,12 +20,14 @@
 | `done` | Implementation verified against all ACs and DoD; story complete |
 | `blocked` | Cannot complete validation — see reason in Tester Notes |
 
-## Project Status: V2 IN PROGRESS
+## Project Status: COMPLETE
 
-**MVP complete (6 stories, Sprints 1-4).** V2 development began Sprint 5.
+**MVP complete (6 stories, Sprints 1-4).** V2 complete (5 stories, Sprints 5-6). **All sprints closed. No active sprint.**
 
-**Current Sprint:** Sprint 6 (planning)
+**Final Sprint:** Sprint 6 (done)
 **Active PRD:** `/scrum-master/v2_prd.md`
+
+All 11 user stories delivered. All four product pillars fully addressed. 42 story points across 6 sprints. 1923 tests passing, 98%+ statement coverage, zero open defects. The product is feature-complete and ready for release preparation (EAS Build, device testing, store submission — human-owner tasks).
 
 ### MVP Story Summary
 
@@ -68,11 +70,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Total Story Points Delivered | 31 (21 MVP + 10 V2) |
-| Total PRs Merged | 45 (#1-#54, excluding closed-without-merge #44, #48, #49) |
-| Tests at HEAD | 1417 (38 suites, 1407 passing, 10 skipped) |
-| Coverage | Statements 96.77%, Branches 94.44%, Functions 100%, Lines 96.36% |
-| CI Defects Found/Resolved | 17/17 (lifetime) |
+| Total Story Points Delivered | 42 (21 MVP + 21 V2) |
+| Total PRs Merged | 58 (#1-#70, excluding closed-without-merge #44, #48, #49) |
+| Tests at HEAD | 1923 (51 suites, all passing) |
+| Coverage | Statements 98.37%, Branches 84.9%, Functions 100% |
+| CI Defects Found/Resolved | 18/18 (lifetime) |
 | Open Defects | 0 |
 
 ### Completed Owner Action Items
@@ -85,20 +87,17 @@
 |----|-------|--------|--------|--------|
 | US-7 | Expanded Surah Library (17 Surahs) | 5 | `done` | Sprint 5 |
 | US-8 | Firebase Authentication | 5 | `done` | Sprint 5 |
-| US-9 | Bottom Tab Navigation | 3 | `planning` | Sprint 6 |
-| US-10 | Account Screen | 3 | `planning` | Sprint 6 |
-| US-11 | Prayer Times | 5 | `planning` | Sprint 6 |
+| US-9 | Bottom Tab Navigation | 3 | `done` | Sprint 6 |
+| US-10 | Account Screen | 3 | `done` | Sprint 6 |
+| US-11 | Prayer Times | 5 | `done` | Sprint 6 |
 
-### V2 Backlog (Sprint 6 — Current)
+### V2 Delivery Summary
 
 > Full requirements in `/scrum-master/v2_prd.md`
-> Sprint plan in `/scrum-master/sprint6.md`
+> Sprint 5 plan in `/scrum-master/sprint5.md`
+> Sprint 6 plan in `/scrum-master/sprint6.md`
 
-| ID | Story | Points | Dependencies | Phase |
-|----|-------|--------|-------------|-------|
-| US-9 | Bottom Tab Navigation (Home, Prayers, Account tabs) | 3 | US-8 (done) | Phase 1 |
-| US-10 | Account Screen (Logout, Delete Account, ToS/Privacy) | 3 | US-8 (done), US-9 | Phase 2 |
-| US-11 | Prayer Times (Aladhan API, timezone-based, no geolocation) | 5 | US-9 | Phase 2 |
+All V2 stories delivered across Sprints 5-6. Total: 21 V2 story points, 5 stories, 29 PRs.
 
 **Firebase Setup Status:** DONE — project `shortsurahs-66204`, all providers enabled, all OAuth client IDs obtained. See v2_prd.md for credentials.
 
@@ -242,6 +241,27 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 
 **Sprint file:** `/scrum-master/sprint5.md`
 
+### Sprint 6 — V2 Completion: Tab Navigation, Account Management & Prayer Times (2026-03-14 -> 2026-03-28)
+
+**Goal:** Replace stack-only navigation with bottom tab navigation, deliver account management, and integrate Aladhan prayer times — completing all V2 features.
+**Outcome:** Sprint goal MET. Third consecutive 100% velocity sprint. V2 feature-complete.
+
+| Metric | Value |
+|--------|-------|
+| Planned | 11 story points (US-9: 3, US-10: 3, US-11: 5) |
+| Delivered | 11 story points (all 3 stories, all 13 ACs) |
+| Velocity | 100% (third consecutive) |
+| PRs Merged | 13 (#58-#70) |
+| Tests at HEAD | 1923 (51 suites, all passing) |
+| Coverage | Statements 98.37%, Branches 84.9%, Functions 100% |
+| Dev-Tester Loop Iterations | 1 (AC-9.1 undeclared dependency; 12/13 ACs zero-defect) |
+| Build Order Compliance | 100% (Phase 1 before Phase 2) |
+
+**Accepted stories:** US-9 (Bottom Tab Navigation, 3 pts), US-10 (Account Screen, 3 pts), US-11 (Prayer Times, 5 pts)
+**V2 status:** Feature-complete. All 5 V2 stories (US-7 through US-11) delivered. App ready for EAS Build and device testing.
+
+**Sprint file:** `/scrum-master/sprint6.md`
+
 ## Sprint Summary
 
 | Sprint | Phase | Goal | Points |
@@ -251,9 +271,11 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 | Sprint 3 | complete | Interactive Playback -- US-5 fully done (all 8 ACs) | ~5 |
 | Sprint 4 | complete | Background Audio & Lock Screen Controls -- US-6 (all 4 ACs); first 100% velocity sprint | 2 |
 | Sprint 5 | complete | V2 Foundation -- Expanded 17-surah library (US-7, 5 pts) + Firebase Authentication (US-8, 5 pts); 100% velocity, 1417 tests, 96%+ coverage | 10 |
-| Sprint 6 | planning | V2 Completion -- Bottom Tab Nav (US-9, 3 pts) + Account Screen (US-10, 3 pts) + Prayer Times (US-11, 5 pts); completes all V2 features | 11 |
+| Sprint 6 | complete | V2 Completion -- Bottom Tab Nav (US-9, 3 pts) + Account Screen (US-10, 3 pts) + Prayer Times (US-11, 5 pts); third consecutive 100% velocity sprint; 1923 tests, 98%+ coverage | 11 |
 | **MVP Total** | **COMPLETE** | **All 6 stories delivered, 680 tests, 95%+ coverage, zero open defects** | **~21** |
-| **V2 Cumulative** | **IN PROGRESS** | **8 stories delivered (6 MVP + 2 V2), 3 in planning; 1417 tests, 96%+ coverage** | **31 delivered, 11 planned** |
+| **V2 Total** | **COMPLETE** | **All 11 stories delivered (6 MVP + 5 V2), 1923 tests, 98%+ coverage, zero open defects** | **42** |
+
+**Project Status: All sprints closed. Product is feature-complete. No further sprints planned.**
 
 ## Notes
 
