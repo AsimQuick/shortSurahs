@@ -20,30 +20,9 @@ import TabAccount from '@/components/icons/TabAccount';
 // Types
 // ---------------------------------------------------------------------------
 
-interface Route {
-  key: string;
-  name: string;
-}
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-interface NavigationState {
-  index: number;
-  routes: Route[];
-}
-
-interface Navigation {
-  navigate: (name: string) => void;
-  emit: (event: {
-    type: string;
-    target: string;
-    canPreventDefault: boolean;
-  }) => { defaultPrevented: boolean };
-}
-
-interface TabBarProps {
-  state: NavigationState;
-  navigation: Navigation;
-  descriptors: Record<string, unknown>;
-}
+type TabBarProps = BottomTabBarProps;
 
 // ---------------------------------------------------------------------------
 // Tab configuration — exact copy from task 004

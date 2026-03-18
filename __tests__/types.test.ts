@@ -19,9 +19,11 @@ describe('Surah type', () => {
     number: 1,
     nameEnglish: 'Al-Fatiha',
     nameArabic: 'الفاتحة',
+    meaning: 'The Opening',
     transliterationKey: '1-fatiha',
     ayahCount: 7,
     totalTracks: 8,
+    revelationType: 'Meccan',
   };
 
   test('id is a string', () => {
