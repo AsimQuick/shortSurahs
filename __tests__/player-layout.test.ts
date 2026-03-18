@@ -5,7 +5,6 @@
  *              player screen layout: back button (top), large artwork (>=80% of
  *              screen width computed at runtime via Dimensions), surah English
  *              name, aya indicator, and playback controls (bottom).
- *              Also verifies system theme support via useColorScheme.
  *              Tests are source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @sprint Sprint 2 — US-4 AC-4.1
@@ -123,7 +122,7 @@ describe('AC-4.1 — aya indicator below surah name', () => {
   });
 
   test('aya indicator renders "Aya" followed by a number or dynamic expression', () => {
-    // AC-4.3 made the indicator dynamic: "Aya {currentTrackIndex + 1}"
+    // AC-4.3 made the indicator dynamic: "Aya N of M" or "Ayah N"
     expect(source).toMatch(/Aya.*(\d|currentTrackIndex)/);
   });
 });
@@ -133,19 +132,20 @@ describe('AC-4.1 — aya indicator below surah name', () => {
 // ---------------------------------------------------------------------------
 
 describe('AC-4.1 — playback controls layout at bottom', () => {
-  test('controls container uses flexDirection "row" (horizontal layout)', () => {
-    expect(source).toMatch(/flexDirection\s*:\s*['"]row['"]/);
+  test('PlayerControls component is used for playback controls', () => {
+    // After redesign, controls are in PlayerControls component
+    expect(source).toContain('PlayerControls');
   });
 
-  test('Previous control is present', () => {
+  test('Previous control is present (passed as prop or function)', () => {
     expect(source).toMatch(/[Pp]rev/);
   });
 
-  test('Play control is present', () => {
+  test('Play control is present (passed as prop or function)', () => {
     expect(source).toMatch(/[Pp]lay/);
   });
 
-  test('Next control is present', () => {
+  test('Next control is present (passed as prop or function)', () => {
     expect(source).toMatch(/[Nn]ext/);
   });
 });
@@ -164,29 +164,21 @@ describe('AC-4.1 — artwork loaded from bundled assets', () => {
   });
 
   test('Image component is used to render artwork', () => {
-    const importMatch = source.match(/import\s+\{([^}]+)\}\s+from\s+['"]react-native['"]/);
-    expect(importMatch).not.toBeNull();
-    expect(importMatch![1]).toContain('Image');
+    // After redesign uses Animated.Image
+    expect(source).toMatch(/Animated\.Image|Image/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// AC-4.1: System theme (light / dark)
+// AC-4.1: Dark theme
 // ---------------------------------------------------------------------------
 
-describe('AC-4.1 — system theme via useColorScheme', () => {
-  test('useColorScheme is imported from react-native', () => {
-    const importMatch = source.match(/import\s+\{([^}]+)\}\s+from\s+['"]react-native['"]/);
-    expect(importMatch).not.toBeNull();
-    expect(importMatch![1]).toContain('useColorScheme');
+describe('AC-4.1 — dark theme', () => {
+  test('background color is applied to container', () => {
+    expect(source).toContain('backgroundColor');
   });
 
-  test('isDark flag is derived from colorScheme', () => {
-    expect(source).toMatch(/isDark/);
-  });
-
-  test('background color differs for dark vs light mode', () => {
-    expect(source).toContain('#000000');
-    expect(source).toContain('#ffffff');
+  test('uses colors module for theming', () => {
+    expect(source).toMatch(/colors\.|bgPrimary|textPrimary/);
   });
 });

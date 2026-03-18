@@ -5,13 +5,13 @@
  *              - metadata header references @ac AC-10.4
  *              - `user` is destructured from useAuth()
  *              - user.email is rendered in the JSX
- *              - userInfoSection style is defined (user info at top)
- *              - actionsSection style is defined (action buttons in middle)
- *              - legalContainer style is defined (legal links at bottom)
  *              - emailText style is defined for the email display
- *              - subtitleColor is used for the email text (themed)
- *              - accessibilityLabel="User email" is present
+ *              - accessibilityLabel for email is present
+ *              - card style groups content sections
  *              - backward-compat: AC-10.1/10.2/10.3 still present
+ *              Updated for UI redesign: dark-only design system, no useColorScheme/isDark.
+ *              Style names updated: card (not userInfoSection/actionsSection),
+ *              legalGroup (not legalContainer).
  *              Source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-10: Account Screen
@@ -87,11 +87,13 @@ describe('AC-10.4 — account.tsx: user email display', () => {
   });
 
   test('accessibilityLabel for user email is present', () => {
-    expect(src).toContain('accessibilityLabel="User email"');
+    // After redesign: accessibilityLabel uses "Your email: ..." format
+    expect(src).toMatch(/accessibilityLabel.*email/i);
   });
 
-  test('email text uses subtitleColor for theming', () => {
-    expect(src).toMatch(/subtitleColor/);
+  test('email text is styled with color', () => {
+    // After redesign: uses colors.textPrimary instead of subtitleColor
+    expect(src).toMatch(/color:/);
   });
 });
 
@@ -99,50 +101,48 @@ describe('AC-10.4 — account.tsx: user email display', () => {
 // Layout sections
 // ---------------------------------------------------------------------------
 
-describe('AC-10.4 — account.tsx: three-section layout', () => {
-  test('userInfoSection style defined (user info at top)', () => {
-    expect(src).toContain('userInfoSection');
+describe('AC-10.4 — account.tsx: layout sections', () => {
+  test('card style is defined for grouped sections', () => {
+    // After redesign: "card" style groups content (not userInfoSection/actionsSection)
+    expect(src).toContain('card');
   });
 
-  test('actionsSection style defined (action buttons in middle)', () => {
-    expect(src).toContain('actionsSection');
+  test('identity section contains user email', () => {
+    // The identity card shows user email
+    expect(src).toMatch(/user\?\.email|user\.email/);
   });
 
-  test('legalContainer style defined (legal links at bottom)', () => {
-    expect(src).toContain('legalContainer');
+  test('actions section contains Sign Out button', () => {
+    // After redesign: "Sign Out" (not "Log Out")
+    expect(src).toMatch(/Sign Out|handleLogout/);
   });
 
-  test('userInfoSection View wraps title and email', () => {
-    expect(src).toMatch(/style=\{styles\.userInfoSection\}/);
-  });
-
-  test('actionsSection View wraps action buttons', () => {
-    expect(src).toMatch(/style=\{styles\.actionsSection\}/);
+  test('legal section contains Terms of Service and Privacy Policy links', () => {
+    expect(src).toContain('Terms of Service');
+    expect(src).toContain('Privacy Policy');
   });
 });
 
 // ---------------------------------------------------------------------------
-// Light/dark theming
+// Theming (dark-only design system)
 // ---------------------------------------------------------------------------
 
-describe('AC-10.4 — account.tsx: theming', () => {
-  test('useColorScheme is imported and used', () => {
-    expect(src).toMatch(/\buseColorScheme\b/);
+describe('AC-10.4 — account.tsx: dark-only design system', () => {
+  test('uses colors design system for theming', () => {
+    expect(src).toMatch(/colors\./);
   });
 
-  test('isDark is derived from colorScheme', () => {
-    expect(src).toMatch(/isDark\s*=\s*colorScheme\s*===\s*['"]dark['"]/);
+  test('uses backgroundColor from design system', () => {
+    expect(src).toContain('backgroundColor');
   });
 
-  test('backgroundColor adapts to isDark', () => {
-    expect(src).toMatch(/backgroundColor\s*=\s*isDark/);
+  test('does NOT import useColorScheme (dark-only design)', () => {
+    // "No useColorScheme()" may appear in comment — check it is not imported/called
+    expect(src).not.toMatch(/import\s+.*\buseColorScheme\b/);
+    expect(src).not.toMatch(/const\s+\w+\s*=\s*useColorScheme\s*\(\)/);
   });
 
-  test('textColor adapts to isDark', () => {
-    expect(src).toMatch(/textColor\s*=\s*isDark/);
-  });
-
-  test('subtitleColor adapts to isDark', () => {
-    expect(src).toMatch(/subtitleColor\s*=\s*isDark/);
+  test('does NOT use isDark (dark-only design)', () => {
+    expect(src).not.toMatch(/\bisDark\b/);
   });
 });

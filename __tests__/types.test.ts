@@ -3,6 +3,7 @@
  * @description Unit tests for types/index.ts — validates Surah and Track
  *              type definitions. V2 (AC-7.1): Surah uses new schema fields;
  *              Track includes isIntro boolean.
+ *              Updated for UI redesign: Surah now includes meaning and revelationType.
  * @project shortSurahs
  * @sprint Sprint 1 — US-1 AC-1.2; Sprint 5 — US-7 AC-7.1
  */
@@ -10,7 +11,7 @@
 import type { Surah, Track } from '../types';
 
 // ---------------------------------------------------------------------------
-// Surah type — V2 schema
+// Surah type — V2 schema (includes meaning and revelationType from UI redesign)
 // ---------------------------------------------------------------------------
 
 describe('Surah type', () => {
@@ -42,6 +43,10 @@ describe('Surah type', () => {
     expect(typeof surah.nameArabic).toBe('string');
   });
 
+  test('meaning is a string', () => {
+    expect(typeof surah.meaning).toBe('string');
+  });
+
   test('transliterationKey is a string', () => {
     expect(typeof surah.transliterationKey).toBe('string');
   });
@@ -54,9 +59,23 @@ describe('Surah type', () => {
     expect(typeof surah.totalTracks).toBe('number');
   });
 
-  test('has exactly the required V2 fields', () => {
+  test('revelationType is Meccan or Medinan', () => {
+    expect(['Meccan', 'Medinan']).toContain(surah.revelationType);
+  });
+
+  test('has exactly the required V2 fields (including meaning and revelationType)', () => {
     const keys = Object.keys(surah).sort();
-    expect(keys).toEqual(['ayahCount', 'id', 'nameArabic', 'nameEnglish', 'number', 'totalTracks', 'transliterationKey']);
+    expect(keys).toEqual([
+      'ayahCount',
+      'id',
+      'meaning',
+      'nameArabic',
+      'nameEnglish',
+      'number',
+      'revelationType',
+      'totalTracks',
+      'transliterationKey',
+    ]);
   });
 });
 
@@ -144,15 +163,17 @@ describe('surahs.json entries conform to Surah type', () => {
     expect(surahs).toHaveLength(17);
   });
 
-  test('every entry satisfies the V2 Surah shape', () => {
+  test('every entry satisfies the V2 Surah shape (including meaning and revelationType)', () => {
     surahs.forEach((surah) => {
       expect(typeof surah.id).toBe('string');
       expect(typeof surah.number).toBe('number');
       expect(typeof surah.nameEnglish).toBe('string');
       expect(typeof surah.nameArabic).toBe('string');
+      expect(typeof surah.meaning).toBe('string');
       expect(typeof surah.transliterationKey).toBe('string');
       expect(typeof surah.ayahCount).toBe('number');
       expect(typeof surah.totalTracks).toBe('number');
+      expect(['Meccan', 'Medinan']).toContain(surah.revelationType);
     });
   });
 });

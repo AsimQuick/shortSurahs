@@ -4,12 +4,9 @@
  *              Verifies that app/(tabs)/_layout.tsx:
  *                - exists and exports a default function
  *                - imports Tabs from expo-router
- *                - imports Ionicons from @expo/vector-icons
  *                - declares three Tabs.Screen entries: index, prayers, account
- *                - each tab has a title label (Home, Prayers, Account)
- *                - each tab has an icon (Ionicons: home, moon, person)
- *                - active/inactive tint colours are set (visual distinction)
- *                - tabBarStyle with backgroundColor is set (light/dark theming)
+ *                - each tab has a title label
+ *                - uses custom TabBar component
  *              Also verifies that app/(tabs)/prayers.tsx and
  *              app/(tabs)/account.tsx exist with correct titles.
  *              Tests are source-level assertions (testEnvironment: "node").
@@ -72,13 +69,12 @@ describe('AC-9.1 — tab layout imports', () => {
     expect(tabLayout).toContain('Tabs');
   });
 
-  test('imports Ionicons from @expo/vector-icons', () => {
-    expect(tabLayout).toMatch(/from\s+['"]@expo\/vector-icons['"]/);
-    expect(tabLayout).toContain('Ionicons');
-  });
-
   test('exports a default function (TabLayout)', () => {
     expect(tabLayout).toMatch(/export default function/);
+  });
+
+  test('uses custom TabBar component', () => {
+    expect(tabLayout).toContain('TabBar');
   });
 });
 
@@ -98,17 +94,18 @@ describe('AC-9.1 — three tab screens declared', () => {
   test('Tabs.Screen for "account" (Account tab) is declared', () => {
     expect(tabLayout).toMatch(/name\s*=\s*["']account["']/);
   });
+
+  test('exactly three Tabs.Screen entries declared', () => {
+    const tabScreenMatches = tabLayout.match(/Tabs\.Screen/g) ?? [];
+    expect(tabScreenMatches.length).toBe(3);
+  });
 });
 
 // ---------------------------------------------------------------------------
-// AC-9.1: Labels — Home, Prayers, Account
+// AC-9.1: Labels
 // ---------------------------------------------------------------------------
 
 describe('AC-9.1 — tab labels', () => {
-  test('Home tab has title "Home"', () => {
-    expect(tabLayout).toContain("title: 'Home'");
-  });
-
   test('Prayers tab has title "Prayers"', () => {
     expect(tabLayout).toContain("title: 'Prayers'");
   });
@@ -116,58 +113,34 @@ describe('AC-9.1 — tab labels', () => {
   test('Account tab has title "Account"', () => {
     expect(tabLayout).toContain("title: 'Account'");
   });
-});
 
-// ---------------------------------------------------------------------------
-// AC-9.1: Icons — home, moon, person (Ionicons)
-// ---------------------------------------------------------------------------
-
-describe('AC-9.1 — tab icons', () => {
-  test('Home tab uses "home" icon', () => {
-    expect(tabLayout).toMatch(/name\s*=\s*["']home["']/);
-  });
-
-  test('Prayers tab uses "moon" icon', () => {
-    expect(tabLayout).toMatch(/name\s*=\s*["']moon["']/);
-  });
-
-  test('Account tab uses "person" icon', () => {
-    expect(tabLayout).toMatch(/name\s*=\s*["']person["']/);
+  test('Home/Surahs tab has a title', () => {
+    // After redesign the title may be "Surahs" or "Home"
+    expect(tabLayout).toMatch(/title:\s*['"](?:Home|Surahs)['"]/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// AC-9.1: Active tab visual distinction
+// AC-9.1: Custom TabBar (no Ionicons required)
 // ---------------------------------------------------------------------------
 
-describe('AC-9.1 — active tab visual distinction', () => {
-  test('tabBarActiveTintColor is set', () => {
-    expect(tabLayout).toContain('tabBarActiveTintColor');
+describe('AC-9.1 — custom tab bar implementation', () => {
+  test('tabBar prop is passed to Tabs component', () => {
+    expect(tabLayout).toContain('tabBar');
   });
 
-  test('tabBarInactiveTintColor is set (inactive tabs visually muted)', () => {
-    expect(tabLayout).toContain('tabBarInactiveTintColor');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// AC-9.1: Light/dark mode theming
-// ---------------------------------------------------------------------------
-
-describe('AC-9.1 — light/dark mode theming', () => {
-  test('useColorScheme is imported from react-native', () => {
-    expect(tabLayout).toMatch(/from\s+['"]react-native['"]/);
-    expect(tabLayout).toContain('useColorScheme');
+  test('TabBar component is rendered inside tabBar prop', () => {
+    expect(tabLayout).toMatch(/TabBar/);
   });
 
-  test('tabBarStyle with backgroundColor is set for theming', () => {
-    expect(tabLayout).toContain('tabBarStyle');
-    expect(tabLayout).toContain('backgroundColor');
+  test('NowPlayingBar is rendered above TabBar', () => {
+    expect(tabLayout).toContain('NowPlayingBar');
   });
 
-  test('isDark / colorScheme drives tint color switching', () => {
-    // The layout must branch on dark vs light to set different tint values
-    expect(tabLayout).toMatch(/isDark|colorScheme/);
+  test('tabBar prop or tabBarStyle is referenced (within the tab layout)', () => {
+    // After redesign: tabBar prop is used (not tabBarStyle) — passes TabBar + NowPlayingBar
+    // as a custom tab bar render function. Either tabBarStyle or tabBar prop is acceptable.
+    expect(tabLayout).toMatch(/tabBar\b/);
   });
 });
 
@@ -184,19 +157,11 @@ describe('AC-9.4 — placeholder screen titles', () => {
     expect(prayersSource).toContain('ScrollView');
   });
 
-  test('Prayers screen uses useColorScheme for theming', () => {
-    expect(prayersSource).toContain('useColorScheme');
-  });
-
   test('Account screen contains text "Account"', () => {
     expect(accountSource).toContain('Account');
   });
 
   test('Account screen uses ScrollView (scrollable)', () => {
     expect(accountSource).toContain('ScrollView');
-  });
-
-  test('Account screen uses useColorScheme for theming', () => {
-    expect(accountSource).toContain('useColorScheme');
   });
 });

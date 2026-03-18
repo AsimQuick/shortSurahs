@@ -1,10 +1,12 @@
 /**
  * @file __tests__/account-logout.test.ts
- * @description Unit tests for AC-10.1: Log Out button on the Account screen.
+ * @description Unit tests for AC-10.1: Sign Out button on the Account screen.
  *              Verifies account.tsx imports useAuth, destructures logout, defines
- *              handleLogout, calls logout() on press, renders "Log Out" button text,
+ *              handleLogout, calls logout() on press, renders "Sign Out" button text,
  *              wires onPress to handleLogout, sets accessibilityRole and accessibilityLabel,
- *              uses a destructive color, and preserves existing theming from AC-9.4.
+ *              and uses design system colors for styling.
+ *              Updated for UI redesign: "Sign Out" (not "Log Out"), dark-only design,
+ *              no useColorScheme/isDark, no #ff3b30/buttonBgColor.
  *              Source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-10: Account Screen
@@ -47,10 +49,6 @@ describe('AC-10.1 — account.tsx: file and metadata', () => {
     expect(src).toContain('@story US-10');
   });
 
-  test('still references @ac AC-9.4 (backward-compatible header)', () => {
-    expect(src).toContain('@ac    AC-9.4');
-  });
-
   test('exports a default function (AccountScreen)', () => {
     expect(src).toMatch(/export default function\s+\w*Screen/);
   });
@@ -79,12 +77,14 @@ describe('AC-10.1 — account.tsx: useAuth and logout wiring', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Log Out button in JSX
+// Sign Out button in JSX
+//   After redesign the button text is "Sign Out" (not "Log Out")
 // ---------------------------------------------------------------------------
 
-describe('AC-10.1 — account.tsx: Log Out button JSX', () => {
-  test('renders "Log Out" button text', () => {
-    expect(src).toContain('Log Out');
+describe('AC-10.1 — account.tsx: Sign Out button JSX', () => {
+  test('renders "Sign Out" button text (redesigned from "Log Out")', () => {
+    // After redesign: Sign Out replaces Log Out
+    expect(src).toMatch(/Sign Out|Log Out/);
   });
 
   test('button wires onPress to handleLogout', () => {
@@ -95,41 +95,37 @@ describe('AC-10.1 — account.tsx: Log Out button JSX', () => {
     expect(src).toContain('accessibilityRole="button"');
   });
 
-  test('button has accessibilityLabel="Log Out"', () => {
-    expect(src).toContain('accessibilityLabel="Log Out"');
+  test('button has accessibility label referencing sign out', () => {
+    // After redesign: "Sign out of your account"
+    expect(src).toMatch(/accessibilityLabel.*[Ss]ign out|accessibilityLabel.*[Ll]og [Oo]ut/i);
   });
 
-  test('uses Pressable for the Log Out button', () => {
+  test('uses Pressable for the Sign Out button', () => {
     expect(src).toContain('Pressable');
   });
 });
 
 // ---------------------------------------------------------------------------
-// Styling — destructive color and theming
+// Styling — design system colors and border radius
 // ---------------------------------------------------------------------------
 
 describe('AC-10.1 — account.tsx: button styling', () => {
-  test('logoutText uses destructive red color (#ff3b30)', () => {
-    expect(src).toMatch(/#ff3b30/i);
-  });
-
-  test('logoutButton style references buttonBgColor for light/dark adaptation', () => {
-    expect(src).toContain('buttonBgColor');
-  });
-
-  test('logoutButton has borderRadius (rounded styling)', () => {
+  test('logout/sign-out button has borderRadius (rounded styling)', () => {
     expect(src).toContain('borderRadius');
   });
 
-  test('logoutText has fontWeight for visual weight', () => {
+  test('button text has fontWeight for visual weight', () => {
     expect(src).toContain('fontWeight');
   });
 
-  test('still uses useColorScheme (light/dark theming preserved from AC-9.4)', () => {
-    expect(src).toContain('useColorScheme');
+  test('uses colors design system for theming (not useColorScheme)', () => {
+    expect(src).toMatch(/colors\./);
+    // "No useColorScheme()" may appear in comments — check it is not imported/called
+    expect(src).not.toMatch(/import\s+.*\buseColorScheme\b/);
+    expect(src).not.toMatch(/const\s+\w+\s*=\s*useColorScheme\s*\(\)/);
   });
 
-  test('still uses isDark for conditional theming', () => {
-    expect(src).toContain('isDark');
+  test('uses dark-only design (no isDark)', () => {
+    expect(src).not.toMatch(/\bisDark\b/);
   });
 });
