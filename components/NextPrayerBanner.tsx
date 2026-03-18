@@ -3,11 +3,11 @@
  * @description Next prayer name + time banner for the home screen header.
  *              Three states:
  *                - Loaded: "Next: {PrayerName} · {Time}" in mixed weights/colors
- *                - Loading: 12px terracotta dot pulsing 30%→80% opacity, 2s cycle
+ *                - Loading: 12px gold dot pulsing 30%→80% opacity, 2s cycle
  *                - Offline: "Prayer times unavailable" in muted text
  *              Returns null when no data and neither loading nor offline.
  *              Display-only — not tappable. Max height ~44px.
- *              Background: bg-surface (#1A1520). No borders.
+ *              Background: bgSurface (#242629). No borders.
  *              Page load stagger: fade + 16px slide-up, 400ms, delay 350ms.
  *              Resolves P4: no "Next Prayer" on homepage.
  * @project shortSurahs
@@ -54,7 +54,7 @@ export function NextPrayerBanner({
   // Page load enter animation (group 6 in stagger — delay 350ms = 70ms × 5)
   const enterAnim = useRef(new Animated.Value(0)).current;
 
-  // Terracotta dot opacity for loading state (30% → 80% → 30%, 2s cycle)
+  // Gold dot opacity for loading state (30% → 80% → 30%, 2s cycle)
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   const showLoading = isLoading && !prayerName;
@@ -78,11 +78,12 @@ export function NextPrayerBanner({
       easing: Easing.bezier(0.22, 1, 0.36, 1),
       useNativeDriver: true,
     }).start();
-  }, [reduceMotion, shouldRender]);
+  }, [reduceMotion, shouldRender, enterAnim]);
 
   // Pulse animation — runs while loading, stops otherwise
+  // Reduce Motion: pulse stops (static at 0.3 opacity)
   useEffect(() => {
-    if (!showLoading) {
+    if (!showLoading || reduceMotion) {
       pulseAnim.setValue(0.3);
       return;
     }
@@ -105,7 +106,7 @@ export function NextPrayerBanner({
     );
     pulse.start();
     return () => pulse.stop();
-  }, [showLoading]);
+  }, [showLoading, reduceMotion, pulseAnim]);
 
   if (!shouldRender) {
     return null;
@@ -137,7 +138,7 @@ export function NextPrayerBanner({
       accessible={true}
       accessibilityRole="text"
     >
-      {/* Loading state — terracotta dot pulsing opacity */}
+      {/* Loading state — gold dot pulsing opacity */}
       {showLoading && (
         <View style={styles.loadingContainer}>
           <Animated.View
@@ -154,10 +155,10 @@ export function NextPrayerBanner({
       {/* Loaded state — "Next: {Name} · {Time}" */}
       {showData && (
         <View style={styles.dataRow}>
-          <Text style={styles.nextLabel}>Next: </Text>
-          <Text style={styles.prayerName}>{prayerName}</Text>
-          <Text style={styles.separator}> · </Text>
-          <Text style={styles.prayerTime}>{prayerTime}</Text>
+          <Text style={styles.nextLabel} numberOfLines={1} ellipsizeMode="tail">Next: </Text>
+          <Text style={styles.prayerName} numberOfLines={1} ellipsizeMode="tail">{prayerName}</Text>
+          <Text style={styles.separator} numberOfLines={1} ellipsizeMode="tail"> · </Text>
+          <Text style={styles.prayerTime} numberOfLines={1} ellipsizeMode="tail">{prayerTime}</Text>
         </View>
       )}
     </Animated.View>
@@ -170,10 +171,10 @@ export function NextPrayerBanner({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bgSurface,   // #1A1520 — slightly elevated
+    backgroundColor: colors.bgSurface,   // #242629 — slightly elevated above bgPrimary
     paddingVertical: 12,
     paddingHorizontal: 16,
-    // No borders — elevation via bg-surface color shift from bg-primary
+    // No borders — elevation via bgSurface color shift from bgPrimary
   },
   loadingContainer: {
     alignItems: 'flex-start',
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.accentTerracotta,
+    backgroundColor: colors.accentGold,  // gold dot — terracotta reserved for prayer name only
   },
   offlineText: {
     fontFamily: fontOutfitRegular,
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 20,
     letterSpacing: 0,
-    color: colors.accentTerracotta, // prayer name — terracotta, the dominant accent
+    color: colors.accentTerracotta, // prayer name — terracotta, the single dominant accent
   },
   separator: {
     fontFamily: fontOutfitRegular,
