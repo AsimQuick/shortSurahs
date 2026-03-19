@@ -13,7 +13,7 @@
       "backgroundColor": "#16161a"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.asim.shortsurahs",
       "usesAppleSignIn": true,
       "infoPlist": {
