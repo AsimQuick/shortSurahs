@@ -174,13 +174,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /**
    * Resets all persisted app state — player queue, player store, onboarding.
    * Called on both logout and deleteAccount so no state leaks between users.
+   * Runs async operations in parallel to minimize latency.
    */
   const resetAppState = async () => {
-    try { await TrackPlayer.reset(); } catch { /* player may not be initialized */ }
+    // Reset in-memory stores immediately (non-blocking)
     usePlayerStore.setState({ currentSurahId: null, currentTrackIndex: 0, isPlaying: false });
-    // Clear onboarding from AsyncStorage so next user sees walkthrough
-    await AsyncStorage.removeItem('onboarding-storage');
     useOnboardingStore.setState({ hasSeenPlayerWalkthrough: false });
+
+    // Run async cleanup in parallel
+    await Promise.all([
+      (async () => {
+        try { await TrackPlayer.reset(); } catch { /* player may not be initialized */ }
+      })(),
+      AsyncStorage.removeItem('onboarding-storage'),
+    ]);
   };
 
   const logout = async (): Promise<void> => {
