@@ -34,7 +34,10 @@ import {
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import TrackPlayer from 'react-native-track-player';
 import { auth } from '../config/firebaseConfig';
+import { useOnboardingStore } from '../store/onboardingStore';
+import { usePlayerStore } from '../store/playerStore';
 
 // Initialize WebBrowser redirect handler for Expo Auth Session (Google OAuth)
 WebBrowser.maybeCompleteAuthSession();
@@ -167,7 +170,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result.user;
   };
 
+  /**
+   * Resets all persisted app state — player queue, player store, onboarding.
+   * Called on both logout and deleteAccount so no state leaks between users.
+   */
+  const resetAppState = async () => {
+    try { await TrackPlayer.reset(); } catch { /* player may not be initialized */ }
+    usePlayerStore.getState().setCurrentSurahId('');
+    usePlayerStore.setState({ currentSurahId: null, currentTrackIndex: 0, isPlaying: false });
+    useOnboardingStore.persist.clearStorage();
+    useOnboardingStore.setState({ hasSeenPlayerWalkthrough: false });
+  };
+
   const logout = async (): Promise<void> => {
+    await resetAppState();
     await signOut(auth);
   };
 
@@ -177,6 +193,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteAccount = async (password?: string): Promise<void> => {
     if (!user) throw new Error('No user is signed in');
+
+    await resetAppState();
 
     // Try delete directly first — works if session is fresh enough
     try {
