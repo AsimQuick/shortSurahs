@@ -31,6 +31,7 @@ export interface PlayerControlsProps {
   onPrev: () => void;
   onPlayPause: () => void;
   onNext: () => void;
+  nextButtonWrapper?: (children: React.ReactNode) => React.ReactNode;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,6 +46,7 @@ export default function PlayerControls({
   onPrev,
   onPlayPause,
   onNext,
+  nextButtonWrapper,
 }: PlayerControlsProps) {
   const reduceMotion = useReduceMotion();
 
@@ -68,7 +70,7 @@ export default function PlayerControls({
       duration: duration.micro,
       useNativeDriver: true,
     }).start();
-  }, [isPlaying, reduceMotion]);
+  }, [isPlaying, reduceMotion, playIconOpacity, pauseIconOpacity]);
 
   return (
     <View style={styles.container} accessible={false}>
@@ -114,18 +116,23 @@ export default function PlayerControls({
       </Pressable>
 
       {/* Next */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.prevNextButton,
-          { opacity: isNextDisabled ? 0.3 : pressed ? 0.7 : 1 },
-        ]}
-        onPress={onNext}
-        disabled={isNextDisabled}
-        accessibilityLabel="Next ayah"
-        accessibilityRole="button"
-      >
-        <NextIcon color={colors.textPrimary} size={24} />
-      </Pressable>
+      {(() => {
+        const nextBtn = (
+          <Pressable
+            style={({ pressed }) => [
+              styles.prevNextButton,
+              { opacity: isNextDisabled ? 0.3 : pressed ? 0.7 : 1 },
+            ]}
+            onPress={onNext}
+            disabled={isNextDisabled}
+            accessibilityLabel="Next ayah"
+            accessibilityRole="button"
+          >
+            <NextIcon color={colors.textPrimary} size={24} />
+          </Pressable>
+        );
+        return nextButtonWrapper ? nextButtonWrapper(nextBtn) : nextBtn;
+      })()}
     </View>
   );
 }

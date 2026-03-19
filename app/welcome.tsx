@@ -133,7 +133,7 @@ export default function WelcomeScreen() {
       makeAnim(buttonsOpacity, buttonsY, 700, 500),          // Buttons: 700ms, 500ms
       makeAnim(footerOpacity, footerY, 900, 400, 0.5),       // Footer: 900ms, 400ms, 50% opacity
     ]).start();
-  }, [reduceMotion]);
+  }, [reduceMotion, bismillahOpacity, bismillahY, dividerOpacity, dividerY, appNameOpacity, appNameY, buttonsOpacity, buttonsY, footerOpacity, footerY]);
 
   // ---------------------------------------------------------------------------
   // Handlers
@@ -251,7 +251,7 @@ export default function WelcomeScreen() {
             {/* Apple Sign-In — iOS only. Native component per Apple guidelines. */}
             {Platform.OS === 'ios' && appleAvailable && (
               <AppleAuthentication.AppleAuthenticationButton
-                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
                 buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
                 cornerRadius={8}
                 style={styles.appleButton}
@@ -266,10 +266,10 @@ export default function WelcomeScreen() {
                 onPress={handleGoogleSignIn}
                 disabled={authLoading}
                 testID="google-signin-button"
-                accessibilityLabel="Sign in with Google"
+                accessibilityLabel="Sign up with Google"
                 accessibilityRole="button"
               >
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                <Text style={styles.googleButtonText}>Sign up with Google</Text>
               </Pressable>
             )}
 
@@ -277,11 +277,11 @@ export default function WelcomeScreen() {
             <Pressable
               style={styles.emailButton}
               onPress={handleEmailSignIn}
-              testID="email-signin-button"
-              accessibilityLabel="Sign in with Email"
+              testID="email-signup-button"
+              accessibilityLabel="Sign up with Email"
               accessibilityRole="button"
             >
-              <Text style={styles.emailButtonText}>Sign in with Email</Text>
+              <Text style={styles.emailButtonText}>Sign up with Email</Text>
             </Pressable>
           </Animated.View>
 

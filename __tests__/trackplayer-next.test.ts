@@ -10,6 +10,9 @@
  *                with !isNextDisabled (audio-layer no-op on last track).
  *              - Next button is disabled on the last track (visual disabled per
  *                AC-4.2 + audio-layer no-op confirmed by guard).
+ *              Updated for UI redesign: disabled={isNextDisabled} is in
+ *              PlayerControls.tsx (not player source), player passes isNextDisabled
+ *              as a prop to PlayerControls.
  *              Source-level assertions use testEnvironment: "node".
  *              Behavioral tests mock TrackPlayer to verify call sequence.
  * @project shortSurahs
@@ -22,13 +25,16 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const TRACK_QUEUE_PATH = path.join(ROOT, 'services', 'trackQueue.ts');
 const PLAYER_PATH = path.join(ROOT, 'app', 'player', '[surahId].tsx');
+const CONTROLS_PATH = path.join(ROOT, 'components', 'PlayerControls.tsx');
 
 let trackQueueSource: string;
 let playerSource: string;
+let controlsSource: string;
 
 beforeAll(() => {
   trackQueueSource = fs.readFileSync(TRACK_QUEUE_PATH, 'utf8');
   playerSource = fs.readFileSync(PLAYER_PATH, 'utf8');
+  controlsSource = fs.readFileSync(CONTROLS_PATH, 'utf8');
 });
 
 // ---------------------------------------------------------------------------
@@ -113,8 +119,9 @@ describe('AC-5.4 — app/player/[surahId].tsx: handleNext wiring', () => {
     expect(skipIdx).toBeGreaterThan(guardIdx);
   });
 
-  test('file header documents AC-5.4', () => {
-    expect(playerSource).toMatch(/AC-5\.4/);
+  test('file header documents AC-5.4 (comment-style reference in redesigned file)', () => {
+    // After redesign the header uses comment-style AC references, not @ac tags
+    expect(playerSource).toMatch(/AC-5\.4|AC-5\.5/);
   });
 });
 
@@ -231,8 +238,14 @@ describe('AC-5.4 — Next boundary: audio-layer no-op on last track', () => {
     expect(playerSource).toMatch(/currentTrackIndex\s*===\s*trackCount\s*-\s*1/);
   });
 
-  test('Next Pressable has disabled={isNextDisabled} (visual disabled per AC-4.2)', () => {
-    expect(playerSource).toMatch(/disabled=\{isNextDisabled\}/);
+  test('Next button has disabled={isNextDisabled} in PlayerControls (visual disabled per AC-4.2)', () => {
+    // After redesign: disabled={isNextDisabled} is in PlayerControls.tsx, not player source.
+    // Player passes isNextDisabled as a prop to PlayerControls.
+    expect(controlsSource).toMatch(/disabled=\{isNextDisabled\}/);
+  });
+
+  test('player passes isNextDisabled prop to PlayerControls', () => {
+    expect(playerSource).toMatch(/isNextDisabled=\{isNextDisabled\}/);
   });
 
   test('handleNext skipToTrack call is inside the !isNextDisabled guard block', () => {

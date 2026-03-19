@@ -230,7 +230,7 @@ export default function NowPlayingBar() {
     );
     loop.start();
     return () => loop.stop();
-  }, [isPlaying, reduceMotion]);
+  }, [isPlaying, reduceMotion, shimmerAnim]);
 
   const shimmerTranslateX = shimmerAnim.interpolate({
     inputRange: [0, 1],

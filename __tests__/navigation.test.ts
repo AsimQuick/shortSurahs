@@ -55,8 +55,10 @@ describe('AC-2.3 — list row tap navigates to player', () => {
     expect(indexSource).toMatch(/item\.id/);
   });
 
-  test('app/index.tsx uses Pressable for tap feedback on each row', () => {
-    expect(indexSource).toMatch(/Pressable|TouchableOpacity/);
+  test('app/index.tsx uses SurahCard (which wraps Pressable) for tap feedback on each row', () => {
+    // After redesign: tap handling is inside SurahCard component, not inline in index.tsx.
+    // index.tsx renders SurahCard with an onPress prop instead of raw Pressable.
+    expect(indexSource).toMatch(/SurahCard|Pressable|TouchableOpacity/);
   });
 
   test('app/index.tsx row has an onPress handler wired to router.push', () => {

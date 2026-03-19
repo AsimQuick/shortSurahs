@@ -92,7 +92,7 @@ export function WelcomeHeader({ isFirstRun }: WelcomeHeaderProps) {
       makeAnim(anim4, staggerDelay * 3),   // 210ms
       makeAnim(anim5, staggerDelay * 4),   // 280ms
     ]).start();
-  }, [reduceMotion]);
+  }, [reduceMotion, anim1, anim2, anim3, anim4, anim5]);
 
   // Animated style: fade in + slide up 16px
   const animStyle = (anim: Animated.Value) => ({
@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,           // no letter-spacing — calligraphic
     color: colors.accentGold,
     textAlign: 'center',
+    marginTop: 8,               // small push down from top
   },
   sectionLabel: {
     fontFamily: fontOutfitSemiBold,
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.44,        // +0.12em at 12px
     textTransform: 'uppercase',
     color: colors.textSecondary,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   screenTitle: {
     fontFamily: fontOutfitBold,
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     letterSpacing: -0.56,       // -0.02em at 28px
     color: colors.textPrimary,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   subtitleGap: {
     height: 4,                  // space-1: 4px between English and Arabic title
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     letterSpacing: 0,           // no letter-spacing for Arabic calligraphy
     color: colors.accentGold,
-    textAlign: 'right',
+    textAlign: 'center',
     writingDirection: 'rtl',
   },
   hint: {
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0,
     color: colors.textSecondary,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   bottomGap: {
     height: 24,                 // space-6: 24px before NextPrayerBanner

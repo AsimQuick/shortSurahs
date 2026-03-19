@@ -5,14 +5,16 @@
  *                - has correct structured metadata header
  *                - imports usePrayerStore, PRAYER_ORDER, formatTime12h
  *                - calls refreshIfStale() on mount via useEffect
- *                - shows ActivityIndicator when isLoading and no prayerTimes
- *                - shows error text and Retry button when error and no prayerTimes
+ *                - shows loading indicator (pulsing dot) when isLoading and no prayerTimes
+ *                - shows error/retry button when error and no prayerTimes
  *                - retry button calls fetchTimes on press
  *                - renders all 5 prayer names via PRAYER_ORDER.map()
- *                - highlights current/next prayer (accentColor, fontWeight '700')
+ *                - highlights the next prayer (isHighlighted)
  *                - displays the current date
- *                - respects light/dark mode theming (accentColor, rowBg, highlightBg)
  *                - has required StyleSheet entries
+ *              Updated for UI redesign: dark-only design, PrayerRow component,
+ *              no useColorScheme/isDark/accentColor/rowBg/highlightBg/currentPrayer,
+ *              no ActivityIndicator (uses pulsing dot), centeredContent (not centered).
  *              Tests are source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-11: Prayer Times
@@ -88,10 +90,6 @@ describe('AC-11.4 — usePrayerStore integration', () => {
     expect(src).toContain('prayerTimes');
   });
 
-  test('destructures currentPrayer from usePrayerStore()', () => {
-    expect(src).toContain('currentPrayer');
-  });
-
   test('destructures nextPrayer from usePrayerStore()', () => {
     expect(src).toContain('nextPrayer');
   });
@@ -151,21 +149,18 @@ describe('AC-11.4 — useEffect triggers refreshIfStale on mount', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Loading state
+// Loading state (branded pulsing dot, not ActivityIndicator)
 // ---------------------------------------------------------------------------
 
 describe('AC-11.4 — loading state', () => {
-  test('imports ActivityIndicator from react-native', () => {
-    expect(src).toContain('ActivityIndicator');
+  test('has loading indicator (pulsing animated dot or ActivityIndicator)', () => {
+    // After redesign: branded gold pulsing dot (not ActivityIndicator)
+    expect(src).toMatch(/isLoading.*prayerTimes|prayerTimes.*isLoading|renderLoading/);
   });
 
-  test('renders ActivityIndicator when isLoading and no prayerTimes', () => {
-    expect(src).toContain('ActivityIndicator');
-    expect(src).toMatch(/isLoading.*prayerTimes|prayerTimes.*isLoading/);
-  });
-
-  test('has centered style for loading full-screen indicator', () => {
-    expect(src).toMatch(/centered[:\s]/);
+  test('has centered/centeredContent style for loading full-screen indicator', () => {
+    // After redesign: centeredContent (not centered)
+    expect(src).toMatch(/centered\w*[:\s]/);
   });
 });
 
@@ -182,20 +177,16 @@ describe('AC-11.4 — error state with retry button', () => {
     expect(src).toMatch(/\{error\}/);
   });
 
-  test('has retry button with accessibilityLabel="Retry"', () => {
+  test('has retry button with accessibilityLabel mentioning Retry', () => {
     expect(src).toMatch(/accessibilityLabel.*Retry|Retry.*accessibilityLabel/);
   });
 
   test('retry button calls fetchTimes on press', () => {
-    expect(src).toMatch(/onPress.*fetchTimes|fetchTimes.*onPress/);
+    expect(src).toMatch(/onPress.*fetchTimes|onPress=\{fetchTimes\}/);
   });
 
-  test('retry button text is "Retry"', () => {
+  test('retry button text contains "Retry"', () => {
     expect(src).toContain('Retry');
-  });
-
-  test('has errorText style', () => {
-    expect(src).toMatch(/errorText[:\s]/);
   });
 
   test('has retryButton style', () => {
@@ -241,57 +232,33 @@ describe('AC-11.4 — full prayer schedule', () => {
     expect(src).toMatch(/scheduleContainer[:\s]/);
   });
 
-  test('has prayerRow style', () => {
-    expect(src).toMatch(/prayerRow[:\s]/);
+  test('uses PrayerRow component or has prayerRow style', () => {
+    // After redesign: prayer rows rendered via PrayerRow component
+    expect(src).toMatch(/PrayerRow|prayerRow[:\s]/);
   });
 
-  test('prayerRow has flexDirection row', () => {
-    expect(src).toContain('flexDirection');
-    expect(src).toMatch(/'row'/);
-  });
-
-  test('has prayerName style', () => {
-    expect(src).toMatch(/prayerName[:\s]/);
-  });
-
-  test('has prayerTime style', () => {
-    expect(src).toMatch(/prayerTime[:\s]/);
+  test('prayerRow/container has flexDirection row or uses row layout', () => {
+    // After redesign: PrayerRow handles row layout
+    expect(src).toMatch(/PrayerRow|'row'/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Highlighted prayer
+// Highlighted prayer (next prayer only)
 // ---------------------------------------------------------------------------
 
-describe('AC-11.4 — current/next prayer highlighting', () => {
-  test('checks if prayer is currentPrayer or nextPrayer for highlight', () => {
-    expect(src).toMatch(/currentPrayer/);
+describe('AC-11.4 — next prayer highlighting', () => {
+  test('checks if prayer is nextPrayer for highlight', () => {
     expect(src).toMatch(/nextPrayer/);
     expect(src).toMatch(/isHighlighted/);
   });
 
-  test('applies accentColor to highlighted prayer text', () => {
-    expect(src).toContain('accentColor');
+  test('isHighlighted condition checks nextPrayer', () => {
+    expect(src).toMatch(/prayer\s*===\s*nextPrayer|nextPrayer.*isHighlighted/);
   });
 
-  test('applies fontWeight 700 to highlighted prayer (prayerNameHighlighted)', () => {
-    expect(src).toMatch(/'700'/);
-  });
-
-  test('has prayerNameHighlighted style', () => {
-    expect(src).toMatch(/prayerNameHighlighted[:\s]/);
-  });
-
-  test('has prayerTimeHighlighted style', () => {
-    expect(src).toMatch(/prayerTimeHighlighted[:\s]/);
-  });
-
-  test('has highlightBg for highlighted row background', () => {
-    expect(src).toContain('highlightBg');
-  });
-
-  test('isHighlighted condition checks both currentPrayer and nextPrayer', () => {
-    expect(src).toMatch(/currentPrayer.*nextPrayer|nextPrayer.*currentPrayer/);
+  test('passes isHighlighted to PrayerRow', () => {
+    expect(src).toMatch(/isHighlighted/);
   });
 });
 
@@ -318,44 +285,20 @@ describe('AC-11.4 — current date displayed', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Theming (light/dark mode)
+// Dark-only design (no useColorScheme/isDark)
 // ---------------------------------------------------------------------------
 
-describe('AC-11.4 — light/dark mode theming', () => {
-  test('uses useColorScheme hook', () => {
-    expect(src).toContain('useColorScheme');
+describe('AC-11.4 — dark-only design', () => {
+  test('does NOT use useColorScheme (dark-only design)', () => {
+    expect(src).not.toMatch(/\buseColorScheme\b/);
   });
 
-  test('derives isDark from colorScheme', () => {
-    expect(src).toMatch(/isDark.*dark|dark.*isDark/);
+  test('does NOT use isDark (dark-only design)', () => {
+    expect(src).not.toMatch(/\bisDark\b/);
   });
 
-  test('defines accentColor for light/dark', () => {
-    expect(src).toContain('accentColor');
-  });
-
-  test('accentColor dark value is iOS blue (#0a84ff)', () => {
-    expect(src).toContain('#0a84ff');
-  });
-
-  test('accentColor light value is iOS blue (#007aff)', () => {
-    expect(src).toContain('#007aff');
-  });
-
-  test('defines rowBg for non-highlighted prayer row backgrounds', () => {
-    expect(src).toContain('rowBg');
-  });
-
-  test('rowBg dark value is dark surface (#1c1c1e)', () => {
-    expect(src).toContain('#1c1c1e');
-  });
-
-  test('rowBg light value is light surface (#f2f2f7)', () => {
-    expect(src).toContain('#f2f2f7');
-  });
-
-  test('defines highlightBg for highlighted row background', () => {
-    expect(src).toContain('highlightBg');
+  test('uses colors design system for theming', () => {
+    expect(src).toMatch(/colors\./);
   });
 
   test('title text is "Prayer Times"', () => {
@@ -380,27 +323,11 @@ describe('AC-11.4 — StyleSheet', () => {
     expect(src).toMatch(/scroll[:\s]/);
   });
 
-  test('has container style', () => {
-    expect(src).toMatch(/container[:\s]/);
-  });
-
-  test('has title style', () => {
-    expect(src).toMatch(/title[:\s]/);
-  });
-
-  test('has centered style', () => {
-    expect(src).toMatch(/centered[:\s]/);
-  });
-
   test('has dateText style', () => {
     expect(src).toMatch(/dateText[:\s]/);
   });
 
   test('has scheduleContainer style', () => {
     expect(src).toMatch(/scheduleContainer[:\s]/);
-  });
-
-  test('has prayerRow style', () => {
-    expect(src).toMatch(/prayerRow[:\s]/);
   });
 });

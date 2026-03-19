@@ -101,7 +101,7 @@ export default function SurahListScreen() {
     </View>
   );
 
-  // 8px separator between cards — reveals bg-primary (#0D0B0E) beneath
+  // 8px separator between cards — reveals bg-primary (#16161a) beneath
   const ItemSeparator = () => <View style={styles.separator} />;
 
   return (
@@ -145,6 +145,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 8,                                // design system §3: 8px gap between cards
-    backgroundColor: colors.bgPrimary,        // #0D0B0E revealed in the gap
+    backgroundColor: colors.bgPrimary,        // #16161a revealed in the gap
   },
 });

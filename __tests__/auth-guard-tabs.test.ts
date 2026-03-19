@@ -174,9 +174,11 @@ describe('AC-9.3 — tab bar lives in (tabs) group (not root Stack)', () => {
     expect(source).not.toContain('tabBarStyle');
   });
 
-  it('(tabs)/_layout.tsx sets tabBarStyle (tab bar styling lives in tab layout)', () => {
+  it('(tabs)/_layout.tsx references tabBar or tabBarStyle (tab bar styling lives in tab layout)', () => {
+    // After redesign: (tabs)/_layout.tsx uses the tabBar prop (not tabBarStyle in screenOptions)
+    // to pass a custom TabBar + NowPlayingBar render function.
     const tabsSource = fs.readFileSync(TABS_LAYOUT_PATH, 'utf8');
-    expect(tabsSource).toContain('tabBarStyle');
+    expect(tabsSource).toMatch(/tabBar\b/);
   });
 });
 

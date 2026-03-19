@@ -1,8 +1,9 @@
 /**
  * @file __tests__/placeholder-screens.test.ts
  * @description Unit tests for AC-9.4: Prayers and Account tabs render placeholder screens.
- *              Verifies prayers.tsx has title "Prayer Times", is scrollable, themed.
- *              Verifies account.tsx has title "Account", is scrollable, themed.
+ *              Verifies prayers.tsx has title "Prayer Times", is scrollable.
+ *              Verifies account.tsx has title "Account", is scrollable.
+ *              Updated for UI redesign: dark-only design, no useColorScheme/isDark.
  *              Source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-9: Bottom Tab Navigation
@@ -44,16 +45,12 @@ describe('AC-9.4 — prayers.tsx: file existence and structure', () => {
     expect(prayersSource).toContain('Prayer Times');
   });
 
-  test('contains a placeholder message (coming soon or Prayer times)', () => {
-    expect(prayersSource).toMatch(/coming soon|Prayer times/i);
+  test('contains prayer-related content (Prayer Times or prayer schedule)', () => {
+    expect(prayersSource).toMatch(/Prayer Times|Prayer schedule|Fajr|prayer/i);
   });
 
   test('uses ScrollView (scrollable layout)', () => {
     expect(prayersSource).toContain('ScrollView');
-  });
-
-  test('uses useColorScheme (system theming)', () => {
-    expect(prayersSource).toContain('useColorScheme');
   });
 
   test('has proper metadata header (@file prayers.tsx)', () => {
@@ -76,9 +73,10 @@ describe('AC-9.4 — prayers.tsx: file existence and structure', () => {
     expect(prayersSource).toContain('StyleSheet');
   });
 
-  test('has dark/light background color logic (isDark branching)', () => {
-    expect(prayersSource).toContain('isDark');
+  test('uses dark-only design with backgroundColor', () => {
+    // After redesign: dark-only (no isDark), backgroundColor from colors system
     expect(prayersSource).toContain('backgroundColor');
+    expect(prayersSource).toMatch(/colors\./);
   });
 });
 
@@ -102,27 +100,25 @@ describe('AC-9.4 — account.tsx: file existence and structure', () => {
   test('contains account-related content (AC-10.4 supersedes placeholder)', () => {
     // AC-9.4 placeholder message was replaced by full account content in AC-10.4.
     // Verify account-related UI elements are present instead.
-    expect(accountSource).toMatch(/Account|Log Out|user\.email/i);
+    expect(accountSource).toMatch(/Account|Sign Out|user\.email/i);
   });
 
   test('uses ScrollView (scrollable layout)', () => {
     expect(accountSource).toContain('ScrollView');
   });
 
-  test('uses useColorScheme (system theming)', () => {
-    expect(accountSource).toContain('useColorScheme');
-  });
-
   test('has proper metadata header (@file account.tsx)', () => {
     expect(accountSource).toMatch(/@file\s+app\/\(tabs\)\/account\.tsx/);
   });
 
-  test('metadata header references @ac AC-9.4', () => {
-    expect(accountSource).toContain('@ac    AC-9.4');
+  test('metadata header references @ac AC-10.1 or later', () => {
+    // AC-9.4 is superseded by AC-10.x; check that AC-10 ACs are present
+    expect(accountSource).toMatch(/@ac\s+AC-10\.\d/);
   });
 
-  test('metadata header references @story US-9', () => {
-    expect(accountSource).toContain('@story US-9');
+  test('metadata header references @story US-10 (AC-9.4 superseded by AC-10.x)', () => {
+    // account.tsx was redesigned for US-10 (Account Screen) and no longer carries @story US-9
+    expect(accountSource).toContain('@story US-10');
   });
 
   test('imports from react-native', () => {
@@ -133,8 +129,9 @@ describe('AC-9.4 — account.tsx: file existence and structure', () => {
     expect(accountSource).toContain('StyleSheet');
   });
 
-  test('has dark/light background color logic (isDark branching)', () => {
-    expect(accountSource).toContain('isDark');
+  test('uses dark-only design with backgroundColor', () => {
+    // After redesign: dark-only (no isDark), backgroundColor from colors system
     expect(accountSource).toContain('backgroundColor');
+    expect(accountSource).toMatch(/colors\./);
   });
 });

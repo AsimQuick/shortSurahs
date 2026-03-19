@@ -15,8 +15,9 @@
  *              - Terms of Service Pressable has accessibilityLabel="Terms of Service"
  *              - Privacy Policy Pressable has accessibilityLabel="Privacy Policy"
  *              - legalLink style uses textDecorationLine: 'underline'
- *              - linkColor adapts to isDark (light/dark mode theming)
  *              - metadata header references AC-10.3
+ *              Updated for UI redesign: legalGroup (not legalContainer), dark-only,
+ *              no linkColor/isDark/useColorScheme/iOS blue colors.
  *              Source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-10: Account Screen
@@ -66,7 +67,8 @@ describe('AC-10.3 — account.tsx: metadata header', () => {
 
 describe('AC-10.3 — account.tsx: Linking import', () => {
   test('imports Linking from react-native', () => {
-    expect(src).toMatch(/import.*\bLinking\b.*from\s+['"]react-native['"]/);
+    // Multi-line imports: use dotall to match across newlines
+    expect(src).toMatch(/import[\s\S]*?\bLinking\b[\s\S]*?from\s+['"]react-native['"]/);
   });
 });
 
@@ -156,19 +158,13 @@ describe('AC-10.3 — account.tsx: legal link styling', () => {
     expect(src).toContain("textDecorationLine: 'underline'");
   });
 
-  test('legalContainer style is defined', () => {
-    expect(src).toContain('legalContainer');
+  test('legal section style is defined (legalGroup or legalContainer)', () => {
+    // After redesign: legalGroup replaces legalContainer
+    expect(src).toMatch(/legalGroup|legalContainer/);
   });
 
-  test('linkColor is defined for theming', () => {
-    expect(src).toContain('linkColor');
-  });
-
-  test('linkColor adapts to isDark (dark mode value)', () => {
-    expect(src).toMatch(/#0a84ff/i);
-  });
-
-  test('linkColor adapts to isDark (light mode value)', () => {
-    expect(src).toMatch(/#007aff/i);
+  test('legal links use colors design system for styling', () => {
+    // After redesign: colors.textSecondary instead of linkColor with isDark
+    expect(src).toMatch(/colors\./);
   });
 });

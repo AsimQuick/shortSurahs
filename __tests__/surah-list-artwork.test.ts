@@ -1,12 +1,13 @@
 /**
  * @file __tests__/surah-list-artwork.test.ts
  * @description Unit tests for AC-3.2: Artwork rendering.
- *              Verifies that app/index.tsx uses bundled require() for artwork
- *              (not string URIs), Image has resizeMode "cover", and the artwork
- *              style has borderRadius > 0.
- *              Also verifies data/artworkMap.ts exports getArtwork() covering
+ *              Verifies that data/artworkMap.ts exports getArtwork() covering
  *              all 4 bundled surahs.
+ *              Verifies that components/SurahCard.tsx renders artwork via
+ *              the SurahNumberStar badge (surah number) with rounded corners.
  *              Tests are source-level assertions (testEnvironment: "node").
+ *              Updated for UI redesign: artwork now in SurahCard component via
+ *              SurahNumberStar star badge (not direct Image + getArtwork in index.tsx).
  * @project shortSurahs
  * @sprint Sprint 2 — US-3 AC-3.2
  */
@@ -17,13 +18,16 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const INDEX_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 const ARTWORK_MAP_PATH = path.join(ROOT, 'data', 'artworkMap.ts');
+const SURAH_CARD_PATH = path.join(ROOT, 'components', 'SurahCard.tsx');
 
 let indexSource: string;
 let artworkMapSource: string;
+let cardSource: string;
 
 beforeAll(() => {
   indexSource = fs.readFileSync(INDEX_PATH, 'utf8');
   artworkMapSource = fs.readFileSync(ARTWORK_MAP_PATH, 'utf8');
+  cardSource = fs.readFileSync(SURAH_CARD_PATH, 'utf8');
 });
 
 // ---------------------------------------------------------------------------
@@ -61,52 +65,39 @@ describe('AC-3.2 — artworkMap module', () => {
 });
 
 // ---------------------------------------------------------------------------
-// AC-3.2: app/index.tsx imports and uses getArtwork (bundled require)
+// AC-3.2: SurahCard uses artwork via star badge
+//         After redesign, the surah list shows SurahNumberStar (not Image + getArtwork)
 // ---------------------------------------------------------------------------
 
-describe('AC-3.2 — index.tsx uses bundled artwork source', () => {
-  test('app/index.tsx imports getArtwork from artworkMap', () => {
-    expect(indexSource).toMatch(/import.*getArtwork.*from.*artworkMap/);
+describe('AC-3.2 — SurahCard renders surah number/badge', () => {
+  test('SurahCard component uses SurahNumberStar for surah number display', () => {
+    expect(cardSource).toContain('SurahNumberStar');
   });
 
-  test('app/index.tsx passes getArtwork(item.id, intro) as Image source', () => {
-    // V2: per-ayah artworkMap requires two arguments — transliterationKey and trackPart.
-    // The surah list shows the intro artwork for each surah.
-    expect(indexSource).toMatch(/source=\{getArtwork\(item\.id,\s*['"]intro['"]\)\}/);
+  test('SurahCard has borderRadius (rounded corners)', () => {
+    expect(cardSource).toMatch(/borderRadius\s*:/);
   });
 
-  test('app/index.tsx does NOT use { uri: item.artwork } string URI for Image source', () => {
-    expect(indexSource).not.toMatch(/source=\{\s*\{\s*uri\s*:\s*item\.artwork\s*\}\s*\}/);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// AC-3.2: resizeMode is "cover"
-// ---------------------------------------------------------------------------
-
-describe('AC-3.2 — Image resizeMode is cover', () => {
-  test('Image component has resizeMode prop', () => {
-    expect(indexSource).toContain('resizeMode');
-  });
-
-  test('resizeMode value is "cover"', () => {
-    expect(indexSource).toMatch(/resizeMode\s*=\s*["']cover["']/);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// AC-3.2: artwork style has borderRadius > 0
-// ---------------------------------------------------------------------------
-
-describe('AC-3.2 — artwork style has rounded corners', () => {
-  test('artwork style defines borderRadius', () => {
-    expect(indexSource).toMatch(/borderRadius\s*:/);
-  });
-
-  test('artwork borderRadius is greater than 0', () => {
-    const match = indexSource.match(/borderRadius\s*:\s*(\d+)/);
+  test('SurahCard borderRadius is greater than 0', () => {
+    const match = cardSource.match(/borderRadius\s*:\s*(\d+)/);
     expect(match).not.toBeNull();
     const value = parseInt(match![1], 10);
     expect(value).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC-3.2: Player screen still uses getArtwork (per-ayah artwork)
+// ---------------------------------------------------------------------------
+
+describe('AC-3.2 — player screen uses bundled artwork source', () => {
+  test('app/player/[surahId].tsx imports getArtwork from artworkMap', () => {
+    const playerPath = path.join(ROOT, 'app', 'player', '[surahId].tsx');
+    const playerSource = fs.readFileSync(playerPath, 'utf8');
+    expect(playerSource).toMatch(/import.*getArtwork.*from.*artworkMap/);
+  });
+
+  test('index.tsx does NOT use { uri: item.artwork } string URI for Image source', () => {
+    expect(indexSource).not.toMatch(/source=\{\s*\{\s*uri\s*:\s*item\.artwork\s*\}\s*\}/);
   });
 });

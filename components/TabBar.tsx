@@ -20,30 +20,9 @@ import TabAccount from '@/components/icons/TabAccount';
 // Types
 // ---------------------------------------------------------------------------
 
-interface Route {
-  key: string;
-  name: string;
-}
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-interface NavigationState {
-  index: number;
-  routes: Route[];
-}
-
-interface Navigation {
-  navigate: (name: string) => void;
-  emit: (event: {
-    type: string;
-    target: string;
-    canPreventDefault: boolean;
-  }) => { defaultPrevented: boolean };
-}
-
-interface TabBarProps {
-  state: NavigationState;
-  navigation: Navigation;
-  descriptors: Record<string, unknown>;
-}
+type TabBarProps = BottomTabBarProps;
 
 // ---------------------------------------------------------------------------
 // Tab configuration — exact copy from task 004
@@ -126,7 +105,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.bgSurface,
     paddingTop: 8,
-    // No borderTopWidth — color shift from bg-primary (#0D0B0E) to bg-surface (#1A1520) provides separation
+    // No borderTopWidth — color shift from bg-primary (#16161a) to bg-surface (#242629) provides separation
   },
   tab: {
     flex: 1,

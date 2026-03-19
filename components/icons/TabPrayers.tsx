@@ -35,8 +35,8 @@ export default function TabPrayers({ color = colors.textPrimary, size = 24 }: Ic
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       {/*
         Inner geometric diamond — Islamic ornamental motif centered on mat.
@@ -47,16 +47,16 @@ export default function TabPrayers({ color = colors.textPrimary, size = 24 }: Ic
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       {/*
         Bottom fringe — three short vertical lines at the mat bottom edge.
         Evokes the tassels/fringe found on real prayer mats.
       */}
-      <Line x1="9" y1="20" x2="9" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
-      <Line x1="12" y1="20" x2="12" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
-      <Line x1="15" y1="20" x2="15" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="butt" />
+      <Line x1="9" y1="20" x2="9" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      <Line x1="12" y1="20" x2="12" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+      <Line x1="15" y1="20" x2="15" y2="22" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
     </Svg>
   );
 }

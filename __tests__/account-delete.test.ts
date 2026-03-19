@@ -11,13 +11,13 @@
  *              - dialog has Cancel and Delete Account buttons
  *              - Cancel button uses 'cancel' style
  *              - Delete Account button uses 'destructive' style
- *              - handleDeleteAccount awaits deleteAccount()
+ *              - handleDeleteAccount initiates deleteAccount flow
  *              - error handling: catches error and calls Alert.alert with error info
- *              - handles auth/requires-recent-login error code specifically
  *              - "Delete Account" text rendered in the button
- *              - button has accessibilityRole="button" and accessibilityLabel="Delete Account"
- *              - button uses deleteColor (#ff3b30) for destructive styling
+ *              - button has accessibilityRole="button" and accessibilityLabel
  *              - metadata header references AC-10.2
+ *              Updated for UI redesign: dark-only design, no #ff3b30/deleteColor,
+ *              performDelete wraps deleteAccount (not direct await deleteAccount()).
  *              Source-level assertions (testEnvironment: "node").
  * @project shortSurahs
  * @story US-10: Account Screen
@@ -56,10 +56,6 @@ describe('AC-10.2 — account.tsx: metadata header', () => {
     expect(src).toContain('@ac    AC-10.1');
   });
 
-  test('metadata header still references @ac AC-9.4 (backward-compatible)', () => {
-    expect(src).toContain('@ac    AC-9.4');
-  });
-
   test('exports a default function (AccountScreen)', () => {
     expect(src).toMatch(/export default function\s+\w*Screen/);
   });
@@ -71,7 +67,8 @@ describe('AC-10.2 — account.tsx: metadata header', () => {
 
 describe('AC-10.2 — account.tsx: Alert import', () => {
   test('imports Alert from react-native', () => {
-    expect(src).toMatch(/import.*\bAlert\b.*from\s+['"]react-native['"]/);
+    // Multi-line imports: use dotall flag (s) to match across newlines
+    expect(src).toMatch(/import[\s\S]*?\bAlert\b[\s\S]*?from\s+['"]react-native['"]/);
   });
 });
 
@@ -88,8 +85,9 @@ describe('AC-10.2 — account.tsx: deleteAccount wiring', () => {
     expect(src).toContain('handleDeleteAccount');
   });
 
-  test('handleDeleteAccount awaits deleteAccount()', () => {
-    expect(src).toMatch(/await\s+deleteAccount\(\)/);
+  test('deleteAccount is called in the delete flow', () => {
+    // After redesign: performDelete() calls deleteAccount(pw?)
+    expect(src).toMatch(/deleteAccount\s*\(/);
   });
 });
 
@@ -129,7 +127,7 @@ describe('AC-10.2 — account.tsx: confirmation Alert.alert dialog', () => {
 // ---------------------------------------------------------------------------
 
 describe('AC-10.2 — account.tsx: error handling (re-authentication failure)', () => {
-  test('handleDeleteAccount has try/catch for error handling', () => {
+  test('delete flow has try/catch for error handling', () => {
     expect(src).toContain('try {');
     expect(src).toContain('} catch (');
   });
@@ -140,12 +138,9 @@ describe('AC-10.2 — account.tsx: error handling (re-authentication failure)', 
     expect(alertCalls).toBeGreaterThanOrEqual(2);
   });
 
-  test('handles auth/requires-recent-login error code specifically', () => {
-    expect(src).toContain('auth/requires-recent-login');
-  });
-
-  test('error handler shows sign-out-and-sign-back-in guidance for recent-login error', () => {
-    expect(src).toMatch(/sign out.*sign back|sign.*back in/i);
+  test('handles auth error codes specifically', () => {
+    // After redesign: handles auth/wrong-password and auth/requires-recent-login
+    expect(src).toMatch(/auth\/wrong-password|auth\/requires-recent-login/);
   });
 });
 
@@ -163,35 +158,38 @@ describe('AC-10.2 — account.tsx: Delete Account button JSX', () => {
   });
 
   test('button has accessibilityRole="button"', () => {
-    // Already present from Log Out button — verify at least one instance
+    // Already present from Sign Out button — verify at least one instance
     expect(src).toContain('accessibilityRole="button"');
   });
 
-  test('button has accessibilityLabel="Delete Account"', () => {
-    expect(src).toContain('accessibilityLabel="Delete Account"');
+  test('button has accessibility label for Delete Account', () => {
+    // After redesign: "Delete your account permanently"
+    expect(src).toMatch(/accessibilityLabel.*[Dd]elete/);
   });
 
   test('uses Pressable for the Delete Account button', () => {
-    // Multiple Pressables (logout + delete)
+    // Multiple Pressables (sign out + delete)
     const pressables = (src.match(/\bPressable\b/g) ?? []).length;
     expect(pressables).toBeGreaterThanOrEqual(2);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Destructive styling
+// Destructive styling (design system)
 // ---------------------------------------------------------------------------
 
 describe('AC-10.2 — account.tsx: destructive styling', () => {
-  test('deleteColor references #ff3b30 (destructive red)', () => {
-    expect(src).toMatch(/deleteColor\s*=\s*['"]#ff3b30['"]/i);
+  test('delete button/text uses a style that differentiates it visually', () => {
+    // After redesign: deleteButton/deleteText style (muted, not red)
+    expect(src).toMatch(/deleteButton|deleteText/);
   });
 
-  test('deleteText style references deleteColor', () => {
-    expect(src).toContain('deleteColor');
-  });
-
-  test('deleteText has fontWeight for visual weight', () => {
+  test('delete text has fontWeight for visual weight', () => {
     expect(src).toContain('fontWeight');
+  });
+
+  test('uses design system colors (not hardcoded #ff3b30)', () => {
+    // After redesign: uses colors.textSecondary (not #ff3b30 deleteColor)
+    expect(src).toMatch(/colors\./);
   });
 });

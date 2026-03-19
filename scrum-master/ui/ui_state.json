@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "current_phase": "complete",
+  "sections_completed": [
+    "hero",
+    "navigation",
+    "features"
+  ],
+  "section_iterations": {
+    "hero": 0,
+    "navigation": 0,
+    "features": 0
+  },
+  "log": [
+    {
+      "timestamp": "2026-03-14T19:45:33.194763+00:00",
+      "agent": "art-director",
+      "action": "Phase 0: Competitive research",
+      "cost_usd": 1.1279,
+      "tokens_in": 209549,
+      "tokens_out": 15553
+    },
+    {
+      "timestamp": "2026-03-14T19:50:45.904750+00:00",
+      "agent": "art-director",
+      "action": "Phase 1a: Color research",
+      "cost_usd": 0.9514,
+      "tokens_in": 135893,
+      "tokens_out": 15391
+    },
+    {
+      "timestamp": "2026-03-14T19:51:55.667604+00:00",
+      "agent": "art-director",
+      "action": "Phase 1b: Visual research",
+      "cost_usd": 1.5537,
+      "tokens_in": 631180,
+      "tokens_out": 24190
+    },
+    {
+      "timestamp": "2026-03-14T19:59:40.680309+00:00",
+      "agent": "art-director",
+      "action": "Phase 2: Synthesis",
+      "cost_usd": 1.528,
+      "tokens_in": 2654,
+      "tokens_out": 19478
+    },
+    {
+      "timestamp": "2026-03-14T20:02:49.802546+00:00",
+      "agent": "art-director",
+      "action": "Phase 3: Site architecture",
+      "cost_usd": 0.9034,
+      "tokens_in": 8,
+      "tokens_out": 9221
+    },
+    {
+      "timestamp": "2026-03-15T09:47:22.174585+00:00",
+      "agent": "art-director",
+      "action": "Phase 1a: Color research",
+      "cost_usd": 0.9925,
+      "tokens_in": 95974,
+      "tokens_out": 20354
+    },
+    {
+      "timestamp": "2026-03-15T09:55:21.247124+00:00",
+      "agent": "art-director",
+      "action": "Phase 2: Synthesis",
+      "cost_usd": 1.7643,
+      "tokens_in": 9571,
+      "tokens_out": 19113
+    },
+    {
+      "timestamp": "2026-03-15T09:58:22.557445+00:00",
+      "agent": "art-director",
+      "action": "Phase 3: Site architecture",
+      "cost_usd": 0.8703,
+      "tokens_in": 1109,
+      "tokens_out": 7433
+    }
+  ],
+  "last_updated": "2026-03-15T10:29:56.930711+00:00",
+  "current_section": "features",
+  "error": "Research/task failed for --"
+}

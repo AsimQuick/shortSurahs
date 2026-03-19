@@ -20,12 +20,14 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import {
+  EmailAuthProvider,
   GoogleAuthProvider,
   OAuthProvider,
   User,
   createUserWithEmailAndPassword,
   deleteUser,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   signInWithCredential,
   signInWithEmailAndPassword,
   signOut,
@@ -59,7 +61,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<User | null>;
   signInWithApple: () => Promise<User | null>;
   logout: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
+  getAuthProvider: () => string;
 }
 
 // Default context values — replaced by AuthProvider at runtime
@@ -72,6 +75,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithApple: async () => null,
   logout: async () => {},
   deleteAccount: async () => {},
+  getAuthProvider: () => 'password',
 });
 
 // Custom hook for consuming the auth context
@@ -167,8 +171,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
-  const deleteAccount = async (): Promise<void> => {
+  const getAuthProvider = (): string => {
+    return user?.providerData[0]?.providerId ?? 'password';
+  };
+
+  const deleteAccount = async (password?: string): Promise<void> => {
     if (!user) throw new Error('No user is signed in');
+
+    // Try delete directly first — works if session is fresh enough
+    try {
+      await deleteUser(user);
+      return;
+    } catch (err: any) {
+      // Only proceed to re-auth if Firebase requires it
+      if (err?.code !== 'auth/requires-recent-login') throw err;
+    }
+
+    // Session stale — re-authenticate based on provider, then retry delete
+    const providerId = getAuthProvider();
+
+    if (providerId === 'google.com') {
+      const result = await promptAsync();
+      if (result.type !== 'success') throw new Error('Google re-authentication cancelled');
+      const { id_token } = result.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      await reauthenticateWithCredential(user, credential);
+    } else if (providerId === 'apple.com') {
+      if (Platform.OS !== 'ios') throw new Error('Apple Sign-In is only available on iOS');
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!appleCredential.identityToken) {
+        throw new Error('No identity token returned from Apple Sign In');
+      }
+      const provider = new OAuthProvider('apple.com');
+      const credential = provider.credential({
+        idToken: appleCredential.identityToken,
+      });
+      await reauthenticateWithCredential(user, credential);
+    } else {
+      // Email/password provider
+      if (!password) throw new Error('Password is required to delete an email/password account');
+      if (!user.email) throw new Error('No email found for this account');
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+    }
+
     await deleteUser(user);
   };
 
@@ -181,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithApple,
     logout,
     deleteAccount,
+    getAuthProvider,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

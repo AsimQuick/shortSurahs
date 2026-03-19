@@ -33,16 +33,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import TrackPlayer, { Event, RepeatMode, useTrackPlayerEvents } from 'react-native-track-player';
 import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { CopilotProvider, CopilotStep, useCopilot, walkthroughable, type TooltipProps } from 'react-native-copilot';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
 import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
 import { usePlayerStore } from '../../store/playerStore';
+import { useOnboardingStore } from '../../store/onboardingStore';
 import { colors } from '../../components/theme/colors';
 import { fontAmiriBold, fontOutfitMedium, fontOutfitRegular, fontOutfitSemiBold } from '../../components/theme/typography';
 import { useReduceMotion, duration } from '../../components/theme/animations';
 import { SectionLabelLine } from '../../components/patterns/SectionLabelLine';
 import BackChevron from '../../components/icons/BackChevron';
 import PlayerControls from '../../components/PlayerControls';
+
+// Walkthroughable wrappers for copilot spotlight
+const WalkthroughableText = walkthroughable(Text);
+const WalkthroughableView = walkthroughable(View);
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -58,11 +64,108 @@ const HORIZONTAL_PADDING = SCREEN_WIDTH < 375 ? 16 : 24;
 // Component
 // ---------------------------------------------------------------------------
 
+// Custom tooltip component — brand-consistent styling
+function OnboardingTooltip({ labels }: TooltipProps) {
+  const { goToNext, stop, currentStep } = useCopilot();
+  return (
+    <View style={tooltipStyles.container}>
+      <Text style={tooltipStyles.body}>{currentStep?.text ?? ''}</Text>
+      <View style={tooltipStyles.buttons}>
+        <Pressable
+          onPress={stop}
+          style={tooltipStyles.skipButton}
+          accessibilityRole="button"
+          accessibilityLabel="Skip onboarding"
+        >
+          <Text style={tooltipStyles.skipText}>{labels.skip}</Text>
+        </Pressable>
+        <Pressable
+          onPress={goToNext}
+          style={tooltipStyles.nextButton}
+          accessibilityRole="button"
+          accessibilityLabel="Next onboarding step"
+        >
+          <Text style={tooltipStyles.nextText}>{labels.next}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const tooltipStyles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.bgSurface,
+    borderRadius: 8,
+    padding: 16,
+    maxWidth: 280,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
+  },
+  body: {
+    fontFamily: fontOutfitRegular,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textPrimary,
+    marginBottom: 16,
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  skipButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  skipText: {
+    fontFamily: fontOutfitMedium,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  nextButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: colors.accentTerracotta,
+    borderRadius: 6,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  nextText: {
+    fontFamily: fontOutfitMedium,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+});
+
+// Outer wrapper — provides CopilotProvider context
 export default function PlayerScreen() {
+  return (
+    <CopilotProvider
+      overlay="svg"
+      animated
+      backdropColor="rgba(22, 22, 26, 0.80)"
+      tooltipComponent={OnboardingTooltip}
+      stepNumberComponent={() => null}
+      labels={{ next: 'Next', skip: 'Skip' }}
+      arrowColor={colors.bgSurface}
+    >
+      <PlayerScreenInner />
+    </CopilotProvider>
+  );
+}
+
+function PlayerScreenInner() {
   const { surahId } = useLocalSearchParams<{ surahId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const reduceMotion = useReduceMotion();
+  const { start: startWalkthrough } = useCopilot();
+  const hasSeenPlayerWalkthrough = useOnboardingStore((s) => s.hasSeenPlayerWalkthrough);
+  const setPlayerWalkthroughSeen = useOnboardingStore((s) => s.setPlayerWalkthroughSeen);
+  const walkthroughStarted = useRef(false);
 
   const surah = getSurahs().find((s) => s.id === surahId);
   const trackCount = surah?.totalTracks ?? 0;
@@ -146,7 +249,7 @@ export default function PlayerScreen() {
         Animated.timing(controlsTranslateY, { toValue: 0, ...animConfig }),
       ]),
     ]).start();
-  }, [reduceMotion]);
+  }, [reduceMotion, artworkOpacity, artworkTranslateY, textOpacity, textTranslateY, controlsOpacity, controlsTranslateY]);
 
   // ---------------------------------------------------------------------------
   // Artwork crossfade on ayah/track change (200ms dissolve)
@@ -172,7 +275,7 @@ export default function PlayerScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [currentTrackIndex, reduceMotion]);
+  }, [currentTrackIndex, reduceMotion, imageOpacity]);
 
   // ---------------------------------------------------------------------------
   // Ambient glow pulse (8000ms cycle)
@@ -203,7 +306,7 @@ export default function PlayerScreen() {
     pulse.start();
 
     return () => pulse.stop();
-  }, [reduceMotion]);
+  }, [reduceMotion, glowOpacity]);
 
   // ---------------------------------------------------------------------------
   // Audio: Load queue on mount (AC-5.2)
@@ -213,6 +316,21 @@ export default function PlayerScreen() {
     setCurrentSurahId(surahId as string);
     loadSurahQueue(surahId as string).catch(() => {});
   }, [surahId, setCurrentSurahId]);
+
+  // ---------------------------------------------------------------------------
+  // Onboarding: trigger walkthrough on first visit (after entry animation)
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (hasSeenPlayerWalkthrough || walkthroughStarted.current) return;
+    walkthroughStarted.current = true;
+    // Wait for the stagger entry animation to finish before starting
+    const timer = setTimeout(() => {
+      startWalkthrough();
+      setPlayerWalkthroughSeen();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [hasSeenPlayerWalkthrough, startWalkthrough, setPlayerWalkthroughSeen]);
 
   // ---------------------------------------------------------------------------
   // Audio: Track change events (AC-7.4)
@@ -415,9 +533,15 @@ export default function PlayerScreen() {
           </View>
 
           {/* Track indicator — "Intro" or "Ayah N of M" */}
-          <Text style={styles.trackIndicator} numberOfLines={1}>
-            {trackLabel}
-          </Text>
+          <CopilotStep
+            text="Each surah begins with an introduction. Learning the key themes and vocabulary helps anchor your memorisation."
+            order={1}
+            name="intro-track"
+          >
+            <WalkthroughableText style={styles.trackIndicator} numberOfLines={1}>
+              {trackLabel}
+            </WalkthroughableText>
+          </CopilotStep>
         </Animated.View>
 
         {/* Controls */}
@@ -438,6 +562,15 @@ export default function PlayerScreen() {
             onPrev={handlePrev}
             onPlayPause={handlePlayPause}
             onNext={handleNext}
+            nextButtonWrapper={(children) => (
+              <CopilotStep
+                text="Tap next to start the first ayah."
+                order={2}
+                name="next-button"
+              >
+                <WalkthroughableView>{children}</WalkthroughableView>
+              </CopilotStep>
+            )}
           />
         </Animated.View>
       </ScrollView>

@@ -1,7 +1,7 @@
 /**
  * @file components/patterns/SectionLabelLine.tsx
  * @description Subtle 60×1px gold accent line placed below section category labels.
- *              Gradient: Gold (#D4A853) at 20% opacity → transparent (left to right).
+ *              Gradient: accentGold (#f9bc60) at 20% opacity → transparent (left to right).
  *              Left-aligned. Fixed 60px width — fade-out is intentional.
  *              Not interactive. Decorative only.
  * @project shortSurahs

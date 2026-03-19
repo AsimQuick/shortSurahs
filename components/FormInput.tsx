@@ -34,6 +34,7 @@ const FormInput = forwardRef<TextInput, FormInputProps>(
         ref={ref}
         style={[styles.input, showBorder && styles.inputActive, style]}
         placeholderTextColor={colors.textSecondary}
+        keyboardAppearance="dark"
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);

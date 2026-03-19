@@ -2,12 +2,12 @@
  * @file components/patterns/CardHoverPattern.tsx
  * @description 60×60 press-reveal geometric pattern overlay for surah cards.
  *              Invisible at rest (0% opacity). Animates to 15% on card press.
- *              Stroke: Terracotta (#C4653A). No fill. Non-interactive (pointerEvents none).
+ *              Stroke: Terracotta (#E26436). No fill. Non-interactive (pointerEvents none).
  * @project shortSurahs
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, View } from 'react-native';
+import { Animated, Easing } from 'react-native';
 import Svg, { Defs, Pattern, Rect, Line, Circle } from 'react-native-svg';
 import { colors } from '../theme/colors';
 import { useReduceMotion, easing, duration } from '../theme/animations';
@@ -27,7 +27,7 @@ interface CardHoverPatternProps {
 // ---------------------------------------------------------------------------
 
 const CardHoverPatternInner = ({ width, height, pressed }: CardHoverPatternProps) => {
-  const TERRACOTTA = colors.accentTerracotta; // #C4653A
+  const TERRACOTTA = colors.accentTerracotta; // #E26436
   const WEIGHT = 0.5;
 
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -55,7 +55,7 @@ const CardHoverPatternInner = ({ width, height, pressed }: CardHoverPatternProps
         useNativeDriver: true,
       }).start();
     }
-  }, [pressed, reduceMotion]);
+  }, [pressed, reduceMotion, opacityAnim]);
 
   /*
    * We animate the wrapper View's opacity (0→1).

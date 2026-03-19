@@ -1,7 +1,8 @@
 /**
  * @file __tests__/player-controls.test.ts
  * @description Unit tests for AC-4.2: Playback controls.
- *              Verifies that app/player/[surahId].tsx implements:
+ *              Verifies that app/player/[surahId].tsx and components/PlayerControls.tsx
+ *              implement:
  *              - Three buttons: Previous, Play/Pause, Next
  *              - Each button's touchable hit area is at least 44x44pt (Apple HIG)
  *              - Play/Pause toggles icon based on isPlaying state
@@ -10,6 +11,7 @@
  *              Tests are source-level assertions (testEnvironment: "node").
  *              Updated for AC-5.7: state assertions updated to reflect migration
  *              from local useState to Zustand store (usePlayerStore).
+ *              Updated for UI redesign: controls moved to PlayerControls component.
  * @project shortSurahs
  * @sprint Sprint 2 — US-4 AC-4.2; Sprint 3 — US-5 AC-5.7 (state migration update)
  */
@@ -19,11 +21,14 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
 const PLAYER_PATH = path.join(ROOT, 'app', 'player', '[surahId].tsx');
+const CONTROLS_PATH = path.join(ROOT, 'components', 'PlayerControls.tsx');
 
 let source: string;
+let controlsSource: string;
 
 beforeAll(() => {
   source = fs.readFileSync(PLAYER_PATH, 'utf8');
+  controlsSource = fs.readFileSync(CONTROLS_PATH, 'utf8');
 });
 
 // ---------------------------------------------------------------------------
@@ -84,27 +89,30 @@ describe('AC-4.2 — currentTrackIndex state', () => {
 
 // ---------------------------------------------------------------------------
 // AC-4.2: 44x44pt minimum touch targets (Apple HIG)
+//         After redesign, touch targets are defined in PlayerControls.tsx
 // ---------------------------------------------------------------------------
 
 describe('AC-4.2 — 44x44pt minimum touch targets', () => {
-  test('controlButton style defines minWidth of at least 44pt', () => {
-    const match = source.match(/minWidth\s*:\s*(\d+)/);
+  test('PlayerControls component defines width of at least 44pt for prev/next buttons', () => {
+    // After redesign, controls are in PlayerControls.tsx with width: 48, height: 48
+    const match = controlsSource.match(/width\s*:\s*(\d+)/);
     expect(match).not.toBeNull();
     expect(parseInt(match![1], 10)).toBeGreaterThanOrEqual(44);
   });
 
-  test('controlButton style defines minHeight of at least 44pt', () => {
-    const match = source.match(/minHeight\s*:\s*(\d+)/);
+  test('PlayerControls component defines height of at least 44pt for prev/next buttons', () => {
+    // After redesign, controls are in PlayerControls.tsx with width: 48, height: 48
+    const match = controlsSource.match(/height\s*:\s*(\d+)/);
     expect(match).not.toBeNull();
     expect(parseInt(match![1], 10)).toBeGreaterThanOrEqual(44);
   });
 
-  test('controlButton has justifyContent: center (centers content within hit area)', () => {
-    expect(source).toMatch(/justifyContent\s*:\s*['"]center['"]/);
+  test('PlayerControls has justifyContent: center (centers content within hit area)', () => {
+    expect(controlsSource).toMatch(/justifyContent\s*:\s*['"]center['"]/);
   });
 
-  test('controlButton has alignItems: center (centers content within hit area)', () => {
-    expect(source).toMatch(/alignItems\s*:\s*['"]center['"]/);
+  test('PlayerControls has alignItems: center (centers content within hit area)', () => {
+    expect(controlsSource).toMatch(/alignItems\s*:\s*['"]center['"]/);
   });
 });
 
@@ -122,15 +130,19 @@ describe('AC-4.2 — Previous button disabled on first track', () => {
   });
 
   test('Previous Pressable has disabled={isPrevDisabled}', () => {
-    expect(source).toMatch(/disabled=\{isPrevDisabled\}/);
+    // After redesign: disabled prop passed to PlayerControls and applied inside
+    expect(source).toMatch(/isPrevDisabled/);
+    expect(controlsSource).toMatch(/disabled=\{isPrevDisabled\}/);
   });
 
-  test('Previous button applies controlButtonDisabled style when isPrevDisabled', () => {
-    expect(source).toMatch(/isPrevDisabled.*controlButtonDisabled/);
+  test('Previous button applies visual disabled feedback when isPrevDisabled', () => {
+    // After redesign: inline opacity style { opacity: isPrevDisabled ? 0.3 : ... }
+    expect(controlsSource).toMatch(/isPrevDisabled.*0\.3|0\.3.*isPrevDisabled/);
   });
 
-  test('controlButtonDisabled style has opacity < 1 (visual disabled feedback)', () => {
-    const match = source.match(/controlButtonDisabled[\s\S]*?opacity\s*:\s*([\d.]+)/);
+  test('disabled opacity is less than 1 (visual disabled feedback)', () => {
+    // 0.3 opacity when disabled
+    const match = controlsSource.match(/isPrevDisabled\s*\?\s*([\d.]+)/);
     expect(match).not.toBeNull();
     expect(parseFloat(match![1])).toBeLessThan(1);
   });
@@ -141,7 +153,7 @@ describe('AC-4.2 — Previous button disabled on first track', () => {
   });
 
   test('Previous button onPress is bound to handlePrev', () => {
-    expect(source).toMatch(/onPress=\{handlePrev\}/);
+    expect(source).toMatch(/onPrev=\{handlePrev\}/);
   });
 });
 
@@ -159,11 +171,14 @@ describe('AC-4.2 — Next button disabled on last track', () => {
   });
 
   test('Next Pressable has disabled={isNextDisabled}', () => {
-    expect(source).toMatch(/disabled=\{isNextDisabled\}/);
+    // After redesign: disabled prop passed to PlayerControls and applied inside
+    expect(source).toMatch(/isNextDisabled/);
+    expect(controlsSource).toMatch(/disabled=\{isNextDisabled\}/);
   });
 
-  test('Next button applies controlButtonDisabled style when isNextDisabled', () => {
-    expect(source).toMatch(/isNextDisabled.*controlButtonDisabled/);
+  test('Next button applies visual disabled feedback when isNextDisabled', () => {
+    // After redesign: inline opacity style { opacity: isNextDisabled ? 0.3 : ... }
+    expect(controlsSource).toMatch(/isNextDisabled.*0\.3|0\.3.*isNextDisabled/);
   });
 
   test('handleNext increments currentTrackIndex by 1', () => {
@@ -172,7 +187,7 @@ describe('AC-4.2 — Next button disabled on last track', () => {
   });
 
   test('Next button onPress is bound to handleNext', () => {
-    expect(source).toMatch(/onPress=\{handleNext\}/);
+    expect(source).toMatch(/onNext=\{handleNext\}/);
   });
 });
 
@@ -182,22 +197,24 @@ describe('AC-4.2 — Next button disabled on last track', () => {
 
 describe('AC-4.2 — Play/Pause icon toggle', () => {
   test('play/pause button renders conditionally based on isPlaying', () => {
-    expect(source).toMatch(/isPlaying\s*\?/);
+    // After redesign: PlayerControls crossfades PlayIcon/PauseIcon based on isPlaying
+    expect(controlsSource).toMatch(/isPlaying/);
   });
 
   test('Play state is represented in the source', () => {
-    expect(source).toMatch(/[Pp]lay/);
+    expect(controlsSource).toMatch(/[Pp]lay/);
   });
 
   test('Pause state is represented in the source', () => {
-    expect(source).toMatch(/[Pp]ause/);
+    expect(controlsSource).toMatch(/[Pp]ause/);
   });
 
   test('Play/Pause button onPress is bound to handlePlayPause', () => {
-    expect(source).toMatch(/onPress=\{handlePlayPause\}/);
+    expect(source).toMatch(/onPlayPause=\{handlePlayPause\}/);
   });
 
   test('Play/Pause button has an accessibilityLabel that reflects playback state', () => {
-    expect(source).toMatch(/accessibilityLabel.*isPlaying|isPlaying.*accessibilityLabel/s);
+    // After redesign: accessibilityLabel is in PlayerControls.tsx
+    expect(controlsSource).toMatch(/accessibilityLabel.*isPlaying|isPlaying.*accessibilityLabel/s);
   });
 });

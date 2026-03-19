@@ -8,8 +8,10 @@
  *              - app/player/[surahId].tsx imports togglePlayPause, wires
  *                handlePlayPause() to call togglePlayPause(isPlaying), and
  *                toggles the isPlaying state on each press.
- *              - UI icon reflects isPlaying state (⏸ when playing, ▶ when paused).
+ *              - UI icon reflects isPlaying state (PauseIcon when playing,
+ *                PlayIcon when paused — SVG icons after redesign).
  *              - TrackPlayer.pause() is used (not stop/reset) so position is retained.
+ *              Updated for UI redesign: emoji icons replaced with SVG icon components.
  *              Source-level assertions use testEnvironment: "node".
  *              Behavioral tests mock TrackPlayer to verify call dispatch.
  * @project shortSurahs
@@ -22,13 +24,16 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const TRACK_QUEUE_PATH = path.join(ROOT, 'services', 'trackQueue.ts');
 const PLAYER_PATH = path.join(ROOT, 'app', 'player', '[surahId].tsx');
+const CONTROLS_PATH = path.join(ROOT, 'components', 'PlayerControls.tsx');
 
 let trackQueueSource: string;
 let playerSource: string;
+let controlsSource: string;
 
 beforeAll(() => {
   trackQueueSource = fs.readFileSync(TRACK_QUEUE_PATH, 'utf8');
   playerSource = fs.readFileSync(PLAYER_PATH, 'utf8');
+  controlsSource = fs.readFileSync(CONTROLS_PATH, 'utf8');
 });
 
 // ---------------------------------------------------------------------------
@@ -118,12 +123,10 @@ describe('AC-5.6 — app/player/[surahId].tsx: handlePlayPause wiring', () => {
     expect(setIdx).toBeGreaterThan(toggleIdx);
   });
 
-  test('Play/Pause button shows ⏸ icon when isPlaying is true', () => {
-    expect(playerSource).toMatch(/isPlaying\s*\?\s*['"]⏸['"]/);
-  });
-
-  test('Play/Pause button shows ▶ icon when isPlaying is false', () => {
-    expect(playerSource).toMatch(/['"]▶['"]/);
+  test('Play/Pause button renders PlayIcon and PauseIcon based on isPlaying (SVG after redesign)', () => {
+    // After redesign: PlayerControls uses PlayIcon/PauseIcon SVG components (not emoji)
+    expect(controlsSource).toMatch(/PlayIcon|PauseIcon/);
+    expect(controlsSource).toMatch(/isPlaying/);
   });
 
   test('file header documents AC-5.6', () => {

@@ -97,7 +97,7 @@ export default function EmailAuthScreen() {
   const titleLineHeight = isCompact ? 32 : 36;
 
   // Form state
-  const [mode, setMode] = useState<Mode>('login');
+  const [mode, setMode] = useState<Mode>('register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -146,7 +146,7 @@ export default function EmailAuthScreen() {
     );
 
     Animated.stagger(stagger.delay, animations).start();
-  }, [reduceMotion]);
+  }, [reduceMotion, opacities, translateYs]);
 
   // ---------------------------------------------------------------------------
   // Error message fade
@@ -162,7 +162,7 @@ export default function EmailAuthScreen() {
     } else {
       errorOpacity.setValue(0);
     }
-  }, [errorMsg, reduceMotion]);
+  }, [errorMsg, reduceMotion, errorOpacity]);
 
   // ---------------------------------------------------------------------------
   // Handlers

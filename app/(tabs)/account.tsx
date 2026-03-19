@@ -18,16 +18,18 @@
  * @updated 2026-03-15
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Alert,
   Animated,
   Easing,
   Linking,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -58,7 +60,9 @@ const GROUP_COUNT = 5;
 // ---------------------------------------------------------------------------
 
 export default function AccountScreen() {
-  const { user, logout, deleteAccount } = useAuth();
+  const { user, logout, deleteAccount, getAuthProvider } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
   const reduceMotion = useReduceMotion();
   const { width } = useWindowDimensions();
 
@@ -132,34 +136,53 @@ export default function AccountScreen() {
     // when auth state changes to null after signOut.
   };
 
-  const handleDeleteAccount = async () => {
+  const performDelete = async (pw?: string) => {
+    try {
+      await deleteAccount(pw);
+      // Navigation to /welcome handled by AuthGuard when auth state → null
+    } catch (error: any) {
+      const code = error?.code;
+      let message: string;
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        message = 'Incorrect password. Please try again.';
+      } else if (code === 'auth/too-many-requests') {
+        message = 'Too many attempts. Please try again later.';
+      } else if (code === 'auth/network-request-failed') {
+        message = 'Network error. Check your connection and try again.';
+      } else {
+        message = error?.message ?? 'Failed to delete account. Please try again.';
+      }
+      Alert.alert('Delete Account Failed', message);
+    }
+  };
+
+  const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
       'Are you sure you want to permanently delete your account? This action cannot be undone.',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete Account',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteAccount();
-              // Navigation to /welcome is handled by AuthGuard in app/_layout.tsx
-              // when auth state changes to null after account deletion.
-            } catch (error: any) {
-              const message =
-                error?.code === 'auth/requires-recent-login'
-                  ? 'Please sign out and sign back in before deleting your account.'
-                  : (error?.message ?? 'Failed to delete account. Please try again.');
-              Alert.alert('Delete Account Failed', message);
+          onPress: () => {
+            const provider = getAuthProvider();
+            if (provider === 'password') {
+              setPassword('');
+              setShowPasswordModal(true);
+            } else {
+              performDelete();
             }
           },
         },
       ]
     );
+  };
+
+  const handlePasswordSubmit = async () => {
+    setShowPasswordModal(false);
+    await performDelete(password);
+    setPassword('');
   };
 
   const handleUpdateLocation = () => {
@@ -319,6 +342,57 @@ export default function AccountScreen() {
         {/* Bottom clearance: 32px before tab bar / now-playing bar */}
         <View style={styles.bottomPad} />
       </ScrollView>
+
+      {/* Password re-auth modal for email/password users */}
+      <Modal
+        visible={showPasswordModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPasswordModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowPasswordModal(false)}
+        >
+          <Pressable style={styles.modalContent} onPress={() => {}}>
+            <Text style={styles.modalTitle}>Confirm Your Password</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter your password to delete your account.
+            </Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Password"
+              placeholderTextColor={colors.textSecondary}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handlePasswordSubmit}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.modalCancelButton,
+                  pressed && { opacity: 0.6 },
+                ]}
+                onPress={() => setShowPasswordModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.modalDeleteButton,
+                  pressed && { opacity: 0.6 },
+                ]}
+                onPress={handlePasswordSubmit}
+              >
+                <Text style={styles.modalDeleteText}>Delete</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScreenHeader>
   );
 }
@@ -517,5 +591,86 @@ const styles = StyleSheet.create({
   // ── Bottom clearance ─────────────────────────────────────────────────────
   bottomPad: {
     height: spacing.space8, // 32px before tab bar / now-playing bar
+  },
+
+  // ── Password re-auth modal ─────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(22, 22, 26, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.space6,
+  },
+  modalContent: {
+    backgroundColor: colors.bgSurface,
+    borderRadius: 8,
+    padding: spacing.space6,
+    width: '100%',
+    maxWidth: 340,
+  },
+  modalTitle: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 18,
+    fontWeight: '600' as const,
+    lineHeight: 24,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: spacing.space2,
+  },
+  modalSubtitle: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 20,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.space5,
+  },
+  modalInput: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 16,
+    color: colors.textPrimary,
+    backgroundColor: colors.bgCard,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.space4,
+    paddingVertical: spacing.space3,
+    marginBottom: spacing.space5,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing.space3,
+  },
+  modalCancelButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(242, 232, 213, 0.20)',
+    borderRadius: 8,
+    paddingVertical: spacing.space3,
+  },
+  modalCancelText: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: colors.textPrimary,
+  },
+  modalDeleteButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    backgroundColor: colors.semanticError,
+    borderRadius: 8,
+    paddingVertical: spacing.space3,
+  },
+  modalDeleteText: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: colors.textPrimary,
   },
 });

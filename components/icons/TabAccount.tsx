@@ -31,8 +31,8 @@ export default function TabAccount({ color = colors.textPrimary, size = 24 }: Ic
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       {/*
         Shoulders: angular trapezoid below head.
@@ -44,8 +44,8 @@ export default function TabAccount({ color = colors.textPrimary, size = 24 }: Ic
         fill="none"
         stroke={color}
         strokeWidth={1.5}
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   );

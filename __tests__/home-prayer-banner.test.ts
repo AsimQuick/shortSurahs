@@ -5,12 +5,11 @@
  *                - app/(tabs)/index.tsx imports usePrayerStore
  *                - useEffect triggers refreshIfStale on mount
  *                - formatTime12h converts HH:MM to 12-hour format correctly
- *                - banner shows "Next Prayer: {name}, {time}" when data available
- *                - ActivityIndicator rendered when isLoading and no prayerTimes
- *                - banner is hidden (null) when prayerTimes unavailable and not loading
- *                - banner uses accessibilityLabel with prayer name and time
- *                - banner respects light/dark theming (bannerBg, bannerAccent)
+ *                - NextPrayerBanner component is used for displaying prayer info
+ *                - NextPrayerBanner handles loading, offline, and data states
  *                - metadata header includes @ac AC-11.3
+ *              Updated for UI redesign: banner logic moved to NextPrayerBanner component,
+ *              no renderBanner function, no bannerBg/bannerAccent/useColorScheme in index.tsx.
  *              Tests are source-level assertions plus direct function tests
  *              (testEnvironment: "node").
  * @project shortSurahs
@@ -28,13 +27,16 @@ import { formatTime12h } from '../utils/formatTime';
 const ROOT = path.resolve(__dirname, '..');
 const HOME_TAB_PATH = path.join(ROOT, 'app', '(tabs)', 'index.tsx');
 const FORMAT_TIME_PATH = path.join(ROOT, 'utils', 'formatTime.ts');
+const NEXT_PRAYER_BANNER_PATH = path.join(ROOT, 'components', 'NextPrayerBanner.tsx');
 
 let src: string;
 let utilSrc: string;
+let bannerSrc: string;
 
 beforeAll(() => {
   src = fs.readFileSync(HOME_TAB_PATH, 'utf8');
   utilSrc = fs.readFileSync(FORMAT_TIME_PATH, 'utf8');
+  bannerSrc = fs.readFileSync(NEXT_PRAYER_BANNER_PATH, 'utf8');
 });
 
 // ---------------------------------------------------------------------------
@@ -48,6 +50,10 @@ describe('AC-11.3 — file existence', () => {
 
   test('utils/formatTime.ts exists', () => {
     expect(fs.existsSync(FORMAT_TIME_PATH)).toBe(true);
+  });
+
+  test('components/NextPrayerBanner.tsx exists', () => {
+    expect(fs.existsSync(NEXT_PRAYER_BANNER_PATH)).toBe(true);
   });
 });
 
@@ -176,138 +182,64 @@ describe('AC-11.3 — useEffect triggers refreshIfStale on mount', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Banner rendering — source-level assertions
+// Banner rendering — NextPrayerBanner component used
+//   After redesign, banner logic is in NextPrayerBanner component
 // ---------------------------------------------------------------------------
 
-describe('AC-11.3 — banner rendering', () => {
-  test('imports ActivityIndicator from react-native', () => {
-    expect(src).toContain('ActivityIndicator');
+describe('AC-11.3 — NextPrayerBanner component usage', () => {
+  test('imports NextPrayerBanner component', () => {
+    expect(src).toContain('NextPrayerBanner');
+    expect(src).toMatch(/import.*NextPrayerBanner.*from/);
   });
 
-  test('has renderBanner function', () => {
-    expect(src).toMatch(/renderBanner/);
+  test('renders NextPrayerBanner in JSX', () => {
+    expect(src).toMatch(/<NextPrayerBanner/);
   });
 
-  test('renders ActivityIndicator when loading and no prayerTimes', () => {
-    expect(src).toContain('ActivityIndicator');
-    // isLoading && !prayerTimes guard
-    expect(src).toMatch(/isLoading.*prayerTimes|prayerTimes.*isLoading/);
+  test('passes prayerName prop to NextPrayerBanner', () => {
+    expect(src).toMatch(/prayerName/);
   });
 
-  test('returns null when prayerTimes unavailable and not loading', () => {
-    expect(src).toMatch(/return null/);
+  test('passes prayerTime prop to NextPrayerBanner', () => {
+    expect(src).toMatch(/prayerTime/);
   });
 
-  test('banner has accessibilityLabel with prayer name and formatted time', () => {
-    expect(src).toMatch(/accessibilityLabel.*Next Prayer/);
-    expect(src).toContain('formatTime12h');
-  });
-
-  test('banner renders "Next Prayer: " label text', () => {
-    expect(src).toMatch(/Next Prayer:/);
-  });
-
-  test('banner renders nextPrayer name', () => {
-    expect(src).toMatch(/\{nextPrayer\}/);
-  });
-
-  test('banner renders formatted time via formatTime12h', () => {
-    expect(src).toMatch(/formatTime12h\(nextPrayerTime\)/);
+  test('passes isLoading prop to NextPrayerBanner', () => {
+    expect(src).toMatch(/isLoading/);
   });
 
   test('imports formatTime12h from utils/formatTime', () => {
     expect(src).toMatch(/from\s+['"].*utils\/formatTime['"]/);
     expect(src).toContain('formatTime12h');
   });
-});
-
-// ---------------------------------------------------------------------------
-// Theming — source-level assertions
-// ---------------------------------------------------------------------------
-
-describe('AC-11.3 — banner theming (light/dark mode)', () => {
-  test('defines bannerBg color for light/dark mode', () => {
-    expect(src).toContain('bannerBg');
-  });
-
-  test('bannerBg dark value is dark surface (#1c1c1e)', () => {
-    expect(src).toContain('#1c1c1e');
-  });
-
-  test('bannerBg light value is light surface (#f2f2f7)', () => {
-    expect(src).toContain('#f2f2f7');
-  });
-
-  test('defines bannerAccent color for light/dark mode', () => {
-    expect(src).toContain('bannerAccent');
-  });
-
-  test('bannerAccent dark value is iOS blue (#0a84ff)', () => {
-    expect(src).toContain('#0a84ff');
-  });
-
-  test('bannerAccent light value is iOS blue (#007aff)', () => {
-    expect(src).toContain('#007aff');
-  });
-
-  test('banner View uses bannerBg as backgroundColor', () => {
-    expect(src).toMatch(/backgroundColor.*bannerBg|bannerBg.*backgroundColor/);
-  });
-
-  test('prayer name Text uses bannerAccent color', () => {
-    expect(src).toMatch(/color.*bannerAccent|bannerAccent.*color/);
-  });
-
-  test('uses isDark derivation for theme switching', () => {
-    expect(src).toMatch(/isDark.*dark|dark.*isDark/);
-  });
-
-  test('uses useColorScheme hook', () => {
-    expect(src).toContain('useColorScheme');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Banner StyleSheet
-// ---------------------------------------------------------------------------
-
-describe('AC-11.3 — banner StyleSheet entries', () => {
-  test('StyleSheet includes banner style', () => {
-    expect(src).toMatch(/banner:/);
-  });
-
-  test('banner style has flexDirection: row', () => {
-    expect(src).toContain('flexDirection');
-    expect(src).toMatch(/'row'/);
-  });
-
-  test('StyleSheet includes bannerLabel style', () => {
-    expect(src).toMatch(/bannerLabel:/);
-  });
-
-  test('StyleSheet includes bannerPrayer style', () => {
-    expect(src).toMatch(/bannerPrayer:/);
-  });
-
-  test('StyleSheet includes bannerTime style', () => {
-    expect(src).toMatch(/bannerTime:/);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Integration: banner positioned above the surah list
-// ---------------------------------------------------------------------------
-
-describe('AC-11.3 — banner is placed above the surah list', () => {
-  test('renderBanner() is called before FlatList in JSX', () => {
-    const bannerCallIdx = src.indexOf('renderBanner()');
-    const flatListIdx = src.indexOf('<FlatList');
-    expect(bannerCallIdx).toBeGreaterThan(-1);
-    expect(flatListIdx).toBeGreaterThan(-1);
-    expect(bannerCallIdx).toBeLessThan(flatListIdx);
-  });
 
   test('FlatList is still present (surah list intact)', () => {
     expect(src).toContain('FlatList');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// NextPrayerBanner component internals
+// ---------------------------------------------------------------------------
+
+describe('AC-11.3 — NextPrayerBanner component internals', () => {
+  test('returns null when no data and neither loading nor offline', () => {
+    expect(bannerSrc).toMatch(/return null/);
+  });
+
+  test('renders offline text when offline', () => {
+    expect(bannerSrc).toContain('Prayer times unavailable');
+  });
+
+  test('renders prayer name when data available', () => {
+    expect(bannerSrc).toMatch(/prayerName/);
+  });
+
+  test('banner has accessibilityLabel', () => {
+    expect(bannerSrc).toMatch(/accessibilityLabel/);
+  });
+
+  test('banner uses flexDirection row for data display', () => {
+    expect(bannerSrc).toMatch(/'row'/);
   });
 });

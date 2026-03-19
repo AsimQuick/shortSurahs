@@ -929,3 +929,206 @@ Cumulative: 31 story points delivered across 5 sprints. Two consecutive 100% vel
 **V2 Foundation Status:** US-7 and US-8 complete. All Sprint 6 prerequisites satisfied.
 
 ---
+
+
+---
+
+## Sprint 6 -- V2 Completion: Tab Navigation, Account Management & Prayer Times
+
+**Sprint Duration:** 2026-03-14 -> 2026-03-28
+**Retrospective Date:** 2026-03-14
+**Retrospective Author:** tester
+
+---
+
+### Sprint Outcome
+
+Sprint 6 delivered all three stories (US-9, US-10, US-11) -- 11 planned story points, 13 acceptance criteria, 13 PRs (#58-#70), all passing CI. This is the third consecutive 100% velocity sprint. The V2 feature set is now complete.
+
+**Stories fully done:** US-9 (3 pts), US-10 (3 pts), US-11 (5 pts)
+**Planned story points:** 11
+**Delivered story points:** 11
+**Velocity:** 100% (third consecutive)
+**PRs merged:** 13 (PRs #58-#70)
+**Tests at sprint close:** 1923 (51 suites, all passing)
+**Tests at sprint start:** 1417
+**Tests added this sprint:** 506 (+35.7%)
+**Coverage at close:** 98.37% statements, 84.9% branches, 100% functions
+**Dev-Tester loop iterations consumed:** 1 (US-9 AC-9.1 -- undeclared dependency; resolved on iteration 2)
+**Zero-defect ACs:** 12 of 13 (all US-10 and US-11 ACs; US-9 AC-9.2, AC-9.3, AC-9.4)
+
+The Tester Sprint Status is `done`.
+
+---
+
+### Missed Checks
+
+**MC-19: CF-6 (Firebase TypeScript conventions in CLAUDE.md) was carried into Sprint 6 as a DoD item but was never written.**
+CF-6 was identified in the Sprint 5 retrospective (MC-17, PI-21) and listed as a P0 carry-forward item. The Sprint 6 DoD explicitly states "CF-6 resolved before first Firebase-dependent PR." At sprint close, no Firebase TypeScript Conventions section has been added to CLAUDE.md. The pattern worked correctly (no import-path CI failures in US-10), but the documentation was never created. This is a process non-conformance: the DoD item was declared, a sprint-level gate was set, and then it was ignored without acknowledgment.
+
+Future process addition: When a carry-forward item is listed in the DoD, the Project Lead script should verify its completion before allowing the first PR in the dependent story to merge. A documentation item that is skipped silently becomes invisible risk for the next sprint. CF-6 must be completed before any Sprint 7 Firebase work begins.
+
+**MC-20: AC-9.1 undeclared dependency (@expo/vector-icons) reached CI on the first push.**
+The @expo/vector-icons package was used in app/(tabs)/_layout.tsx for Ionicons without being declared in package.json. PI-15 (local preflight: npx eslint . --max-warnings 0) would have caught this immediately, as the import/no-unresolved rule is the same rule that blocked CI. This is the same class of error PI-15 was designed to prevent. The Dev Team did not run the local preflight before the first push on AC-9.1.
+
+This is the only CI failure in Sprint 6. It was quickly diagnosed and resolved on Iteration 2. However, it represents a PI-15 compliance lapse on the first PR of the sprint -- the sprint that was supposed to enforce PI-15 "from PR #1, zero tolerance" per CF-7.
+
+Future process addition: PI-15 compliance is non-negotiable. The first PR of every sprint is not exempt. The orchestration script should surface the PI-15 checklist to the Dev Team as a reminder before every AC branch is pushed, not just when a CI failure is detected.
+
+---
+
+### Process Improvements
+
+**PI-24: CF-6 (Firebase TypeScript conventions) must be written before Sprint 7 begins.**
+The types/firebase-auth-rn.d.ts module augmentation pattern is in production and working. It has now survived two sprints (US-8, US-10) without import-path errors. The documentation investment is overdue. Before Sprint 7 begins, a Firebase section must be added to CLAUDE.md documenting: (1) getReactNativePersistence is accessed via types/firebase-auth-rn.d.ts module augmentation, not a direct subpath import; (2) all other Auth imports use firebase/auth (main subpath only); (3) no @firebase/* internal package imports. This is a 15-minute task that eliminates the entire import-path rediscovery risk for any future Firebase feature.
+
+**PI-25: The orchestration script should surface the PI-15 preflight checklist at branch push time.**
+MC-20 shows that PI-15 was not run before the first push of AC-9.1 despite CF-7 explicitly requiring it from Sprint 6 PR #1. Documentation-only reminders have limited enforcement power when no tooling surfaces them at the moment of action. The Project Lead script should output the PI-15 checklist ("Run: npx eslint . --max-warnings 0 && npx tsc --noEmit && npm test") whenever it instructs the Dev Team to push a branch. This surfaces the requirement at the exact moment it must be applied.
+
+**PI-26: Branches coverage below 95% target is an acceptable pattern for UI-theming-heavy sprints; document the threshold rationale.**
+At sprint close, branches coverage is 84.9% -- above the 70% threshold but below the 95% target. This gap is structurally caused by isDark light/dark conditional branches that are exercised in end-to-end runtime but are not individually forked in static unit tests. The same pattern was present in Sprint 5 (84.31% branches at AC-11.4). The DoD should document an explicit rationale: branches threshold is 70% hard floor; 95% target applies to logic branches; UI theming branches (isDark forks) are excluded from the 95% target provided the overall branches metric exceeds 80%. This makes the acceptance criterion explicit rather than leaving it to per-sprint judgment.
+
+---
+
+### CI Summary -- Sprint 6
+
+| PR | AC | CI Result | Dev-Tester Iterations | Cumulative Tests |
+|----|-----|-----------|----------------------|-----------------|
+| #58 | US-9 AC-9.1 | PASS (iter 2) | 1 | 1444 |
+| #59 | US-9 AC-9.2 | PASS | 0 | 1476 |
+| #60 | US-9 AC-9.3 | PASS | 0 | 1498 |
+| #61 | US-9 AC-9.4 | PASS | 0 | 1522 |
+| #62 | US-10 AC-10.1 | PASS | 0 | 1543 |
+| #63 | US-10 AC-10.2 | PASS | 0 | 1570 |
+| #64 | US-10 AC-10.3 | PASS | 0 | 1593 |
+| #65 | US-10 AC-10.4 | PASS | 0 | 1614 |
+| #66 | US-11 AC-11.1 | PASS | 0 | 1677 |
+| #67 | US-11 AC-11.2 | PASS | 0 | 1755 |
+| #68 | US-11 AC-11.3 | PASS | 0 | 1806 |
+| #69 | US-11 AC-11.4 | PASS | 0 | 1879 |
+| #70 | US-11 AC-11.5 | PASS | 0 | 1923 |
+
+All 13 Sprint 6 PRs: CI green on final merge. Zero force-merges. Zero skipped checks. Single PR per AC enforced. Build order followed (US-9 Phase 1 complete before US-10/US-11 Phase 2).
+
+**Final HEAD coverage (PR #70):**
+- Statements: 98.37%
+- Branches: 84.9%
+- Functions: 100%
+- Threshold (70% all metrics): EXCEEDED on all metrics
+- Target (95%): EXCEEDED on statements and functions
+
+---
+
+### Velocity Trend (6 Sprints)
+
+| Sprint | Planned | Delivered | Velocity % | Tests at Close | Loop Iterations |
+|--------|---------|-----------|------------|----------------|-----------------|
+| Sprint 1 | 26 pts | 6 pts | 23% | 140 | 3 |
+| Sprint 2 | ~18 pts | 8 pts | 44% | 383 | 2 |
+| Sprint 3 | ~7 pts | ~5 pts | 71% | 545 | 1 |
+| Sprint 4 | 2 pts | 2 pts | 100% | 680 | 0 |
+| Sprint 5 | 10 pts | 10 pts | 100% | 1417 | 9+2ext |
+| Sprint 6 | 11 pts | 11 pts | 100% | 1923 | 1 |
+
+Cumulative: 42 story points delivered across 6 sprints. Three consecutive 100% velocity sprints. V2 feature-complete.
+
+---
+
+### Carry-Forward Action Items (Post-Sprint 6)
+
+| ID | Action | Owner | Priority |
+|----|--------|-------|----------|
+| CF-9 | Add Firebase TypeScript Conventions section to CLAUDE.md (CF-6, carried from Sprint 5) -- required before any Sprint 7 Firebase work | Dev Team / Project Lead | P0 |
+| CF-10 | Replace placeholder ToS/Privacy URLs in app/(tabs)/account.tsx with real URLs when available | Human owner | P1 |
+| CF-11 | REQ-5 -- EAS Build config + physical device testing for background audio (carried from Sprint 4) | Human owner | P1 |
+
+**V2 Status:** Feature-complete. All 5 V2 user stories (US-7 through US-11) are implemented, tested, and merged. The app has: 17-surah library with per-ayah artwork, Firebase Authentication (email/Apple/Google), bottom tab navigation, account management (logout/delete/legal links), and Aladhan prayer times with offline degradation.
+
+---
+
+---
+
+## Sprint 6 — Product Owner Retrospective
+
+**Review Date:** 2026-03-14
+**Review Author:** product-owner
+
+---
+
+### Sprint Outcome (PO Perspective)
+
+Sprint 6 closes the V2 chapter. All three stories — US-9 (Bottom Tab Navigation, 3 pts), US-10 (Account Screen, 3 pts), and US-11 (Prayer Times, 5 pts) — delivered in full. 11 story points, 13 acceptance criteria, 13 PRs (#58-#70), all CI-verified. This is the third consecutive 100% velocity sprint and the highest single-sprint point total in the project's history (surpassing Sprint 5's 10 pts).
+
+The app has transformed from a 4-surah MVP player to a full-featured Quran memorization app with 17 surahs, Firebase authentication, tab-based navigation, account management, and prayer time awareness. Every product pillar — offline-first, simplicity, memorization-focused, privacy-respecting — is fully addressed.
+
+**Accepted:** US-9 (3 pts) + US-10 (3 pts) + US-11 (5 pts) = 11 story points
+**Velocity:** 11 / 11 = 100%
+
+---
+
+### What Went Well
+
+**WW-29: V2 feature set delivered in two sprints.** Sprint 5 laid the foundation (expanded library + auth); Sprint 6 delivered the user-facing features (navigation, account, prayer times). Five V2 stories, 21 story points, 29 PRs, and 1243 new tests across two sprints — all with 100% velocity. The sprint-over-sprint planning was accurate and the dependency graph held.
+
+**WW-30: Near-zero defect rate.** 12 of 13 ACs passed CI on the first push. Only 1 dev-tester loop iteration consumed in the entire sprint — down from 9+2ext in Sprint 5. PI-15 compliance (when followed) has effectively eliminated the lint/type error iteration category. This is the lowest non-zero iteration count in project history.
+
+**WW-31: Prayer times feature exceeded expectations.** US-11 was the riskiest story (5 pts, external API dependency, 5 ACs). It delivered cleanly: Aladhan API integration, Zustand state management, Home screen banner, full Prayers tab schedule with highlighted current/next prayer, and offline graceful degradation — all with zero dev-tester iterations. The capacity note's contingency (Prayers tab "coming soon" placeholder) was never needed.
+
+**WW-32: Test suite growth is disciplined and sustainable.** 506 tests added this sprint (1417 → 1923, +35.7%). Statement coverage rose from 96.77% to 98.37%. Function coverage maintained at 100%. The test-per-AC pattern (source-level + behavioral assertions) continues to scale well.
+
+**WW-33: Build order compliance was 100%.** Phase 1 (US-9, tab navigation infrastructure) completed and merged before Phase 2 (US-10, US-11) began. This is the third consecutive sprint with perfect build order compliance, validating PO-PI-11 from Sprint 4.
+
+**WW-34: Reference implementation port worked.** US-10 (Account Screen) drew heavily from finnaDo's settings.tsx patterns for Firebase re-auth and delete account. The reference implementation pattern — using a proven codebase as a template — reduced discovery cost and eliminated implementation ambiguity.
+
+---
+
+### What Didn't Go Well
+
+**WDW-20: CF-6 carried across two sprints without resolution.** Firebase TypeScript conventions documentation was identified in Sprint 5 retrospective (MC-17), listed as P0 carry-forward (CF-6), added to Sprint 6 DoD, and still not written. The pattern works (zero import-path errors in Sprint 6), but the documentation debt is now two sprints old. A process gap allowed a DoD item to be silently skipped. This must be resolved before Sprint 7.
+
+**WDW-21: PI-15 compliance lapse on Sprint 6 PR #1.** CF-7 explicitly required PI-15 compliance "from Sprint 6 PR #1, zero tolerance." AC-9.1 failed CI on the first push due to an undeclared dependency that local ESLint would have caught. The process improvement worked when applied (12/13 zero-defect ACs) but the enforcement mechanism is still documentation-based, not tooling-based.
+
+**WDW-22: Branches coverage continues to decline.** From 94.44% (Sprint 5 close) to 84.9% (Sprint 6 close). The gap is structurally caused by UI theming branches (isDark forks), but the trend line is concerning. The Tester's PI-26 recommendation to explicitly document threshold rationale is the right approach.
+
+---
+
+### Process Improvements (PO Recommendations for Sprint 7+)
+
+**PO-PI-22: CF-6/CF-9 must be completed before Sprint 7 begins.** This is non-negotiable. A documentation item that survives three sprints without completion indicates a gap in the orchestration loop. The Project Lead script should block sprint kickoff until CF-9 is verified as merged to CLAUDE.md.
+
+**PO-PI-23: Automate PI-15 enforcement.** Two sprints of evidence show PI-15 works when followed but can be forgotten on the first PR. Per PI-25 (Tester recommendation), the orchestration script should surface the PI-15 checklist at branch push time. Even better: add a pre-push git hook that runs `eslint + tsc + jest` automatically.
+
+**PO-PI-24: Formally document the branches coverage threshold rationale.** Per PI-26, define: 70% hard floor on all metrics; 95% target on statements and functions; branches target is 80% with explicit exemption for UI theming branches (isDark forks). This makes the quality gate criteria explicit.
+
+**PO-PI-25: V2 is feature-complete — shift focus to release readiness.** The next phase is not new features but release preparation: EAS Build configuration, physical device testing (REQ-5, carried from Sprint 4), real ToS/Privacy URLs (CF-10), and App Store / Play Store submission. Consider a "Sprint 7: Release Prep" sprint focused entirely on these items.
+
+---
+
+### Velocity Trend (6 Sprints)
+
+| Sprint | Planned | Delivered | Velocity % | Tests at Close | Loop Iterations |
+|--------|---------|-----------|------------|----------------|-----------------|
+| Sprint 1 | 26 pts | 6 pts | 23% | 140 | 3 |
+| Sprint 2 | ~18 pts | 8 pts | 44% | 383 | 2 |
+| Sprint 3 | ~7 pts | ~5 pts | 71% | 545 | 1 |
+| Sprint 4 | 2 pts | 2 pts | 100% | 680 | 0 |
+| Sprint 5 | 10 pts | 10 pts | 100% | 1417 | 9+2ext |
+| Sprint 6 | 11 pts | 11 pts | 100% | 1923 | 1 |
+
+Cumulative: 42 story points delivered across 6 sprints. Three consecutive 100% velocity sprints. V2 feature-complete.
+
+---
+
+### Carry-Forward Backlog (Post-V2)
+
+| Priority | Item | Owner |
+|----------|------|-------|
+| P0 | CF-9: Firebase TypeScript conventions in CLAUDE.md | Dev Team / Project Lead |
+| P1 | CF-10: Replace placeholder ToS/Privacy URLs | Human owner |
+| P1 | CF-11/REQ-5: EAS Build + physical device testing | Human owner |
+| P2 | App Store / Play Store submission prep | Human owner |
+| P2 | CarPlay / Android Auto (post-V2 backlog) | Future sprint |
+
+**V2 Status:** Feature-complete. Ready for release preparation.
+
+---

@@ -95,8 +95,17 @@ describe('AC-5.8 — app/player/[surahId].tsx: isPlayDisabled', () => {
     expect(playerSource).toMatch(/isPlayDisabled\s*=\s*trackCount\s*===\s*0/);
   });
 
-  test('Play/Pause Pressable has disabled={isPlayDisabled}', () => {
-    expect(playerSource).toMatch(/disabled=\{isPlayDisabled\}/);
+  test('Play/Pause button has disabled={isPlayDisabled} (in PlayerControls or player source)', () => {
+    // After redesign: disabled={isPlayDisabled} is applied in PlayerControls.tsx,
+    // while player source passes isPlayDisabled as a prop. Either location is valid.
+    const controlsSource = fs.readFileSync(
+      path.join(ROOT, 'components', 'PlayerControls.tsx'),
+      'utf8'
+    );
+    expect(
+      playerSource.match(/disabled=\{isPlayDisabled\}/) ||
+      controlsSource.match(/disabled=\{isPlayDisabled\}/)
+    ).toBeTruthy();
   });
 
   test('file header documents AC-5.8', () => {
