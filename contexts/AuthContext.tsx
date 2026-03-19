@@ -34,6 +34,7 @@ import {
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import TrackPlayer from 'react-native-track-player';
 import { auth } from '../config/firebaseConfig';
 import { useOnboardingStore } from '../store/onboardingStore';
@@ -176,9 +177,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const resetAppState = async () => {
     try { await TrackPlayer.reset(); } catch { /* player may not be initialized */ }
-    usePlayerStore.getState().setCurrentSurahId('');
     usePlayerStore.setState({ currentSurahId: null, currentTrackIndex: 0, isPlaying: false });
-    useOnboardingStore.persist.clearStorage();
+    // Clear onboarding from AsyncStorage so next user sees walkthrough
+    await AsyncStorage.removeItem('onboarding-storage');
     useOnboardingStore.setState({ hasSeenPlayerWalkthrough: false });
   };
 
