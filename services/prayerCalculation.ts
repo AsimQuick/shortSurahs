@@ -83,7 +83,12 @@ export const METHODS = {
     // 18.2°/18.2° with minute offsets fitted to the published UAE timetable
     // (Nov 2026, 28-30 of 30 days exact, never more than 1 min off). adhan-js's
     // own Dubai preset puts Asr 1-2 min late. See research notes.
-    build: custom(18.2, 18.2, { sunrise: -3.5, dhuhr: 3, asr: 1.25, maghrib: 3.5 }),
+    // Fajr -5 min (owner field check, 7 Nov 2026): the Khaleej Times table used
+    // for the fit is 5 min later than Awqaf for Fajr. Two independent checks
+    // agree on -5: Awqaf's published Dubai Fajr for 3 Feb 2026 (05:37, Abu
+    // Dhabi 05:41) and the owner's Dubai mosque for 8 Nov 2026 (05:06).
+    // A 19.25° angle gives the same times within 1 min all year.
+    build: custom(18.2, 18.2, { fajr: -5, sunrise: -3.5, dhuhr: 3, asr: 1.25, maghrib: 3.5 }),
   },
   ummAlQura: { label: 'Umm al-Qura University, Makkah', build: CalculationMethod.UmmAlQura },
   qatar: { label: 'Qatar Ministry of Awqaf', build: CalculationMethod.Qatar },
