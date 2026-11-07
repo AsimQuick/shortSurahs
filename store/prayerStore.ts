@@ -1,33 +1,48 @@
 /**
  * @file store/prayerStore.ts
- * @description Zustand prayer times data layer for AC-11.2.
- *              Manages prayer time state: the five daily prayer times,
- *              the current/next prayer, the fetch timestamp, and
- *              loading/error states. Prayer times are re-fetched when
- *              the app returns to the foreground if the cached data is
- *              from a previous day. If the API call fails, an error
- *              message is stored for UI display (no crash) and the
- *              fetchTimes action serves as the retry mechanism.
- *              AC-11.5: Offline graceful degradation — detects network
- *              unavailability (TypeError) and sets isOffline flag with
- *              a user-friendly offline message; resets on successful fetch.
+ * @description Zustand prayer times data layer.
+ *              Holds today's five prayer times, the current/next prayer, tomorrow's
+ *              Fajr (shown after Isha), the location the times were calculated
+ *              for, and loading/error state.
+ *              Sprint 7 (US-13): times are calculated on device with adhan-js
+ *              (services/prayerCalculation.ts) instead of the Aladhan API, so they
+ *              work offline and use the right method for the user's country.
+ *              The store recalculates when the chosen location changes, and
+ *              refreshIfStale() recalculates on a new calendar day.
+ *              The only failure left is "no location" (a timezone with no city,
+ *              such as UTC); the UI then asks the user to choose a city.
  * @project shortSurahs
  * @story US-11: Prayer Times
+ * @story US-13: Accurate prayer times and location
  * @ac    AC-11.2: Prayer times data layer
- * @ac    AC-11.5: Offline graceful degradation
- * @sprint Sprint 6
+ * @sprint Sprint 6, Sprint 7
  * @author Dev Team
  * @created 2026-03-14
+ * @updated 2026-11-07
  */
 
 import { create } from 'zustand';
-import { fetchPrayerTimes, PrayerTimes } from '../services/aladhanService';
+import { calculatePrayerTimes, type PrayerTimes } from '../services/prayerCalculation';
+import type { PrayerLocation } from '../services/locationService';
+import {
+  getEffectiveLocation,
+  usePrayerSettingsStore,
+  type LocationSource,
+} from './prayerSettingsStore';
 
 /** The ordered sequence of the five daily prayers. */
 export const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const;
 
 /** Union type of the five canonical prayer names. */
 export type PrayerName = (typeof PRAYER_ORDER)[number];
+
+/** Shown when the device timezone has no city we can calculate for. */
+export const NO_LOCATION_MESSAGE =
+  'Choose your city to see prayer times. Your time zone does not tell us where you are.';
+
+/** Shown if the calculation itself fails (not expected). */
+export const CALCULATION_ERROR_MESSAGE =
+  'Prayer times could not be calculated. Try choosing your city again.';
 
 /**
  * Parses a time string in "HH:MM" (24-hour) format to minutes since midnight.
@@ -92,37 +107,53 @@ export function isFromPreviousDay(fetchTimestamp: number): boolean {
   );
 }
 
+/**
+ * The "HH:MM" time of the next prayer. After Isha the next prayer is
+ * tomorrow's Fajr, which can differ from today's by a minute or two.
+ */
+export function getNextPrayerTime(
+  prayerTimes: PrayerTimes | null,
+  currentPrayer: PrayerName | null,
+  nextPrayer: PrayerName | null,
+  tomorrowFajr: string | null,
+): string | null {
+  if (!prayerTimes || !nextPrayer) return null;
+  if (nextPrayer === 'Fajr' && currentPrayer === 'Isha' && tomorrowFajr) return tomorrowFajr;
+  return prayerTimes[nextPrayer];
+}
+
 // ---------------------------------------------------------------------------
 // Zustand store
 // ---------------------------------------------------------------------------
 
 export interface PrayerStoreState {
-  /** The five daily prayer times, or null if not yet fetched. */
+  /** The five daily prayer times, or null if not yet calculated. */
   prayerTimes: PrayerTimes | null;
+  /** Tomorrow's Fajr ("HH:MM"), shown as the next prayer after Isha. */
+  tomorrowFajr: string | null;
   /** The most recent prayer that has passed, or null if before Fajr. */
   currentPrayer: PrayerName | null;
   /** The next upcoming prayer (wraps to Fajr after Isha). */
   nextPrayer: PrayerName | null;
-  /** Unix timestamp (ms) of the last successful fetch, or null. */
+  /** The location the times were calculated for, or null if unknown. */
+  location: PrayerLocation | null;
+  /** Whether the location was chosen by the user or taken from the timezone. */
+  locationSource: LocationSource;
+  /** Unix timestamp (ms) of the last successful calculation, or null. */
   fetchTimestamp: number | null;
-  /** True while the API call is in-flight. */
+  /** True while times are being calculated. */
   isLoading: boolean;
-  /** User-friendly error message from the last failed fetch, or null. */
+  /** User-facing message when times cannot be shown, or null. */
   error: string | null;
   /**
-   * True when the last fetch failed due to a network error (no connectivity).
-   * Distinct from API-level errors (e.g., 500 responses).
-   * Reset to false on successful fetch.
-   */
-  isOffline: boolean;
-  /**
-   * Fetches today's prayer times from the Aladhan API and updates all
-   * state fields. Also serves as the retry action after a failure.
+   * Calculates today's prayer times for the effective location and updates
+   * all state fields. Also serves as the retry action. Name kept from the
+   * API era so existing screens keep working.
    */
   fetchTimes: () => Promise<void>;
   /**
-   * Re-fetches prayer times only if cached data is missing or from a
-   * previous calendar day. Call this when the app returns to the foreground.
+   * Recalculates only if there are no times yet or they are from a previous
+   * calendar day. Call this on mount and when the app returns to the foreground.
    */
   refreshIfStale: () => Promise<void>;
   /**
@@ -134,43 +165,50 @@ export interface PrayerStoreState {
 
 export const usePrayerStore = create<PrayerStoreState>((set, get) => ({
   prayerTimes: null,
+  tomorrowFajr: null,
   currentPrayer: null,
   nextPrayer: null,
+  location: null,
+  locationSource: 'timezone',
   fetchTimestamp: null,
   isLoading: false,
   error: null,
-  isOffline: false,
 
   fetchTimes: async () => {
     set({ isLoading: true, error: null });
+    const { location, source } = getEffectiveLocation();
+    if (!location) {
+      set({
+        prayerTimes: null,
+        tomorrowFajr: null,
+        currentPrayer: null,
+        nextPrayer: null,
+        location: null,
+        locationSource: source,
+        isLoading: false,
+        error: NO_LOCATION_MESSAGE,
+      });
+      return;
+    }
     try {
-      const times = await fetchPrayerTimes();
+      const now = new Date();
+      const times = calculatePrayerTimes(location, now);
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const tomorrowFajr = calculatePrayerTimes(location, tomorrow).Fajr;
       const { currentPrayer, nextPrayer } = computeCurrentAndNext(times);
       set({
         prayerTimes: times,
+        tomorrowFajr,
         currentPrayer,
         nextPrayer,
+        location,
+        locationSource: source,
         fetchTimestamp: Date.now(),
         isLoading: false,
-        isOffline: false,
         error: null,
       });
-    } catch (err) {
-      // TypeError indicates a network-level failure (no connectivity).
-      // Other error types indicate API-level failures (e.g., HTTP errors).
-      if (err instanceof TypeError) {
-        set({
-          isLoading: false,
-          isOffline: true,
-          error: 'You are offline. Prayer times will be available when you reconnect.',
-        });
-      } else {
-        set({
-          isLoading: false,
-          isOffline: false,
-          error: 'Unable to load prayer times. Please check your connection and try again.',
-        });
-      }
+    } catch {
+      set({ isLoading: false, error: CALCULATION_ERROR_MESSAGE });
     }
   },
 
@@ -188,3 +226,11 @@ export const usePrayerStore = create<PrayerStoreState>((set, get) => ({
     set({ currentPrayer, nextPrayer });
   },
 }));
+
+// Recalculate whenever the user picks a different city (or clears it), and once
+// the persisted settings have loaded from storage.
+usePrayerSettingsStore.subscribe((state, previous) => {
+  if (state.chosenLocation !== previous.chosenLocation) {
+    usePrayerStore.getState().fetchTimes();
+  }
+});

@@ -1,7 +1,7 @@
 # Product Owner Requests — Items Requiring Human Action
 
-**Last Updated:** 2026-03-14
-**Open requests:** 4 / 8 (REQ-5, REQ-6, REQ-7, REQ-8 open)
+**Last Updated:** 2026-11-07
+**Open requests:** 4 / 9 (REQ-5, REQ-6, REQ-8, REQ-9 open)
 
 ---
 
@@ -152,7 +152,11 @@ Before app store submission, real URLs are needed.
 
 **Deadline:** Before App Store / Play Store submission (not blocking Sprint 6 development)
 
-**Status:** open
+**Status:** resolved (2026-11-07) — owner provided the live pages. `app/(tabs)/account.tsx` now opens:
+- Terms of Service: `https://shortsurahs.app/terms-and-conditions.html`
+- Privacy Policy: `https://shortsurahs.app/privacy-policy.html`
+
+Both return HTTP 200. Ships with the Sprint 7 build (REQ-9).
 
 ---
 
@@ -168,5 +172,22 @@ The following GitHub issues are still open but their stories are complete:
 - **#38** — US-8 (Firebase Authentication) — done Sprint 5
 
 **Question:** Should these be closed, or kept open for device-testing tracking?
+
+**Status:** open
+
+---
+
+## REQ-9: New native build and device review for Sprint 7
+
+**Sprint:** Sprint 7
+**Priority:** P0 — Blocks release of US-12, US-13, US-14
+**Action needed:** Build, review, release
+
+Sprint 7 adds `expo-notifications` (a native module) and the Android permission `SCHEDULE_EXACT_ALARM`. The JavaScript must ship with a new binary.
+
+1. Run an EAS development or preview build and review the Prayers, Account and Home screens on a phone (no simulator was available when they were built).
+2. Turn on "Notify me at prayer times" and confirm a notification arrives at the next prayer.
+3. Change city to Abu Dhabi and confirm the on-screen confirmation and the +4 minute shift from Dubai.
+4. Build production for both stores. Store privacy answers do not change (no location is collected).
 
 **Status:** open

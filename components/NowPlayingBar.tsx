@@ -17,8 +17,14 @@
  *                - Bar slides up + fades in on first appearance (200ms, ease-default).
  *                - Reduce Motion: all animations disabled (instant transitions, static shimmer).
  *
- *              Design tokens: bg-surface (#1A1520), 64px height, Outfit 14px text,
+ *              Design tokens: bg-surface (#1A1520), 64px height, Outfit text,
  *              custom SVG artwork per surah, react-native-svg gradients.
+ *
+ *              Track text (Sprint 7, US-12): two lines, like a music app's title
+ *              and artist, instead of "Al-Ikhlas · Ayah 2 of 4" on one line:
+ *                Al-Ikhlas            (Outfit Medium 15, cream)
+ *                Ayah 2 of 4          (Outfit Regular 13, muted)
+ *              The intro track shows "Introduction".
  *
  *              Forbidden (enforced here):
  *                - No "Now Playing" text label
@@ -261,14 +267,14 @@ export default function NowPlayingBar() {
   // ── Derived display values ─────────────────────────────────────────────────
   const isIntro = currentTrackIndex === 0;
 
-  // Text: "Al-Ikhlas · Intro" or "Al-Ikhlas · Ayah 2 of 4"
+  // Second line under the surah name: "Introduction" or "Ayah 2 of 4"
   const trackLabel = isIntro
-    ? ' · Intro'
-    : ` · Ayah ${currentTrackIndex} of ${surah.ayahCount}`;
+    ? 'Introduction'
+    : `Ayah ${currentTrackIndex} of ${surah.ayahCount}`;
 
   // Accessibility label for the tappable bar area
   const barAccessibilityLabel = isIntro
-    ? `Now playing: ${surah.nameEnglish}, Intro. Tap to open player.`
+    ? `Now playing: ${surah.nameEnglish}, Introduction. Tap to open player.`
     : `Now playing: ${surah.nameEnglish}, Ayah ${currentTrackIndex} of ${surah.ayahCount}. Tap to open player.`;
 
   // Compact horizontal padding on narrow screens (< 375px)
@@ -359,21 +365,19 @@ export default function NowPlayingBar() {
           <View style={styles.artworkGap} />
 
           {/*
-            Track text: "{surahName} · Intro" or "{surahName} · Ayah N of M"
-            Single line, ellipsis tail truncation on overflow.
-            Surah name: Outfit Medium 14px Cream.
-            Ayah indicator: Outfit Regular 14px Muted — appended inline.
-            Text is left-aligned (no textAlign: 'center').
+            Track text, two lines, left-aligned:
+              surah name (Outfit Medium 15px, cream)
+              "Introduction" or "Ayah N of M" (Outfit Regular 13px, muted)
+            Each line truncates with an ellipsis on overflow.
           */}
-          <Text
-            style={styles.trackText}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            accessibilityElementsHidden={true}
-          >
-            <Text style={styles.surahName}>{surah.nameEnglish}</Text>
-            <Text style={styles.ayahIndicator}>{trackLabel}</Text>
-          </Text>
+          <View style={styles.trackText} accessibilityElementsHidden={true}>
+            <Text style={styles.surahName} numberOfLines={1} ellipsizeMode="tail">
+              {surah.nameEnglish}
+            </Text>
+            <Text style={styles.ayahIndicator} numberOfLines={1} ellipsizeMode="tail">
+              {trackLabel}
+            </Text>
+          </View>
         </Pressable>
 
         {/* Gap: text → button (12px per spec) */}
@@ -450,24 +454,20 @@ const styles = StyleSheet.create({
   },
   trackText: {
     flex: 1,
-    // Base style for the Text container; child Text nodes override fontFamily / color
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,  // text-sm per design_system.md §2
-    lineHeight: 20,
-    color: colors.textPrimary,
-    // textAlign: 'left' is default — no center alignment (art_direction_notes.md §5)
+    justifyContent: 'center',
+    // Two stacked lines, 38px total, centred in the 64px bar. Left-aligned.
   },
   surahName: {
     fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
+    fontSize: 15,
     lineHeight: 20,
-    color: colors.textPrimary, // Cream (#F2E8D5) — 13.84:1 contrast on Night Surface (AAA)
+    color: colors.textPrimary, // Cream on Night Surface (AAA)
   },
   ayahIndicator: {
     fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textSecondary, // Muted (#8A7E6B) — 4.41:1 on Night Surface (AA Large)
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSecondary, // Muted on Night Surface (AA)
   },
   buttonGap: {
     width: 12, // space-3 per design_system.md §3

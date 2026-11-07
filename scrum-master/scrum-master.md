@@ -20,12 +20,21 @@
 | `done` | Implementation verified against all ACs and DoD; story complete |
 | `blocked` | Cannot complete validation — see reason in Tester Notes |
 
-## Project Status: COMPLETE
+## Project Status: LIVE ON THE APP STORE — Sprint 7 in review
 
-**MVP complete (6 stories, Sprints 1-4).** V2 complete (5 stories, Sprints 5-6). **All sprints closed. No active sprint.**
+**MVP complete (6 stories, Sprints 1-4).** V2 complete (5 stories, Sprints 5-6). The app is live in the stores.
+**Sprint 7 (prayer experience) is in review** on branch `feature/US-12-14-prayer-improvements`. See `/scrum-master/sprint7.md`.
 
-**Final Sprint:** Sprint 6 (done)
-**Active PRD:** `/scrum-master/v2_prd.md`
+**Current Sprint:** Sprint 7 (review)
+**Active PRD:** `/scrum-master/v2_prd.md` (prayer-time sections superseded by Sprint 7: on-device calculation replaces the Aladhan API)
+
+### Sprint 7 Story Summary
+
+| ID | Story | Status | Notes |
+|----|-------|--------|-------|
+| US-12 | Design refresh (Prayers, Account, Home header, next prayer banner) | `review` | Removes the accent stripe, tracked-caps eyebrows and middle-dot copy; mihrab niche for the next prayer; reciter credit |
+| US-13 | Accurate prayer times and location | `review` | adhan-js on device; UAE method fitted to the official timetable (within 1 min); country→method table; city picker with instant confirmation; no GPS |
+| US-14 | Prayer time notifications | `review` | "It's time for Asr prayer"; 12 days ahead, rolling; opt-in switch; needs a new EAS build |
 
 All 11 user stories delivered. All four product pillars fully addressed. 42 story points across 6 sprints. 1923 tests passing, 98%+ statement coverage, zero open defects. The product is feature-complete and ready for release preparation (EAS Build, device testing, store submission — human-owner tasks).
 
@@ -106,6 +115,10 @@ All V2 stories delivered across Sprints 5-6. Total: 21 V2 story points, 5 storie
 - CarPlay / Android Auto
 - Performance benchmarks
 - Custom theming beyond system light/dark
+- Per-prayer minute adjustment, only if users report mosque mismatches (owner chose no method picker; automatic per country like Muslim Pro)
+- Saudi Ramadan Isha +30 min (Umm al-Qura)
+- Verify UAE offsets against a summer timetable; collect official shifts for the remaining emirates
+- Android 14+: in-app prompt to allow exact alarms for on-the-minute notifications
 
 ## Asset Inventory (V2 — 17 Surahs)
 
@@ -241,6 +254,22 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 
 **Sprint file:** `/scrum-master/sprint5.md`
 
+### Sprint 7 — Prayer Experience: Design Refresh, Accurate Times, Notifications (2026-11-07)
+
+**Goal:** Remove machine-made design patterns from Prayers and Account, fix prayer times that were minutes off, give location changes instant confirmation, and add prayer notifications.
+**Outcome:** Code complete, in review. Not yet verified on a device (no simulator on the build machine).
+
+| Metric | Value |
+|--------|-------|
+| Stories | 3 (US-12, US-13, US-14) |
+| Tests at HEAD | 1,861 (54 suites, all passing) |
+| Lint / type-check | clean |
+| Metro + Hermes export (iOS, Android) | pass |
+| New dependencies | `adhan` ^4.4.6, `expo-notifications` ~55.0.27 |
+
+**Sprint file:** `/scrum-master/sprint7.md`
+**Research:** `/reports/Prayer time accuracy fix.md`
+
 ### Sprint 6 — V2 Completion: Tab Navigation, Account Management & Prayer Times (2026-03-14 -> 2026-03-28)
 
 **Goal:** Replace stack-only navigation with bottom tab navigation, deliver account management, and integrate Aladhan prayer times — completing all V2 features.
@@ -274,8 +303,9 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 | Sprint 6 | complete | V2 Completion -- Bottom Tab Nav (US-9, 3 pts) + Account Screen (US-10, 3 pts) + Prayer Times (US-11, 5 pts); third consecutive 100% velocity sprint; 1923 tests, 98%+ coverage | 11 |
 | **MVP Total** | **COMPLETE** | **All 6 stories delivered, 680 tests, 95%+ coverage, zero open defects** | **~21** |
 | **V2 Total** | **COMPLETE** | **All 11 stories delivered (6 MVP + 5 V2), 1923 tests, 98%+ coverage, zero open defects** | **42** |
+| Sprint 7 | review | Prayer experience -- design refresh (US-12), accurate on-device prayer times + city picker (US-13), prayer notifications (US-14); 1,861 tests | -- |
 
-**Project Status: All sprints closed. Product is feature-complete. No further sprints planned.**
+**Project Status: Live. Sprint 7 in review.**
 
 ## Notes
 
@@ -311,3 +341,5 @@ Login video: `assets/video/shortSurah-login-sm.mp4`
 - GitHub issues: #1 (US-1, closed), #2 (US-2, closed), #3 (US-3, closed), #4 (US-4, closed), #5 (US-5, closed), #6 (US-6, open), #26 (CF-5, closed), #37 (US-7, open), #38 (US-8, open), #55 (US-9, open), #56 (US-10, open), #57 (US-11, open)
 - V2 assets verified: 122 audio files, 122 image files, 1 login video — all present in assets/audio/, assets/images/, assets/video/
 - Firebase project ready: `shortsurahs-66204`, Email/Apple/Google providers enabled, all OAuth client IDs obtained
+- Sprint 7: `services/aladhanService.ts` removed. Prayer times now come from `services/prayerCalculation.ts` (adhan-js, on device); location from `services/locationService.ts` + `data/cities.json` (GeoNames, built by `scripts/build-cities.js`); preferences in `store/prayerSettingsStore.ts`; notifications in `services/prayerNotifications.ts`; lifecycle in `hooks/usePrayerSync.ts`
+- Sprint 7: reciter credited on Account: Saleh Ahmad Saleh (`data/reciter.ts`)

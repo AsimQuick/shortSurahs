@@ -8,7 +8,8 @@
  *              - State fields: prayerTimes, currentPrayer, nextPrayer,
  *                fetchTimestamp, isLoading, error
  *              - Initial state is correct (all nulls, false)
- *              - fetchTimes: sets isLoading, calls fetchPrayerTimes, updates
+ *              - fetchTimes: sets isLoading, calls calculatePrayerTimes (on device,
+ *                Sprint 7), updates
  *                all state fields on success, sets user-friendly error on failure
  *              - refreshIfStale: fetches when fetchTimestamp is null
  *                or from a previous day; skips when already fetched today
@@ -69,12 +70,16 @@ describe('AC-11.2 — prayerStore.ts: imports and store creation', () => {
     expect(source).toMatch(/import\s+.*create.*from\s+['"]zustand['"]/);
   });
 
-  test('imports fetchPrayerTimes from aladhanService', () => {
-    expect(source).toMatch(/import.*fetchPrayerTimes.*from.*aladhanService/);
+  test('imports calculatePrayerTimes from prayerCalculation (on-device, Sprint 7)', () => {
+    expect(source).toMatch(/import[\s\S]*?calculatePrayerTimes[\s\S]*?from\s+['"]\.\.\/services\/prayerCalculation['"]/);
   });
 
-  test('imports PrayerTimes from aladhanService', () => {
-    expect(source).toMatch(/import.*PrayerTimes.*from.*aladhanService/);
+  test('imports PrayerTimes from prayerCalculation', () => {
+    expect(source).toMatch(/import[\s\S]*?PrayerTimes[\s\S]*?from\s+['"]\.\.\/services\/prayerCalculation['"]/);
+  });
+
+  test('no longer imports the Aladhan network service', () => {
+    expect(source).not.toMatch(/aladhanService/);
   });
 
   test('exports usePrayerStore', () => {
@@ -153,8 +158,8 @@ describe('AC-11.2 — prayerStore.ts: action functions', () => {
     expect(source).toMatch(/isLoading\s*:\s*true/);
   });
 
-  test('fetchTimes calls fetchPrayerTimes', () => {
-    expect(source).toMatch(/await\s+fetchPrayerTimes\s*\(/);
+  test('fetchTimes calls calculatePrayerTimes', () => {
+    expect(source).toMatch(/calculatePrayerTimes\s*\(/);
   });
 
   test('fetchTimes sets fetchTimestamp on success', () => {
@@ -166,7 +171,8 @@ describe('AC-11.2 — prayerStore.ts: action functions', () => {
   });
 
   test('fetchTimes sets error on failure', () => {
-    expect(source).toMatch(/error\s*:\s*['"`]Unable to load prayer times/);
+    expect(source).toMatch(/error\s*:\s*CALCULATION_ERROR_MESSAGE/);
+    expect(source).toMatch(/error\s*:\s*NO_LOCATION_MESSAGE/);
   });
 
   test('fetchTimes uses try/catch for error handling', () => {
@@ -239,7 +245,23 @@ describe('AC-11.2 — prayerStore.ts: exported helpers', () => {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const store = require('../store/prayerStore') as typeof import('../store/prayerStore');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const aladhanSvc = require('../services/aladhanService') as typeof import('../services/aladhanService');
+const calcSvc = require('../services/prayerCalculation') as typeof import('../services/prayerCalculation');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const settings = require('../store/prayerSettingsStore') as typeof import('../store/prayerSettingsStore');
+
+// A fixed location so the store always has somewhere to calculate for.
+const TEST_LOCATION = {
+  name: 'Dubai',
+  countryCode: 'AE',
+  countryName: 'United Arab Emirates',
+  latitude: 25.077,
+  longitude: 55.309,
+  timezone: 'Asia/Dubai',
+};
+
+beforeAll(() => {
+  settings.usePrayerSettingsStore.setState({ chosenLocation: TEST_LOCATION });
+});
 
 
 describe('AC-11.2 — Behavioral: parseTimeToMinutes()', () => {
@@ -415,9 +437,9 @@ describe('AC-11.2 — Behavioral: fetchTimes() — success', () => {
       error: null,
     });
     jest.spyOn(
-      aladhanSvc,
-      'fetchPrayerTimes',
-    ).mockResolvedValue(mockTimes);
+      calcSvc,
+      'calculatePrayerTimes',
+    ).mockReturnValue(mockTimes);
   });
 
   afterEach(() => {
@@ -474,9 +496,11 @@ describe('AC-11.2 — Behavioral: fetchTimes() — failure', () => {
       error: null,
     });
     jest.spyOn(
-      aladhanSvc,
-      'fetchPrayerTimes',
-    ).mockRejectedValue(new Error('Network request failed'));
+      calcSvc,
+      'calculatePrayerTimes',
+    ).mockImplementation(() => {
+      throw new Error('Calculation failed');
+    });
   });
 
   afterEach(() => {
@@ -512,9 +536,9 @@ describe('AC-11.2 — Behavioral: fetchTimes() — failure', () => {
     // Now fix the mock to succeed and retry
     jest.restoreAllMocks();
     jest.spyOn(
-      aladhanSvc,
-      'fetchPrayerTimes',
-    ).mockResolvedValue(mockTimes);
+      calcSvc,
+      'calculatePrayerTimes',
+    ).mockReturnValue(mockTimes);
 
     await store.usePrayerStore.getState().fetchTimes();
     expect(store.usePrayerStore.getState().error).toBeNull();
@@ -537,9 +561,9 @@ describe('AC-11.2 — Behavioral: refreshIfStale()', () => {
       error: null,
     });
     jest.spyOn(
-      aladhanSvc,
-      'fetchPrayerTimes',
-    ).mockResolvedValue(mockTimes);
+      calcSvc,
+      'calculatePrayerTimes',
+    ).mockReturnValue(mockTimes);
   });
 
   afterEach(() => {
@@ -561,9 +585,9 @@ describe('AC-11.2 — Behavioral: refreshIfStale()', () => {
     // First fetch to set prayerTimes and fetchTimestamp
     await store.usePrayerStore.getState().fetchTimes();
     const fetchSpy = jest.spyOn(
-      aladhanSvc,
-      'fetchPrayerTimes',
-    ).mockResolvedValue(mockTimes);
+      calcSvc,
+      'calculatePrayerTimes',
+    ).mockReturnValue(mockTimes);
 
     // Reset call count
     fetchSpy.mockClear();
