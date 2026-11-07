@@ -3,10 +3,11 @@
 **Sprint Goal:** Make the Prayers and Account screens feel like a calm mosque at night instead of a templated app, fix prayer times that were several minutes off, let people set their city with clear confirmation, and notify them at each prayer time.
 
 **Sprint Duration:** 2026-11-07 (single working session, owner-requested)
-**Branch:** `feature/US-12-14-prayer-improvements` (uncommitted at hand-off, for owner review)
+**Branches:** `feature/US-12-14-prayer-improvements`, `feature/US-15-17-listening-and-icon` (both merged to `main`)
+**Release:** 1.1.0
 **Phase:** review
 **Last Updated:** 2026-11-07
-**Stories:** US-12 (Design refresh), US-13 (Accurate prayer times and location), US-14 (Prayer time notifications)
+**Stories:** US-12 (Design refresh, incl. new app icon), US-13 (Accurate prayer times and location), US-14 (Prayer time notifications), US-15 (Lock screen and car display), US-16 (Sleep timer), US-17 (Continue listening)
 **Research report:** `/reports/Prayer time accuracy fix.md` (notes in `/research_notes/Prayer time accuracy fix/`)
 
 ---
@@ -17,6 +18,8 @@
 2. Prayer times are off by a few minutes. Research why and fix it.
 3. Send prayer time notifications, written plainly: "It's time for Asr prayer". No emoji, no em dashes.
 4. The Account (profile) page also looks AI. The Update Location button needs instant feedback that confirms and names the location. Add the reciter's name: Saleh Ahmad Saleh.
+5. (Later the same day) Include all four recommended listening changes (US-15 to US-17), and replace the app icon everywhere with a new design (`assets/source/app-icon-source.jpeg`).
+6. Field check: Fajr showed 05:11 while the owner's mosque and Muslim Mate showed 05:06. Fixed in US-13 (see "Fajr correction").
 
 ---
 
@@ -82,7 +85,8 @@ The app called `api.aladhan.com/v1/timingsByCity/{date}?city={timezone city}&cou
 ### Fix
 
 - **On-device calculation with adhan-js** (`services/prayerCalculation.ts`). No network, works offline, can compute days ahead for notifications.
-- **UAE method fitted to the published timetable:** 18.2°/18.2° with sunrise −3.5, Dhuhr +3, Asr +1.25, Maghrib +3.5 minutes. It is calculated at Dubai and shifted per emirate (Abu Dhabi +4, Fujairah −6, others by longitude). This matches the official 7 Nov 2026 Dubai times within one minute for all five prayers (tested). adhan-js's built-in Dubai preset is 1–2 min late on Asr, so it is not used.
+- **UAE method fitted to the published timetable:** 18.2°/18.2° with Fajr −5, sunrise −3.5, Dhuhr +3, Asr +1.25, Maghrib +3.5 minutes. It is calculated at Dubai and shifted per emirate (Abu Dhabi +4, Fujairah −6, others by longitude). Dhuhr, Asr, Maghrib and Isha match the published 7 Nov 2026 Dubai times within one minute (tested). adhan-js's built-in Dubai preset is 1–2 min late on Asr, so it is not used.
+- **Fajr correction (owner field check, 7 Nov 2026):** the first build showed Fajr 05:11 while the owner's Dubai mosque and Muslim Mate showed 05:06. The Khaleej Times table used for the fit runs 5 minutes later than Awqaf for Fajr. Awqaf's published Dubai Fajr for 3 Feb 2026 (05:37; Abu Dhabi 05:41) confirms the same −5. Both are now tests. A 19.25° angle would give the same times within one minute all year.
 - **Country → method table** from the research: Umm al-Qura (SA, YE, IQ, SY), Qatar (QA, BH, OM), Kuwait, Egyptian, Jordan, Turkey, Tehran, Karachi with Hanafi Asr (PK, IN, BD, AF), JAKIM 18° (MY), Singapore 20° (SG, ID, BN), ISNA (US), Moonsighting (GB, CA), Russia, Morocco, Tunisia. Everywhere else uses the Muslim World League. High-latitude rule by latitude; polar days resolved to the nearest valid latitude.
 - **Location without GPS** (`services/locationService.ts`, `data/cities.json`): the default is the city that represents the phone's timezone. Users can pick any of 12,013 cities (GeoNames, population ≥ 50,000 plus capitals and admin seats, 480 KB). Nothing leaves the device.
 - **Instant confirmation:** after choosing a city, both the Prayers tab and Account show "Location updated. Prayer times are now for Abu Dhabi, United Arab Emirates." The city line updates at once, and the message is announced to VoiceOver/TalkBack.
@@ -91,7 +95,7 @@ The app called `api.aladhan.com/v1/timingsByCity/{date}?city={timezone city}&cou
 
 ### Known gaps
 
-- UAE offsets were fitted on November data only; check against a summer timetable.
+- UAE offsets were fitted on November data, with Fajr checked against February and November; check against a summer timetable.
 - Saudi Ramadan Isha (+30 min) is not applied.
 - Official shifts for Sharjah, Ajman, Umm Al Quwain, Ras Al Khaimah and Al Ain are longitude estimates (±1–2 min).
 - Contested countries: Oman (Qatar vs Dubai), Canada (Moonsighting vs ISNA), US (ISNA vs Moonsighting), France (MWL 18° vs UOIF 12°). The owner chose to keep automatic selection with no picker (see Calculation method decision above).
@@ -108,6 +112,64 @@ The app called `api.aladhan.com/v1/timingsByCity/{date}?city={timezone city}&cou
 - Android: notifications go to the "Prayer times" channel (high importance). `SCHEDULE_EXACT_ALARM` is declared so they arrive on the minute where the system allows; without it Android may deliver up to an hour late. `USE_EXACT_ALARM` is deliberately not used (Google Play restricts it to alarm/calendar apps).
 - The expo-notifications config plugin is deliberately not added to `app.json`: local notifications do not need it, and it would add a push entitlement to the iOS build.
 - Notifications are cancelled on logout and account deletion.
+
+---
+
+## US-15: Lock screen and car display
+
+**Status:** review
+
+What people see on the lock screen, in Control Centre, on CarPlay/Android Auto and on Bluetooth car displays (`services/trackQueue.ts`):
+
+| | Before | After |
+|---|---|---|
+| Title | "Al-Ikhlas — Aya 2" / "Al-Ikhlas — Intro" | "Al-Ikhlas, Ayah 2" / "Al-Ikhlas, Introduction" |
+| Artist | "shortSurahs" (the app's internal name) | "Saleh Ahmad Saleh" |
+| Album | (none) | "Short Surahs" |
+
+The player screen now says "Introduction" (matching the mini player) and "7 ayahs, Meccan" instead of "7 Ayahs · Meccan".
+
+---
+
+## US-16: Sleep timer
+
+**Status:** review
+
+Ayahs loop until the listener taps Next, so anyone who fell asleep listening heard the same ayah all night.
+
+- A quiet "Sleep timer" control under the player controls (`components/SleepTimerButton.tsx`). It opens a small sheet: 15 minutes, 30 minutes, 45 minutes, 1 hour, and "Turn off" while running. While running the control reads "Stops in 24 min" in gold.
+- The playback service pauses playback when the time is up (`services/playbackService.ts`). It checks on progress events every 5 seconds (`progressUpdateEventInterval: 5`), which keep arriving with the screen locked.
+- Pressing play after the timer ran out clears it, so playback is not stopped again a few seconds later.
+- State in `store/sleepTimerStore.ts` (not saved; a timer does not survive closing the app).
+
+---
+
+## US-17: Continue listening
+
+**Status:** review
+
+Before, closing the app lost the listener's place, and even tapping the mini player restarted the surah from the introduction.
+
+- The surah and ayah are saved on the device (`store/playerStore.ts`, AsyncStorage `player-storage`). After a restart the mini player shows them; Play resumes at that ayah (`components/NowPlayingBar.tsx`).
+- Opening the surah that is already loaded (from the mini player or the list) keeps the place. Opening the saved surah after a restart resumes at the saved ayah. Opening a different surah starts at its introduction, as before.
+- Nothing plays automatically on launch (`isPlaying` starts false).
+- The playback service now records track changes and sets ayah looping even when the player screen is closed. Previously, closing the player during the introduction meant the following ayahs did not loop, and lock-screen skips were not reflected in the mini player. Lock-screen play/pause now update the mini player's icon too.
+- Cleared on logout and account deletion, with the sleep timer.
+
+---
+
+## App icon (US-12)
+
+**Status:** review
+
+The owner supplied a new icon (`assets/source/app-icon-source.jpeg`): an open book with an infinity loop, copper on brown. It is a rendering of an icon (a rounded square on a cream border), so it cannot be used directly; iOS and Android apply their own corner masks.
+
+`scripts/build-icons.js` generates every asset from it:
+- Re-draws the brown vertical gradient full-bleed (no rounded corners, no edge highlight) and lifts only the logo from the source.
+- `icon.png` (1024, iOS and stores); `android-icon-foreground.png` (logo in the 72/108 visible zone); `android-icon-background.png`; `android-icon-monochrome.png` (Android 13+ themed icons); `splash-icon.png` (logo only, on the dark splash); `favicon.png`.
+- `app.json`: Android adaptive icon background changed from the template light blue `#E6F4FE` to the icon brown `#49291A`.
+
+**Recommendation:** export a full-bleed square PNG (1024 or larger, no border, no rounded corners) from the original design file and re-run `node scripts/build-icons.js <file>`. The current logo is upscaled about 1.25x from the JPEG and is slightly soft at App Store size.
 
 ---
 
@@ -136,18 +198,18 @@ The app called `api.aladhan.com/v1/timingsByCity/{date}?city={timezone city}&cou
 |---|---|
 | `npx tsc --noEmit` | pass |
 | `npx eslint . --max-warnings 0` | pass |
-| `npm test` | 54 suites, 1,861 tests, all passing (baseline before sprint: 51 suites, 1,864 tests) |
+| `npm test` | 55 suites, 1,889 tests, all passing (baseline before sprint: 51 suites, 1,864 tests) |
 | Accuracy tests under `TZ=UTC` and `TZ=America/New_York` | pass |
 | `npx expo export` iOS + Android (Metro + Hermes bytecode) | pass |
 | On-device visual review | **not done**: no simulator available. Owner to review. |
 
 The test count fell by 3 because 112 tests went with the code they tested: the Aladhan service tests (63) and the network-based offline tests (49, rewritten as 13 offline-calculation tests). They were replaced by on-device calculation, location, notification and design guard tests.
 
-New test files: `prayer-calculation.test.ts`, `location-service.test.ts`, `prayer-notifications.test.ts`, `design-refresh.test.ts`. Rewritten: `offline-degradation.test.ts`. Updated: `prayer-store.test.ts`, `prayers-schedule.test.ts`. Added `__mocks__/@react-native-async-storage/async-storage.js` (the package's own Jest mock).
+New test files: `prayer-calculation.test.ts`, `location-service.test.ts`, `prayer-notifications.test.ts`, `design-refresh.test.ts`, `playback-continuity.test.ts` (US-15 to US-17, icon assets). Rewritten: `offline-degradation.test.ts`. Updated: `prayer-store.test.ts`, `prayers-schedule.test.ts`. Added `__mocks__/@react-native-async-storage/async-storage.js` (the package's own Jest mock).
 
 ## Owner actions
 
-1. Review the screens on a device build (EAS development or preview profile).
+1. Review the screens on a device build. Also check: the new icon on the home screen and splash, the lock screen showing "Saleh Ahmad Saleh", the sleep timer stopping playback with the screen locked, and closing and reopening the app to see the mini player resume.
 2. New EAS build for both stores (native module + Android permission).
 3. App Store privacy answers do not change: no location is collected; the chosen city stays on device.
 4. REQ-7 resolved: Terms and Privacy now open `https://shortsurahs.app/terms-and-conditions.html` and `https://shortsurahs.app/privacy-policy.html` (the live app still has the `example.com` placeholders until this build ships).
