@@ -9,7 +9,9 @@
  *              Implements AC-9.2: Home tab shows surah list — tapping a surah
  *              calls router.push('/player/[surahId]').
  *              Implements AC-11.3: Next prayer banner via NextPrayerBanner.
- *              Implements AC-11.5: Offline graceful degradation via NextPrayerBanner.
+ *              Sprint 7 (US-13): prayer times are calculated on device, so the
+ *              banner has no offline state; it shows "Choose your city in Account"
+ *              only when the timezone has no city. After Isha it shows tomorrow's Fajr.
  *
  *              Header: ScreenHeader (safe area wrapper) + WelcomeHeader + NextPrayerBanner
  *              rendered as FlatList ListHeaderComponent (scrolls with list).
@@ -39,7 +41,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { getSurahs } from '../../data/dataUtils';
 import type { Surah } from '../../types';
-import { usePrayerStore } from '../../store/prayerStore';
+import { usePrayerStore, getNextPrayerTime } from '../../store/prayerStore';
 import { formatTime12h } from '../../utils/formatTime';
 import { colors } from '../../components/theme/colors';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -59,7 +61,15 @@ export default function SurahListScreen() {
   const router = useRouter();
   const [isFirstRun, setIsFirstRun] = useState(false);
 
-  const { prayerTimes, nextPrayer, isLoading, isOffline, refreshIfStale } = usePrayerStore();
+  const {
+    prayerTimes,
+    tomorrowFajr,
+    currentPrayer,
+    nextPrayer,
+    isLoading,
+    error,
+    refreshIfStale,
+  } = usePrayerStore();
 
   // Refresh prayer times if stale
   useEffect(() => {
@@ -82,8 +92,7 @@ export default function SurahListScreen() {
     checkFirstRun();
   }, []);
 
-  const nextPrayerTime =
-    prayerTimes && nextPrayer ? prayerTimes[nextPrayer] : null;
+  const nextPrayerTime = getNextPrayerTime(prayerTimes, currentPrayer, nextPrayer, tomorrowFajr);
 
   const formattedPrayerTime = nextPrayerTime ? formatTime12h(nextPrayerTime) : null;
 
@@ -95,7 +104,7 @@ export default function SurahListScreen() {
         prayerName={nextPrayer}
         prayerTime={formattedPrayerTime}
         isLoading={isLoading}
-        isOffline={isOffline}
+        isUnavailable={!!error && !prayerTimes}
       />
       <View style={styles.listGap} />
     </View>

@@ -4,8 +4,9 @@
  *              on the Account screen.
  *              Verifies account.tsx:
  *              - imports Linking from react-native
- *              - defines TOS_URL as 'https://example.com/terms'
- *              - defines PRIVACY_URL as 'https://example.com/privacy'
+ *              - defines TOS_URL as 'https://shortsurahs.app/terms-and-conditions.html'
+ *              - defines PRIVACY_URL as 'https://shortsurahs.app/privacy-policy.html'
+ *              (placeholders replaced with the live pages, Sprint 7 / REQ-7)
  *              - calls Linking.openURL with TOS_URL for Terms of Service link
  *              - calls Linking.openURL with PRIVACY_URL for Privacy Policy link
  *              - renders "Terms of Service" text
@@ -73,24 +74,28 @@ describe('AC-10.3 — account.tsx: Linking import', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Placeholder URLs
+// Legal URLs (live pages on shortsurahs.app)
 // ---------------------------------------------------------------------------
 
-describe('AC-10.3 — account.tsx: placeholder URLs', () => {
-  test('defines TOS_URL as https://example.com/terms', () => {
-    expect(src).toContain("'https://example.com/terms'");
+describe('AC-10.3 — account.tsx: legal URLs', () => {
+  test('defines TOS_URL as the live Terms and Conditions page', () => {
+    expect(src).toContain("'https://shortsurahs.app/terms-and-conditions.html'");
   });
 
-  test('defines PRIVACY_URL as https://example.com/privacy', () => {
-    expect(src).toContain("'https://example.com/privacy'");
+  test('defines PRIVACY_URL as the live Privacy Policy page', () => {
+    expect(src).toContain("'https://shortsurahs.app/privacy-policy.html'");
   });
 
   test('TOS_URL is assigned to a named constant', () => {
-    expect(src).toMatch(/TOS_URL\s*=\s*['"]https:\/\/example\.com\/terms['"]/);
+    expect(src).toMatch(/TOS_URL\s*=\s*['"]https:\/\/shortsurahs\.app\/terms-and-conditions\.html['"]/);
   });
 
   test('PRIVACY_URL is assigned to a named constant', () => {
-    expect(src).toMatch(/PRIVACY_URL\s*=\s*['"]https:\/\/example\.com\/privacy['"]/);
+    expect(src).toMatch(/PRIVACY_URL\s*=\s*['"]https:\/\/shortsurahs\.app\/privacy-policy\.html['"]/);
+  });
+
+  test('no example.com placeholders remain', () => {
+    expect(src).not.toMatch(/example\.com/);
   });
 });
 

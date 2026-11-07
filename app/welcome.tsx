@@ -233,7 +233,7 @@ export default function WelcomeScreen() {
             ]}
           >
             <Text style={styles.appName}>Short Surahs</Text>
-            <Text style={styles.tagline}>Listen. Learn. Recite.</Text>
+            <Text style={styles.tagline}>Learn the short surahs, one ayah at a time.</Text>
           </Animated.View>
         </View>
 
@@ -367,7 +367,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: 'center',
     marginTop: 8,
-    letterSpacing: 0.64,
+    letterSpacing: 0,
+    paddingHorizontal: 24, // a full sentence now; keep it off the screen edges
     // opacity: 0.7 stacks multiplicatively with parent Animated.View opacity (0→1),
     // so the tagline effectively fades from 0 to 0.7 during the entrance animation.
     opacity: 0.7,

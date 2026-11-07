@@ -1,9 +1,11 @@
 /**
  * @file components/WelcomeHeader.tsx
  * @description Sacred threshold header for the home screen.
- *              Renders: Bismillah calligraphy · "BEGIN YOUR JOURNEY" section
- *              label + SectionLabelLine · OrnamentalDivider · "Short Surahs"
- *              title · "سور قصيرة" Arabic subtitle · first-run guidance.
+ *              Renders: Bismillah calligraphy, OrnamentalDivider, "Short Surahs"
+ *              title, "سور قصيرة" Arabic subtitle, first-run guidance.
+ *              Sprint 7 (US-12): removed the tracked-caps "BEGIN YOUR JOURNEY"
+ *              eyebrow and its gradient line; the Bismillah already opens the
+ *              screen and the eyebrow read as template chrome.
  *              BackgroundTessellation covers the full header area at 6% gold
  *              opacity — the "geometric tilework at the periphery."
  *              Page load stagger: fade + 16px slide-up, 400ms, 70ms between groups.
@@ -23,13 +25,11 @@ import {
 } from 'react-native';
 import { BackgroundTessellation } from './patterns/BackgroundTessellation';
 import { OrnamentalDivider } from './patterns/OrnamentalDivider';
-import { SectionLabelLine } from './patterns/SectionLabelLine';
 import { colors } from './theme/colors';
 import {
   fontAmiriBold,
   fontAmiriRegular,
   fontOutfitRegular,
-  fontOutfitSemiBold,
   fontOutfitBold,
 } from './theme/typography';
 import { useReduceMotion, duration, stagger } from './theme/animations';
@@ -54,9 +54,8 @@ export function WelcomeHeader({ isFirstRun }: WelcomeHeaderProps) {
   // Horizontal padding: 16px compact (< 375px) or 24px standard
   const horizontalPadding = screenWidth < 375 ? 16 : 24;
 
-  // Five animated groups: Bismillah, section label, divider, title block, hint
+  // Four animated groups: Bismillah, divider, title block, hint
   const anim1 = useRef(new Animated.Value(0)).current; // Bismillah
-  const anim2 = useRef(new Animated.Value(0)).current; // Section label + line
   const anim3 = useRef(new Animated.Value(0)).current; // Ornamental divider
   const anim4 = useRef(new Animated.Value(0)).current; // Title + Arabic subtitle
   const anim5 = useRef(new Animated.Value(0)).current; // First-run hint
@@ -65,7 +64,6 @@ export function WelcomeHeader({ isFirstRun }: WelcomeHeaderProps) {
     if (reduceMotion) {
       // All elements appear immediately — no animation
       anim1.setValue(1);
-      anim2.setValue(1);
       anim3.setValue(1);
       anim4.setValue(1);
       anim5.setValue(1);
@@ -87,12 +85,11 @@ export function WelcomeHeader({ isFirstRun }: WelcomeHeaderProps) {
 
     Animated.parallel([
       makeAnim(anim1, 0),
-      makeAnim(anim2, staggerDelay),       // 70ms
-      makeAnim(anim3, staggerDelay * 2),   // 140ms
-      makeAnim(anim4, staggerDelay * 3),   // 210ms
-      makeAnim(anim5, staggerDelay * 4),   // 280ms
+      makeAnim(anim3, staggerDelay),       // 70ms
+      makeAnim(anim4, staggerDelay * 2),   // 140ms
+      makeAnim(anim5, staggerDelay * 3),   // 210ms
     ]).start();
-  }, [reduceMotion, anim1, anim2, anim3, anim4, anim5]);
+  }, [reduceMotion, anim1, anim3, anim4, anim5]);
 
   // Animated style: fade in + slide up 16px
   const animStyle = (anim: Animated.Value) => ({
@@ -129,28 +126,11 @@ export function WelcomeHeader({ isFirstRun }: WelcomeHeaderProps) {
           </Text>
         </Animated.View>
 
-        {/* Section label + line — 12px below Bismillah */}
-        <Animated.View
-          style={[{ marginTop: 12 }, animStyle(anim2)]}
-          accessible={false}
-          importantForAccessibility="no-hide-descendants"
-        >
-          <Text
-            style={styles.sectionLabel}
-            accessibilityElementsHidden={true}
-          >
-            BEGIN YOUR JOURNEY
-          </Text>
-          <SectionLabelLine />
-        </Animated.View>
-
         {/*
-          Ornamental divider
+          Ornamental divider — directly below the Bismillah.
           OrnamentalDivider has built-in marginVertical: 16px.
-          marginTop: -8 on this wrapper reduces the effective top gap from 16 to 8px.
-          Bottom gap stays 16px — matching "Divider to title: space-4".
         */}
-        <Animated.View style={[{ marginTop: -8 }, animStyle(anim3)]}>
+        <Animated.View style={animStyle(anim3)}>
           <OrnamentalDivider />
         </Animated.View>
 
@@ -212,16 +192,6 @@ const styles = StyleSheet.create({
     color: colors.accentGold,
     textAlign: 'center',
     marginTop: 8,               // small push down from top
-  },
-  sectionLabel: {
-    fontFamily: fontOutfitSemiBold,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-    letterSpacing: 1.44,        // +0.12em at 12px
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
   screenTitle: {
     fontFamily: fontOutfitBold,

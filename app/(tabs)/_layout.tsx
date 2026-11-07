@@ -19,8 +19,13 @@ import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import TabBar from '@/components/TabBar';
 import NowPlayingBar from '@/components/NowPlayingBar';
+import { usePrayerSync } from '@/hooks/usePrayerSync';
 
 export default function TabLayout() {
+  // Keeps prayer times, the next prayer, and prayer notifications current
+  // while the signed-in app is open (US-13, US-14).
+  usePrayerSync();
+
   return (
     <Tabs
       screenOptions={{

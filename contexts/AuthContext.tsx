@@ -39,6 +39,12 @@ import TrackPlayer from 'react-native-track-player';
 import { auth } from '../config/firebaseConfig';
 import { useOnboardingStore } from '../store/onboardingStore';
 import { usePlayerStore } from '../store/playerStore';
+import {
+  PRAYER_SETTINGS_DEFAULTS,
+  PRAYER_SETTINGS_STORAGE_KEY,
+  usePrayerSettingsStore,
+} from '../store/prayerSettingsStore';
+import { cancelPrayerNotifications } from '../services/prayerNotifications';
 
 // Initialize WebBrowser redirect handler for Expo Auth Session (Google OAuth)
 WebBrowser.maybeCompleteAuthSession();
@@ -172,7 +178,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Resets all persisted app state — player queue, player store, onboarding.
+   * Resets all persisted app state — player queue, player store, onboarding,
+   * prayer settings (chosen city, notification preference) and any scheduled
+   * prayer notifications.
    * Called on both logout and deleteAccount so no state leaks between users.
    * Runs async operations in parallel to minimize latency.
    */
@@ -180,13 +188,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Reset in-memory stores immediately (non-blocking)
     usePlayerStore.setState({ currentSurahId: null, currentTrackIndex: 0, isPlaying: false });
     useOnboardingStore.setState({ hasSeenPlayerWalkthrough: false });
+    usePrayerSettingsStore.setState({ ...PRAYER_SETTINGS_DEFAULTS });
 
     // Run async cleanup in parallel
     await Promise.all([
       (async () => {
         try { await TrackPlayer.reset(); } catch { /* player may not be initialized */ }
       })(),
+      (async () => {
+        try { await cancelPrayerNotifications(); } catch { /* notifications unavailable */ }
+      })(),
       AsyncStorage.removeItem('onboarding-storage'),
+      AsyncStorage.removeItem(PRAYER_SETTINGS_STORAGE_KEY),
     ]);
   };
 

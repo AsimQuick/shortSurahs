@@ -102,8 +102,10 @@ describe('AC-11.4 — usePrayerStore integration', () => {
     expect(src).toContain('error');
   });
 
-  test('destructures fetchTimes from usePrayerStore()', () => {
-    expect(src).toContain('fetchTimes');
+  test('reads tomorrowFajr and currentPrayer for the next-prayer niche (Sprint 7)', () => {
+    expect(src).toContain('tomorrowFajr');
+    expect(src).toContain('currentPrayer');
+    expect(src).toContain('getNextPrayerTime');
   });
 
   test('destructures refreshIfStale from usePrayerStore()', () => {
@@ -168,7 +170,9 @@ describe('AC-11.4 — loading state', () => {
 // Error state with retry
 // ---------------------------------------------------------------------------
 
-describe('AC-11.4 — error state with retry button', () => {
+// Sprint 7 (US-13): times are calculated on device, so the only empty state
+// is "no city for this timezone". Its button opens the city picker.
+describe('AC-11.4 — empty state with choose-city button', () => {
   test('imports Pressable from react-native', () => {
     expect(src).toContain('Pressable');
   });
@@ -177,16 +181,17 @@ describe('AC-11.4 — error state with retry button', () => {
     expect(src).toMatch(/\{error\}/);
   });
 
-  test('has retry button with accessibilityLabel mentioning Retry', () => {
-    expect(src).toMatch(/accessibilityLabel.*Retry|Retry.*accessibilityLabel/);
+  test('button has accessibilityLabel "Choose your city"', () => {
+    expect(src).toContain('accessibilityLabel="Choose your city"');
   });
 
-  test('retry button calls fetchTimes on press', () => {
-    expect(src).toMatch(/onPress.*fetchTimes|onPress=\{fetchTimes\}/);
+  test('button opens the city picker', () => {
+    expect(src).toMatch(/onPress=\{openPicker\}/);
+    expect(src).toContain('<CityPickerModal');
   });
 
-  test('retry button text contains "Retry"', () => {
-    expect(src).toContain('Retry');
+  test('button text is "Choose your city"', () => {
+    expect(src).toMatch(/>Choose your city</);
   });
 
   test('has retryButton style', () => {
@@ -301,8 +306,8 @@ describe('AC-11.4 — dark-only design', () => {
     expect(src).toMatch(/colors\./);
   });
 
-  test('title text is "Prayer Times"', () => {
-    expect(src).toContain('Prayer Times');
+  test('title text is "Prayer times" (sentence case, Sprint 7)', () => {
+    expect(src).toMatch(/>\s*Prayer times\s*</);
   });
 
   test('uses ScrollView for scrollable layout', () => {
