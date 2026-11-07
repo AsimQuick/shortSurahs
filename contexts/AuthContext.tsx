@@ -38,7 +38,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import TrackPlayer from 'react-native-track-player';
 import { auth } from '../config/firebaseConfig';
 import { useOnboardingStore } from '../store/onboardingStore';
-import { usePlayerStore } from '../store/playerStore';
+import { PLAYER_STORAGE_KEY, usePlayerStore } from '../store/playerStore';
+import { useSleepTimerStore } from '../store/sleepTimerStore';
 import {
   PRAYER_SETTINGS_DEFAULTS,
   PRAYER_SETTINGS_STORAGE_KEY,
@@ -178,7 +179,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Resets all persisted app state — player queue, player store, onboarding,
+   * Resets all persisted app state — player queue, player store (saved place),
+   * sleep timer, onboarding,
    * prayer settings (chosen city, notification preference) and any scheduled
    * prayer notifications.
    * Called on both logout and deleteAccount so no state leaks between users.
@@ -187,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetAppState = async () => {
     // Reset in-memory stores immediately (non-blocking)
     usePlayerStore.setState({ currentSurahId: null, currentTrackIndex: 0, isPlaying: false });
+    useSleepTimerStore.getState().cancel();
     useOnboardingStore.setState({ hasSeenPlayerWalkthrough: false });
     usePrayerSettingsStore.setState({ ...PRAYER_SETTINGS_DEFAULTS });
 
@@ -199,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try { await cancelPrayerNotifications(); } catch { /* notifications unavailable */ }
       })(),
       AsyncStorage.removeItem('onboarding-storage'),
+      AsyncStorage.removeItem(PLAYER_STORAGE_KEY),
       AsyncStorage.removeItem(PRAYER_SETTINGS_STORAGE_KEY),
     ]);
   };

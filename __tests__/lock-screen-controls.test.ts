@@ -3,7 +3,7 @@
  * @description Unit tests for AC-6.2: Lock screen controls.
  *              Verifies that:
  *              - Track metadata includes the surah nameEnglish and aya number
- *                in the title (e.g. "Al-Fatiha — Aya 1") so the OS lock screen
+ *                in the title (e.g. "Al-Fatiha, Ayah 1") so the OS lock screen
  *                and Android notification display the correct surah name.
  *              - Track artwork is set so the lock screen displays cover art.
  *              - TrackPlayer capabilities expose play/pause/next/previous
@@ -63,7 +63,7 @@ describe('AC-6.2 — Lock screen title: surah name and aya number', () => {
 
   test('track title format: surah name comes before aya number', () => {
     // The surah name must precede the aya number in the title template,
-    // matching the expected "Al-Fatiha — Aya 1" display format.
+    // matching the expected "Al-Fatiha, Ayah 1" display format.
     expect(trackQueueSource).toMatch(
       /title\s*:\s*`\$\{surah\.nameEnglish\}[\s\S]*?Aya[\s\S]*?\$\{i \+ 1\}/
     );
@@ -219,71 +219,71 @@ describe('AC-6.2 — Behavioural: lock screen title format at runtime', () => {
   });
 
   // V2: index 0 = Intro, index 1 = Aya 1 (Al-Fatiha has 7 ayahs + intro = 8 tracks)
-  test('1-fatiha intro track title is "Al-Fatiha — Intro"', async () => {
+  test('1-fatiha intro track title is "Al-Fatiha, Introduction"', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Fatiha — Intro');
+    expect(tracks[0].title).toBe('Al-Fatiha, Introduction');
   });
 
-  test('1-fatiha first ayah track title is "Al-Fatiha — Aya 1" (index 1)', async () => {
+  test('1-fatiha first ayah track title is "Al-Fatiha, Ayah 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[1].title).toBe('Al-Fatiha — Aya 1');
+    expect(tracks[1].title).toBe('Al-Fatiha, Ayah 1');
   });
 
-  test('1-fatiha last track title is "Al-Fatiha — Aya 7" (index 7)', async () => {
+  test('1-fatiha last track title is "Al-Fatiha, Ayah 7" (index 7)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[7].title).toBe('Al-Fatiha — Aya 7');
+    expect(tracks[7].title).toBe('Al-Fatiha, Ayah 7');
   });
 
   // 112-ikhlas: 4 ayahs + intro = 5 tracks; index 0=Intro, 1=Aya1, ..., 4=Aya4
-  test('112-ikhlas first ayah track title is "Al-Ikhlas — Aya 1" (index 1)', async () => {
+  test('112-ikhlas first ayah track title is "Al-Ikhlas, Ayah 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[1].title).toBe('Al-Ikhlas — Aya 1');
+    expect(tracks[1].title).toBe('Al-Ikhlas, Ayah 1');
   });
 
-  test('112-ikhlas last track title is "Al-Ikhlas — Aya 4" (index 4)', async () => {
+  test('112-ikhlas last track title is "Al-Ikhlas, Ayah 4" (index 4)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 4');
+    expect(tracks[4].title).toBe('Al-Ikhlas, Ayah 4');
   });
 
   // 113-falaq: 5 ayahs + intro = 6 tracks; index 1 = Aya 1
-  test('113-falaq first ayah track title is "Al-Falaq — Aya 1" (index 1)', async () => {
+  test('113-falaq first ayah track title is "Al-Falaq, Ayah 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('113-falaq');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[1].title).toBe('Al-Falaq — Aya 1');
+    expect(tracks[1].title).toBe('Al-Falaq, Ayah 1');
   });
 
   // 114-nas: 6 ayahs + intro = 7 tracks; index 1 = Aya 1, index 6 = Aya 6
-  test('114-nas first ayah track title is "An-Nas — Aya 1" (index 1)', async () => {
+  test('114-nas first ayah track title is "An-Nas, Ayah 1" (index 1)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('114-nas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[1].title).toBe('An-Nas — Aya 1');
+    expect(tracks[1].title).toBe('An-Nas, Ayah 1');
   });
 
-  test('114-nas last track title is "An-Nas — Aya 6" (index 6)', async () => {
+  test('114-nas last track title is "An-Nas, Ayah 6" (index 6)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('114-nas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[6].title).toBe('An-Nas — Aya 6');
+    expect(tracks[6].title).toBe('An-Nas, Ayah 6');
   });
 
   test('all 1-fatiha tracks have artwork set (cover art appears on lock screen)', async () => {

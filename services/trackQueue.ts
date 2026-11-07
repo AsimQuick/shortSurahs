@@ -5,8 +5,12 @@
  *              loadSurahQueue() clears any existing queue with TrackPlayer.reset(),
  *              then builds and adds all tracks for the selected surah from
  *              bundled assets (no streaming). Track metadata includes:
- *                - title: surah name + "Intro" or "Aya N"
- *                - artist: "shortSurahs"
+ *                - title: "Al-Ikhlas, Introduction" or "Al-Ikhlas, Ayah 2"
+ *                  (Sprint 7: was "Al-Ikhlas — Aya 2")
+ *                - artist: the reciter, Saleh Ahmad Saleh (Sprint 7: was
+ *                  "shortSurahs"), shown on the lock screen, CarPlay/Android
+ *                  Auto and Bluetooth car displays
+ *                - album: "Short Surahs"
  *                - artwork: bundled require() asset from artworkMap
  *                - url: bundled require() asset from audioMap
  *              Implements AC-5.3: Loop behavior (PRD Rule 1).
@@ -39,14 +43,23 @@
  *              (index 0) plays exactly once, then RNTP auto-advances to ayah 1.
  *              skipToTrack(index) sets RepeatMode.Off when index === 0 (navigating
  *              back to intro) and RepeatMode.Track when index > 0 (ayah looping).
+ *              Sprint 7 (US-17, continue listening): loadSurahQueue(surahId,
+ *              startIndex) can start at a saved ayah, and isSurahQueued() tells
+ *              whether a surah is already loaded so returning to it keeps the
+ *              listener's place instead of restarting from the intro.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2; Sprint 5 — US-7 AC-7.1, AC-7.4
+ * @sprint Sprint 2 — US-5 AC-5.2, AC-5.3; Sprint 3 — US-5 AC-5.4, AC-5.5, AC-5.6, AC-5.8; Sprint 4 — US-6 AC-6.2; Sprint 5 — US-7 AC-7.1, AC-7.4; Sprint 7 — US-15, US-17
  */
 
 import TrackPlayer, { RepeatMode } from 'react-native-track-player';
 import { getSurahs } from '../data/dataUtils';
 import { getArtwork } from '../data/artworkMap';
 import { getAudioAsset } from '../data/audioMap';
+import { RECITER_NAME } from '../data/reciter';
+import { clearExpiredSleepTimer } from '../store/sleepTimerStore';
+
+/** Album name shown with the reciter on lock screens and car displays. */
+export const ALBUM_NAME = 'Short Surahs';
 
 /**
  * Loads all tracks for the given surah into the TrackPlayer queue.
@@ -56,7 +69,7 @@ import { getAudioAsset } from '../data/audioMap';
  *
  * @param surahId - The surah id (e.g. "1-fatiha", "112-ikhlas")
  */
-export async function loadSurahQueue(surahId: string): Promise<void> {
+export async function loadSurahQueue(surahId: string, startIndex = 0): Promise<void> {
   const surah = getSurahs().find((s) => s.id === surahId);
   if (!surah) return;
 
@@ -75,6 +88,7 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     url: string;
     title: string;
     artist: string;
+    album: string;
     artwork: string;
   }[] = [];
 
@@ -89,8 +103,9 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     validTracks.push({
       id: introKey,
       url: introAudioAsset as unknown as string,
-      title: `${surah.nameEnglish} — Intro`,
-      artist: 'shortSurahs',
+      title: `${surah.nameEnglish}, Introduction`,
+      artist: RECITER_NAME,
+      album: ALBUM_NAME,
       artwork: getArtwork(surah.transliterationKey, 'intro') as unknown as string,
     });
   }
@@ -108,8 +123,9 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
     validTracks.push({
       id: trackKey,
       url: audioAsset as unknown as string,
-      title: `${surah.nameEnglish} — Aya ${i + 1}`,
-      artist: 'shortSurahs',
+      title: `${surah.nameEnglish}, Ayah ${i + 1}`,
+      artist: RECITER_NAME,
+      album: ALBUM_NAME,
       artwork: getArtwork(surah.transliterationKey, String(i + 1)) as unknown as string,
     });
   }
@@ -124,11 +140,37 @@ export async function loadSurahQueue(surahId: string): Promise<void> {
 
   await TrackPlayer.add(validTracks);
 
+  clearExpiredSleepTimer();
+
+  // US-17: resume at a saved ayah. Ayahs loop, so the loop mode goes on at once.
+  if (startIndex > 0 && startIndex < validTracks.length) {
+    await TrackPlayer.skip(startIndex);
+    await TrackPlayer.setRepeatMode(RepeatMode.Track);
+    await TrackPlayer.play();
+    return;
+  }
+
   // AC-7.4: Start with RepeatMode.Off so the intro (index 0) plays exactly once,
   // then RNTP auto-advances to ayah 1. The player screen's event listener switches
   // to RepeatMode.Track when the first ayah begins.
   await TrackPlayer.setRepeatMode(RepeatMode.Off);
   await TrackPlayer.play();
+}
+
+/**
+ * True when the player queue already holds this surah's tracks, e.g. when the
+ * listener returns to the surah that is playing. US-17.
+ */
+export async function isSurahQueued(surahId: string): Promise<boolean> {
+  const surah = getSurahs().find((s) => s.id === surahId);
+  if (!surah) return false;
+  try {
+    const queue = await TrackPlayer.getQueue();
+    const firstId = queue[0]?.id;
+    return typeof firstId === 'string' && firstId.startsWith(`${surah.transliterationKey}-`);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -164,6 +206,7 @@ export async function togglePlayPause(isPlaying: boolean): Promise<void> {
   if (isPlaying) {
     await TrackPlayer.pause();
   } else {
+    clearExpiredSleepTimer();
     await TrackPlayer.play();
   }
 }

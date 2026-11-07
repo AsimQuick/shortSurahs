@@ -20,6 +20,9 @@
  *              Design tokens: bg-surface (#1A1520), 64px height, Outfit text,
  *              custom SVG artwork per surah, react-native-svg gradients.
  *
+ *              Continue listening (Sprint 7, US-17): after a restart the bar
+ *              shows the saved surah and ayah; Play loads and resumes it there.
+ *
  *              Track text (Sprint 7, US-12): two lines, like a music app's title
  *              and artist, instead of "Al-Ikhlas · Ayah 2 of 4" on one line:
  *                Al-Ikhlas            (Outfit Medium 15, cream)
@@ -61,7 +64,7 @@ import Svg, {
 } from 'react-native-svg';
 import { usePlayerStore } from '@/store/playerStore';
 import { getSurahs } from '@/data/dataUtils';
-import { togglePlayPause } from '@/services/trackQueue';
+import { isSurahQueued, loadSurahQueue, togglePlayPause } from '@/services/trackQueue';
 import { colors } from '@/components/theme/colors';
 import { useReduceMotion } from '@/components/theme/animations';
 import PlayIcon from '@/components/icons/PlayIcon';
@@ -285,7 +288,14 @@ export default function NowPlayingBar() {
     router.push({ pathname: '/player/[surahId]', params: { surahId: currentSurahId } });
   };
 
-  const handlePlayPause = () => {
+  const handlePlayPause = async () => {
+    // US-17: after the app was closed the bar shows the saved place, but the
+    // player queue is empty. Play loads the saved surah at the saved ayah.
+    if (!isPlaying && !(await isSurahQueued(currentSurahId))) {
+      setIsPlaying(true);
+      loadSurahQueue(currentSurahId, currentTrackIndex).catch(() => setIsPlaying(false));
+      return;
+    }
     // Update store immediately for responsive UI; service call follows
     setIsPlaying(!isPlaying);
     togglePlayPause(isPlaying);

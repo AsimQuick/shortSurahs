@@ -164,12 +164,13 @@ describe('AC-5.2 — services/trackQueue.ts queue behaviour', () => {
   });
 
   test('track title includes surah nameEnglish and aya number (AC-6.2: lock screen metadata)', () => {
-    // Title format is "${surah.nameEnglish} — Aya ${i + 1}" so lock screen shows surah name.
+    // Title format is "${surah.nameEnglish}, Ayah ${i + 1}" so lock screen shows surah name.
     expect(trackQueueSource).toMatch(/title\s*:\s*`\$\{surah\.nameEnglish\}.*Aya.*\$\{i \+ 1\}/);
   });
 
-  test('track artist is "shortSurahs"', () => {
-    expect(trackQueueSource).toContain("artist: 'shortSurahs'");
+  test('track artist is the reciter', () => {
+    // Sprint 7: the reciter, not the app's internal name.
+    expect(trackQueueSource).toContain('artist: RECITER_NAME');
   });
 
   test('track artwork uses getArtwork() (bundled require asset)', () => {
@@ -205,7 +206,8 @@ describe('AC-5.2 — app/player/[surahId].tsx integration', () => {
   });
 
   test('loadSurahQueue is called with surahId', () => {
-    expect(playerSource).toMatch(/loadSurahQueue\s*\(\s*surahId/);
+    // Sprint 7: the route param is read into `id`; a saved place may add a start index.
+    expect(playerSource).toMatch(/loadSurahQueue\s*\(\s*(surahId|id)\b/);
   });
 
   test('file header documents AC-5.2', () => {
@@ -297,22 +299,22 @@ describe('AC-5.2 — Behavioral: loadSurahQueue clears queue before loading new 
   });
 
   // AC-7.1: first track is Intro, then Aya 1..N
-  test('track titles for 112-ikhlas: first is Intro, then Aya 1 through Aya 4 (AC-6.2: surah name + aya)', async () => {
+  test('track titles for 112-ikhlas: first is the Introduction, then Ayah 1 through Ayah 4 (AC-6.2: surah name + aya)', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('112-ikhlas');
     const tracks = mockAdd.mock.calls[0][0] as { title: string }[];
-    expect(tracks[0].title).toBe('Al-Ikhlas — Intro');
-    expect(tracks[1].title).toBe('Al-Ikhlas — Aya 1');
-    expect(tracks[4].title).toBe('Al-Ikhlas — Aya 4');
+    expect(tracks[0].title).toBe('Al-Ikhlas, Introduction');
+    expect(tracks[1].title).toBe('Al-Ikhlas, Ayah 1');
+    expect(tracks[4].title).toBe('Al-Ikhlas, Ayah 4');
   });
 
-  test('all tracks have artist "shortSurahs"', async () => {
+  test('all tracks have the reciter as artist', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { loadSurahQueue } = require('../services/trackQueue') as typeof import('../services/trackQueue');
     await loadSurahQueue('1-fatiha');
     const tracks = mockAdd.mock.calls[0][0] as { artist: string }[];
-    tracks.forEach((t) => expect(t.artist).toBe('shortSurahs'));
+    tracks.forEach((t) => expect(t.artist).toBe('Saleh Ahmad Saleh'));
   });
 
   test('queue-clearing: second open with different surah resets queue (reset called twice)', async () => {
