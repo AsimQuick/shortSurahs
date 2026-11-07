@@ -4,7 +4,7 @@
 A distraction-free Quran memorization app that plays looping ayah tracks offline — on phone and in the car. V2 adds user accounts, prayer awareness, and an expanded 17-surah library.
 
 ## Product Pillars
-- **Offline-first** — All audio bundled locally, zero network dependency. Network used only for auth and prayer times
+- **Offline-first** — All audio bundled locally, zero network dependency. Prayer times are calculated on device. Network used only for auth
 - **Simplicity** — Minimal Apple Music-style UI, bottom tab navigation (Home, Prayers, Account)
 - **Memorization-focused** — Loop-until-ready playback model. Intros play once, ayahs loop. Per-ayah artwork
 - **Privacy-respecting** — No geolocation. Prayer times from timezone only. No ads, no tracking
@@ -15,7 +15,8 @@ A distraction-free Quran memorization app that plays looping ayah tracks offline
 - **Audio Engine:** react-native-track-player (lock screen, CarPlay, Android Auto, background audio)
 - **State Management:** Zustand
 - **Authentication:** Firebase Auth (Email, Apple Sign-In, Google Sign-In)
-- **Prayer Times:** Aladhan API (timezone-based, no geolocation)
+- **Prayer Times:** adhan-js, calculated on device (no API). Location = city from the device timezone or a city the user picks; no geolocation
+- **Notifications:** expo-notifications, local only (prayer time reminders)
 - **Video:** expo-video (login screen background)
 - **Platforms:** iOS, Android
 - **Backend:** Firebase Auth only — no Firestore, no data sync
@@ -31,7 +32,6 @@ A distraction-free Quran memorization app that plays looping ayah tracks offline
 - All code files must include structured front matter / metadata header comments
 - Sprint documentation lives in `/scrum-master/`
 - `project-state.json` is owned exclusively by the Project Lead — agents do not modify it
-- After updating any documentation in `/scrum-master/`, use `mcp__devrag__reindex_document` to re-index
 
 ## Agent Reference
 - **Product Owner:** Backlog, user stories, sprint files, change control (does NOT write code)
