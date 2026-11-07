@@ -15,6 +15,15 @@
  *              AC-7.5: getArtwork() per-ayah artwork resolution
  *
  *              Track label format updated to "Intro" / "Ayah N of M".
+ *
+ *              Sprint 7:
+ *              - Wording: "Introduction" (matches the mini player) and
+ *                "7 ayahs, Meccan" instead of "7 Ayahs · Meccan" (US-15).
+ *              - Continue listening (US-17): opening the surah that is already
+ *                loaded keeps the listener's place instead of restarting from the
+ *                intro; after the app was closed, opening the saved surah resumes
+ *                at the saved ayah.
+ *              - Sleep timer control under the playback controls (US-16).
  * @project shortSurahs
  */
 
@@ -36,7 +45,12 @@ import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from '
 import { CopilotProvider, CopilotStep, useCopilot, walkthroughable, type TooltipProps } from 'react-native-copilot';
 import { getSurahs } from '../../data/dataUtils';
 import { getArtwork } from '../../data/artworkMap';
-import { loadSurahQueue, skipToTrack, togglePlayPause } from '../../services/trackQueue';
+import {
+  isSurahQueued,
+  loadSurahQueue,
+  skipToTrack,
+  togglePlayPause,
+} from '../../services/trackQueue';
 import { usePlayerStore } from '../../store/playerStore';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { colors } from '../../components/theme/colors';
@@ -45,6 +59,7 @@ import { useReduceMotion, duration } from '../../components/theme/animations';
 import { SectionLabelLine } from '../../components/patterns/SectionLabelLine';
 import BackChevron from '../../components/icons/BackChevron';
 import PlayerControls from '../../components/PlayerControls';
+import { SleepTimerButton } from '../../components/SleepTimerButton';
 
 // Walkthroughable wrappers for copilot spotlight
 const WalkthroughableText = walkthroughable(Text);
@@ -181,10 +196,10 @@ function PlayerScreenInner() {
   const trackPart = currentTrackIndex === 0 ? 'intro' : String(currentTrackIndex);
   const artwork = surah ? getArtwork(surah.transliterationKey, trackPart) : undefined;
 
-  // Track label: "Intro" for index 0, "Ayah N of M" for ayah tracks
+  // Track label: "Introduction" for index 0, "Ayah N of M" for ayah tracks
   const ayahCount = surah?.ayahCount ?? 0;
   const trackLabel =
-    currentTrackIndex === 0 ? 'Intro' : `Ayah ${currentTrackIndex} of ${ayahCount}`;
+    currentTrackIndex === 0 ? 'Introduction' : `Ayah ${currentTrackIndex} of ${ayahCount}`;
 
   // Disabled states
   const isPrevDisabled = currentTrackIndex === 0;
@@ -313,8 +328,28 @@ function PlayerScreenInner() {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    setCurrentSurahId(surahId as string);
-    loadSurahQueue(surahId as string).catch(() => {});
+    let cancelled = false;
+    const id = surahId as string;
+    (async () => {
+      const saved = usePlayerStore.getState();
+      if (saved.currentSurahId === id) {
+        // US-17: this surah is the one in progress.
+        // Already loaded (e.g. opened from the mini player): keep the place.
+        if (await isSurahQueued(id)) return;
+        if (cancelled) return;
+        // Saved from an earlier session: continue at the saved ayah.
+        saved.setIsPlaying(true);
+        await loadSurahQueue(id, saved.currentTrackIndex);
+        return;
+      }
+      if (cancelled) return;
+      // A different surah: start it from the introduction (AC-5.2).
+      setCurrentSurahId(id);
+      await loadSurahQueue(id);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [surahId, setCurrentSurahId]);
 
   // ---------------------------------------------------------------------------
@@ -522,9 +557,9 @@ function PlayerScreenInner() {
             {surah.meaning}
           </Text>
 
-          {/* Metadata — "{ayahCount} Ayahs · Meccan/Medinan" — Outfit Regular 12px, text-secondary */}
+          {/* Metadata — "7 ayahs, Meccan" — Outfit Regular 12px, text-secondary */}
           <Text style={styles.metadata} numberOfLines={1}>
-            {surah.ayahCount} Ayahs · {surah.revelationType}
+            {surah.ayahCount} ayahs, {surah.revelationType}
           </Text>
 
           {/* Section label line — gold fade accent, centered */}
@@ -532,7 +567,7 @@ function PlayerScreenInner() {
             <SectionLabelLine />
           </View>
 
-          {/* Track indicator — "Intro" or "Ayah N of M" */}
+          {/* Track indicator — "Introduction" or "Ayah N of M" */}
           <CopilotStep
             text="Each surah begins with an introduction. Learning the key themes and vocabulary helps anchor your memorisation."
             order={1}
@@ -572,6 +607,10 @@ function PlayerScreenInner() {
               </CopilotStep>
             )}
           />
+          {/* Sleep timer (US-16) */}
+          <View style={styles.sleepTimer}>
+            <SleepTimerButton />
+          </View>
         </Animated.View>
       </ScrollView>
     </View>
@@ -720,6 +759,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     width: '100%',
     alignItems: 'center',
+  },
+  sleepTimer: {
+    marginTop: 16,
   },
 
   // Not-found state

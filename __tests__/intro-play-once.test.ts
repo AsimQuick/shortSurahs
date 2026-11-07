@@ -104,8 +104,8 @@ describe('AC-7.4 — app/player/[surahId].tsx: event handler for auto-advance', 
 
 describe('AC-7.4 — app/player/[surahId].tsx: "Intro" label for track index 0', () => {
   test('trackLabel is defined and shows "Intro" for index 0', () => {
-    // trackLabel ternary: currentTrackIndex === 0 ? 'Intro' : `Aya ${currentTrackIndex}`
-    expect(playerSource).toMatch(/currentTrackIndex\s*===\s*0\s*\?\s*'Intro'/);
+    // Sprint 7: "Introduction" (matches the mini player)
+    expect(playerSource).toMatch(/currentTrackIndex\s*===\s*0\s*\?\s*'Introduction'/);
   });
 
   test('trackLabel shows "Aya ${currentTrackIndex}" for index > 0', () => {
@@ -118,7 +118,7 @@ describe('AC-7.4 — app/player/[surahId].tsx: "Intro" label for track index 0',
   });
 
   test('"Intro" string literal appears in the track label expression', () => {
-    expect(playerSource).toContain("'Intro'");
+    expect(playerSource).toContain("'Introduction'");
   });
 
   test('aya indicator does NOT hardcode "Aya 1" (must be dynamic)', () => {

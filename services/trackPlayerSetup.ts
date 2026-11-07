@@ -5,8 +5,10 @@
  *              updateOptions() to declare the transport capabilities exposed
  *              to the OS (lock screen, notification, CarPlay).
  *              Called inside a useEffect in app/_layout.tsx.
+ *              Sprint 7 (US-16): progress events every 5 seconds let the
+ *              playback service enforce the sleep timer with the screen locked.
  * @project shortSurahs
- * @sprint Sprint 2 — US-5 AC-5.1
+ * @sprint Sprint 2 — US-5 AC-5.1; Sprint 7 — US-16
  */
 
 import TrackPlayer, { Capability } from 'react-native-track-player';
@@ -30,5 +32,7 @@ export async function setupTrackPlayer(): Promise<void> {
       Capability.Play,
       Capability.Pause,
     ],
+    // Sleep timer check interval (seconds), see services/playbackService.ts.
+    progressUpdateEventInterval: 5,
   });
 }

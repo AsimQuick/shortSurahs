@@ -231,24 +231,24 @@ describe('AC-6.4 — Track metadata for Android notification current track info'
   });
 
   test('track title includes the surah English name', () => {
-    // e.g. "Al-Fatiha — Aya 1" — the surah name is what appears as the
+    // e.g. "Al-Fatiha, Ayah 1" — the surah name is what appears as the
     // track title in the Android notification.
     expect(trackQueueSource).toMatch(/surah\.nameEnglish/);
   });
 
   test('track title includes the aya number', () => {
     // Aya number displayed in the Android notification alongside the surah name.
-    expect(trackQueueSource).toMatch(/Aya\s/);
+    expect(trackQueueSource).toMatch(/Ayah\s/);
   });
 
-  test('track title format is "surahName — Aya N"', () => {
-    // Full title format: surah name + em dash + aya number.
-    expect(trackQueueSource).toMatch(/`\$\{surah\.nameEnglish\}\s*—\s*Aya\s/);
+  test('track title format is "surahName, Ayah N" (Sprint 7: no em dash)', () => {
+    expect(trackQueueSource).toMatch(/`\$\{surah\.nameEnglish\}, Ayah\s/);
   });
 
   test('track artist is set (displayed below the track title in notification)', () => {
     // The artist field appears as a subtitle in the Android notification.
-    expect(trackQueueSource).toContain("artist: 'shortSurahs'");
+    // Sprint 7: the reciter, not the app's internal name.
+    expect(trackQueueSource).toContain('artist: RECITER_NAME');
   });
 
   test('track artwork is set via getArtwork() (displayed in notification thumbnail)', () => {

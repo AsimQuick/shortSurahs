@@ -2,7 +2,10 @@
  * @file __tests__/prayer-calculation.test.ts
  * @description Tests for services/prayerCalculation.ts (US-13).
  *              - UAE times match the official Dubai timetable for 7 Nov 2026
- *                (published via Khaleej Times: 05:11, 12:05, 15:13, 17:38, 18:54)
+ *                (Khaleej Times: 12:05, 15:13, 17:38, 18:54) to within one minute.
+ *              - UAE Fajr matches Awqaf and a Dubai mosque, which are 5 min
+ *                earlier than the Khaleej Times table: 05:37 on 3 Feb 2026
+ *                (Abu Dhabi 05:41) and 05:06 on 8 Nov 2026.
  *                to within one minute.
  *              - Emirate shifts: Abu Dhabi +4 min, Fujairah -6 min from Dubai.
  *              - The old setup (ISNA 15°) is shown to be the cause of the error.
@@ -65,8 +68,10 @@ function minutesOf(hhmm: string): number {
   return h! * 60 + m!;
 }
 
+// Fajr from the owner's Dubai mosque (and Muslim Mate); the rest from Khaleej
+// Times, whose Fajr (05:11) runs 5 min later than Awqaf.
 const OFFICIAL_DUBAI_NOV_7: Record<PrayerKey, string> = {
-  Fajr: '05:11',
+  Fajr: '05:06',
   Dhuhr: '12:05',
   Asr: '15:13',
   Maghrib: '17:38',
@@ -89,6 +94,22 @@ describe('US-13 — UAE matches the official timetable', () => {
     );
     expect(minutesOf(inDubai(isna.fajr)) - minutesOf(OFFICIAL_DUBAI_NOV_7.Fajr)).toBeGreaterThanOrEqual(10);
     expect(minutesOf(OFFICIAL_DUBAI_NOV_7.Isha) - minutesOf(inDubai(isna.isha))).toBeGreaterThanOrEqual(10);
+  });
+});
+
+describe('US-13 — UAE Fajr matches Awqaf and the mosque', () => {
+  test('3 Feb 2026: Dubai 05:37, Abu Dhabi 05:41 (Awqaf, published)', () => {
+    const feb3 = new Date(2026, 1, 3);
+    expect(inDubai(dayTimes(DUBAI, feb3).Fajr)).toBe('05:37');
+    expect(inDubai(dayTimes(ABU_DHABI, feb3).Fajr)).toBe('05:41');
+  });
+
+  test('8 Nov 2026: Dubai 05:06 (owner’s mosque and Muslim Mate)', () => {
+    expect(inDubai(dayTimes(DUBAI, new Date(2026, 10, 8)).Fajr)).toBe('05:06');
+  });
+
+  test('UAE method applies the -5 minute Fajr adjustment', () => {
+    expect(getCalculationParameters(DUBAI).methodAdjustments.fajr).toBe(-5);
   });
 });
 
